@@ -38,37 +38,7 @@ services:
       start_period: 40s
     restart: unless-stopped
 
-  # Streamlit Frontend Service
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.streamlit
-    container_name: exhumed-frontend
-    ports:
-      - "8501:8501"
-    environment:
-      - BACKEND_URL=http://backend:8000
-      - STREAMLIT_SERVER_PORT=8501
-      - STREAMLIT_SERVER_HEADLESS=true
-      - STREAMLIT_CLIENT_LOGGER_ENABLED=true
-    volumes:
-      - ./frontend:/app/frontend
-      - ./static:/app/static
-      - streamlit-cache:/root/.streamlit/cache
-    command: streamlit run frontend/app.py --server.port=8501 --server.address=0.0.0.0
-    networks:
-      - exhumed-network
-    depends_on:
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
-
 # Network for inter-service communication
 networks:
   exhumed-network:
     driver: bridge
-
-# Volumes for persistent data
-volumes:
-  streamlit-cache:
-    driver: local

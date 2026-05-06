@@ -89,8 +89,8 @@ test_jaccard.py
 backend/logs.*.json
 
 # Next.js prototype frontend
-front/node_modules/
-front/.next/
-front/.vercel/
-!front/lib/
-!front/lib/**
+frontend/node_modules/
+frontend/.next/
+frontend/.vercel/
+!frontend/lib/
+!frontend/lib/**

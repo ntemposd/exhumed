@@ -8,6 +8,7 @@ Storage stack:
 """
 
 import asyncio
+import contextlib
 import json
 import logging
 import os
@@ -31,6 +32,8 @@ from fpdf import FPDF
 from pydantic import BaseModel, Field
 from upstash_redis import Redis
 from upstash_vector import Index
+
+from backend.services.database import DatabaseService, SentenceTransformerEmbeddingProvider
 
 # Initialize logging
 logging.basicConfig(
@@ -145,7 +148,13 @@ def _extract_provider_error_text(response: httpx.Response) -> str:
             return str(data.get("message") or data.get("error") or data)
         return str(data)
     except Exception:
-        return response.text[:300] if response is not None else "No response body"
+        if response is None:
+            return "No response body"
+
+        try:
+            return response.text[:300]
+        except Exception:
+            return f"HTTP {response.status_code} with unread or unavailable response body"
 
 
 def _read_mapping_or_attr(value: Any, *names: str) -> Any:
@@ -294,6 +303,11 @@ if missing_env:
 
 redis = Redis(url=UPSTASH_REDIS_REST_URL, token=UPSTASH_REDIS_REST_TOKEN)
 vector_index = Index(url=UPSTASH_VECTOR_REST_URL, token=UPSTASH_VECTOR_REST_TOKEN)
+database_service = DatabaseService(
+    redis_client=redis,
+    vector_index=vector_index,
+    embedding_provider=SentenceTransformerEmbeddingProvider(),
+)
 
 app = FastAPI(
     title="EXHUMED",
@@ -346,6 +360,14 @@ class ProcessTurnStreamChunk(BaseModel):
     content: str
 
 
+class ProcessTurnStreamStatus(BaseModel):
+    type: Literal["status"]
+    stage: Literal["retrying"]
+    message: str
+    retry_after_seconds: float
+    attempt_number: int
+
+
 class ProcessTurnStreamFinal(BaseModel):
     type: Literal["final"]
     message_id: UUID
@@ -383,6 +405,16 @@ class TelemetryData(BaseModel):
     entropy: float = Field(..., description="Jaccard Similarity Entropy Score (0.0-1.0)")
     latency_ms: int = Field(..., description="Response generation latency in milliseconds")
     word_count: int = Field(..., description="Total word count in generated response")
+    vector: Optional["VectorTelemetry"] = Field(default=None, description="Speaker knowledge retrieval telemetry for this turn")
+
+
+class VectorTelemetry(BaseModel):
+    used: bool = Field(..., description="Whether speaker knowledge was injected into the prompt")
+    match_count: int = Field(..., description="Number of retrieved knowledge chunks")
+    top_score: Optional[float] = Field(None, description="Top retrieval similarity score")
+    sources: List[str] = Field(default_factory=list, description="Unique source titles contributing context")
+    chunk_ids: List[str] = Field(default_factory=list, description="Retrieved chunk ids for debugging")
+    context_chars: int = Field(..., description="Total character count of injected knowledge text")
 
 
 class ExecutionMetrics(BaseModel):
@@ -465,9 +497,6 @@ def calculate_jaccard_entropy(text1: str, text2: str) -> float:
     entropy = 1.0 - jaccard_similarity
     
     return round(entropy, 4)
-
-
-
 
 
 class SessionTopicUpdateRequest(BaseModel):
@@ -716,24 +745,13 @@ async def check_services() -> Dict[str, Any]:
 
     vector_started = time.perf_counter()
     try:
-        supports_text_upsert, vector_detail = _vector_index_supports_text_upsert(force_refresh=True)
+        vector_index.info()
         vector_latency_ms = int((time.perf_counter() - vector_started) * 1000)
-        vector_status = "ONLINE"
-        service_detail: Optional[str] = None
-
-        if not supports_text_upsert:
-            vector_status = "DEGRADED"
-            service_detail = vector_detail
-        elif _vector_write_status.get("status") == "error":
-            vector_status = "DEGRADED"
-            service_detail = str(_vector_write_status.get("detail") or "Vector writes are failing")
-
         services.append(
             ServiceStatus(
                 name="Vector",
-                status=vector_status,
+                status="ONLINE",
                 latency_ms=vector_latency_ms,
-                detail=service_detail,
             )
         )
     except Exception as exc:
@@ -801,13 +819,10 @@ async def fetch_agent_config(agent_id: str) -> AgentConfig:
 
 async def fetch_context_messages(session_id: UUID, limit: int = 5) -> List[Dict[str, Any]]:
     try:
-        raw_entries = redis.lrange(f"session:{session_id}:messages", -limit, -1) or []
+        history = database_service.get_chat_history(str(session_id))[-limit:]
         context: List[Dict[str, Any]] = []
 
-        for offset, raw_entry in enumerate(raw_entries, start=1):
-            item = _load_message_record(raw_entry)
-            if not item:
-                continue
+        for offset, item in enumerate(history, start=1):
             context.append(
                 {
                     "agent_id": item["agent_id"],
@@ -865,13 +880,36 @@ async def fetch_session_topic(session_id: UUID) -> str:
         return ""
 
 
-def build_context_prompt(topic: str, context_messages: List[Dict[str, Any]], agent_config: AgentConfig) -> str:
+def build_context_prompt(
+    topic: str,
+    context_messages: List[Dict[str, Any]],
+    agent_config: AgentConfig,
+    agent_context_matches: Optional[List[Dict[str, Any]]] = None,
+) -> str:
+    knowledge_block = ""
+    retrieval_guidance = ""
+    if agent_context_matches:
+        context_lines = [str(match.get("data") or "").strip() for match in agent_context_matches if match.get("data")]
+        if context_lines:
+            knowledge_block = "\n\nRelevant historical speaker context:\n" + "\n".join(
+                f"- {line}" for line in context_lines
+            )
+            retrieval_guidance = (
+                "\n\nUse the historical speaker context as background philosophical grounding only. "
+                "Do not continue the original source scene, courtroom exchange, interview, or speech verbatim. "
+                "Do not address historical interlocutors or named figures from the source material unless they are explicitly part of the current debate. "
+                "Translate any retrieved ideas into the present topic and the current panel discussion."
+            )
+
     if not context_messages:
         return (
             f"{agent_config.system_prompt}\n\n"
             f"Discussion topic: {topic}\n"
+            f"{knowledge_block}"
+            f"{retrieval_guidance}"
             "You are taking the first turn. Provide a clear, substantive response. "
-            "Do not prefix your answer with your name, a speaker label, or a turn number."
+            "Do not prefix your answer with your name, a speaker label, or a turn number. "
+            "Do not import historical addressees, scene setup, or source-only references unless the current topic explicitly requires them."
         )
 
     context_text = "\n".join(
@@ -881,11 +919,83 @@ def build_context_prompt(topic: str, context_messages: List[Dict[str, Any]], age
     return (
         f"{agent_config.system_prompt}\n\n"
         f"Discussion topic: {topic}\n"
+        f"{knowledge_block}"
+        f"{retrieval_guidance}\n"
         "Recent discussion context (latest turns):\n"
         f"{context_text}\n\n"
         "Now contribute the next turn. Keep it concise, concrete, and relevant. "
-        "Do not prefix your answer with your name, a speaker label, or a turn number."
+        "Do not prefix your answer with your name, a speaker label, or a turn number. "
+        "Do not import historical addressees, scene setup, or source-only references unless the current topic explicitly requires them."
     )
+
+
+def get_agent_context_matches(query_text: str, agent_id: str) -> List[Dict[str, Any]]:
+    try:
+        matches = database_service.get_agent_context(query_text=query_text, agent_id=agent_id, top_k=4)
+        if matches:
+            top_match = matches[0]
+            top_metadata = top_match.get("metadata") or {}
+            logger.info(
+                "Retrieved %s speaker knowledge matches for %s on query=%r (top_score=%s, source=%s, chunk=%s)",
+                len(matches),
+                agent_id,
+                query_text,
+                top_match.get("score"),
+                top_metadata.get("source_title"),
+                top_metadata.get("chunk_index"),
+            )
+        else:
+            logger.info("No speaker knowledge matches found for %s on query=%r", agent_id, query_text)
+
+        return matches
+    except Exception as exc:
+        logger.warning("Unable to retrieve agent context for %s: %s", agent_id, exc)
+        return []
+
+
+def summarize_vector_telemetry(agent_context_matches: List[Dict[str, Any]]) -> VectorTelemetry:
+    sources: List[str] = []
+    chunk_ids: List[str] = []
+    context_chars = 0
+
+    for match in agent_context_matches:
+        metadata = match.get("metadata") or {}
+        source_title = str(metadata.get("source_title") or "").strip()
+        if source_title and source_title not in sources:
+            sources.append(source_title)
+
+        chunk_id = str(match.get("id") or "").strip()
+        if chunk_id:
+            chunk_ids.append(chunk_id)
+
+        context_chars += len(str(match.get("data") or ""))
+
+    top_score = None
+    if agent_context_matches:
+        raw_score = agent_context_matches[0].get("score")
+        if isinstance(raw_score, (int, float)):
+            top_score = float(raw_score)
+
+    return VectorTelemetry(
+        used=bool(agent_context_matches),
+        match_count=len(agent_context_matches),
+        top_score=top_score,
+        sources=sources,
+        chunk_ids=chunk_ids,
+        context_chars=context_chars,
+    )
+
+
+def persist_session_telemetry(session_id: UUID, logic_entropy: float) -> None:
+    semantic_overlap = max(0.0, min(1.0, 1.0 - logic_entropy))
+    try:
+        database_service.set_telemetry_metrics(
+            str(session_id),
+            logic_entropy=float(logic_entropy),
+            semantic_overlap=float(semantic_overlap),
+        )
+    except Exception as exc:
+        logger.warning("Unable to persist session telemetry for %s: %s", session_id, exc)
 
 
 def sanitize_generated_message(message: str, display_name: str) -> str:
@@ -1011,6 +1121,11 @@ async def call_llm_api(
             raise
         except httpx.HTTPStatusError as exc:
             response = exc.response
+            if response is not None:
+                try:
+                    await response.aread()
+                except Exception:
+                    pass
             error_text = _extract_provider_error_text(response) if response is not None else "Unknown upstream error"
             status_code = response.status_code if response is not None else "unknown"
 
@@ -1087,6 +1202,7 @@ async def stream_llm_api(
     agent_config: AgentConfig,
     temperature_override: Optional[float] = None,
     on_complete: Optional[Callable[[str, ExecutionMetrics], Awaitable[None]]] = None,
+    on_retry: Optional[Callable[[float, int], Awaitable[None]]] = None,
 ) -> AsyncIterator[str]:
     api_url = f"{LLM_API_BASE_URL}/chat/completions"
     headers = {"Authorization": f"Bearer {LLM_API_KEY}"}
@@ -1173,11 +1289,18 @@ async def stream_llm_api(
                     return
         except httpx.HTTPStatusError as exc:
             response = exc.response
+            if response is not None:
+                try:
+                    await response.aread()
+                except Exception:
+                    pass
             error_text = _extract_provider_error_text(response) if response is not None else "Unknown upstream error"
             status_code = response.status_code if response is not None else "unknown"
 
             if response is not None and response.status_code == 429 and attempt < LLM_429_MAX_RETRIES:
                 retry_delay = _parse_retry_after_seconds(response, error_text) or min(2 ** attempt, 8)
+                if on_retry is not None:
+                    await on_retry(retry_delay, attempt + 1)
                 await _sleep_for_retry(retry_delay, attempt + 1)
                 continue
 
@@ -1221,41 +1344,8 @@ async def save_message_to_storage(
     }
 
     try:
-        # Persist semantically searchable discussion content to Upstash Vector.
-        # Raw text upserts require an embedding-enabled index.
-        vector_metadata = {
-            "session_id": str(session_id),
-            "agent_id": agent_id,
-            "display_name": display_name,
-            "topic": topic,
-            "turn_number": turn_number,
-            "created_at": created_at,
-        }
-        try:
-            supports_text_upsert, vector_detail = _vector_index_supports_text_upsert()
-            if not supports_text_upsert:
-                _record_vector_write_status(False, vector_detail)
-                logger.warning("Vector upsert skipped: %s", vector_detail)
-            else:
-                vector_index.upsert(
-                    vectors=[
-                        {
-                            "id": str(message_id),
-                            "data": message,
-                            "metadata": vector_metadata,
-                        }
-                    ]
-                )
-                _record_vector_write_status(True)
-        except Exception as vector_exc:
-            _record_vector_write_status(False, str(vector_exc))
-            logger.warning("Vector upsert skipped: %s", vector_exc)
-
-        # Keep ordered timeline in Redis for deterministic "last 5" and PDF export.
-        pipeline = redis.pipeline()
-        pipeline.rpush(f"session:{session_id}:messages", json.dumps(record))
-        pipeline.expire(f"session:{session_id}:messages", 60 * 60 * 24 * 30)
-        pipeline.exec()
+        # Redis is the canonical store for live conversation history.
+        database_service.append_chat_message(str(session_id), record)
 
         return record
     except Exception as exc:
@@ -1264,13 +1354,10 @@ async def save_message_to_storage(
 
 
 async def fetch_session_messages(session_id: UUID) -> List[Dict[str, Any]]:
-    raw_entries = redis.lrange(f"session:{session_id}:messages", 0, -1) or []
+    raw_entries = database_service.get_chat_history(str(session_id))
     messages: List[Dict[str, Any]] = []
 
-    for index, raw_entry in enumerate(raw_entries, start=1):
-        item = _load_message_record(raw_entry)
-        if not item:
-            continue
+    for index, item in enumerate(raw_entries, start=1):
         if "turn_number" not in item:
             item["turn_number"] = index
         messages.append(item)
@@ -1388,14 +1475,18 @@ async def process_turn(request: ProcessTurnRequest) -> ProcessTurnResponse:
         request.topic,
     )
 
-    agent_config = await fetch_agent_config(request.agent_id)
-    context_messages = await fetch_context_messages(request.session_id, limit=5)
+    agent_config, context_messages, agent_context_matches = await asyncio.gather(
+        fetch_agent_config(request.agent_id),
+        fetch_context_messages(request.session_id, limit=5),
+        asyncio.to_thread(get_agent_context_matches, request.topic, request.agent_id),
+    )
     turn_number = request.turn_number or (len(context_messages) + 1)
     previous_response = ""
     if context_messages:
         previous_response = str(context_messages[-1].get("message", "") or "").strip()
 
-    prompt = build_context_prompt(request.topic, context_messages, agent_config)
+    vector_telemetry = summarize_vector_telemetry(agent_context_matches)
+    prompt = build_context_prompt(request.topic, context_messages, agent_config, agent_context_matches)
     generated_message, execution_metrics = await call_llm_api(
         prompt,
         agent_config,
@@ -1409,7 +1500,9 @@ async def process_turn(request: ProcessTurnRequest) -> ProcessTurnResponse:
         entropy=entropy,
         latency_ms=int(latency_ms),
         word_count=len(generated_message.split()),
+        vector=vector_telemetry,
     )
+    persist_session_telemetry(request.session_id, entropy)
 
     stored_message = await save_message_to_storage(
         session_id=request.session_id,
@@ -1441,15 +1534,20 @@ async def process_turn_stream(request: ProcessTurnRequest) -> StreamingResponse:
         request.topic,
     )
 
-    agent_config = await fetch_agent_config(request.agent_id)
-    context_messages = await fetch_context_messages(request.session_id, limit=5)
+    agent_config, context_messages, agent_context_matches = await asyncio.gather(
+        fetch_agent_config(request.agent_id),
+        fetch_context_messages(request.session_id, limit=5),
+        asyncio.to_thread(get_agent_context_matches, request.topic, request.agent_id),
+    )
     turn_number = request.turn_number or (len(context_messages) + 1)
     previous_response = ""
     if context_messages:
         previous_response = str(context_messages[-1].get("message", "") or "").strip()
 
-    prompt = build_context_prompt(request.topic, context_messages, agent_config)
+    vector_telemetry = summarize_vector_telemetry(agent_context_matches)
+    prompt = build_context_prompt(request.topic, context_messages, agent_config, agent_context_matches)
     final_payload: Optional[ProcessTurnStreamFinal] = None
+    event_queue: asyncio.Queue[Optional[bytes]] = asyncio.Queue()
 
     async def handle_stream_completion(generated_message: str, execution_metrics: ExecutionMetrics) -> None:
         nonlocal final_payload
@@ -1461,7 +1559,9 @@ async def process_turn_stream(request: ProcessTurnRequest) -> StreamingResponse:
             entropy=entropy,
             latency_ms=int(latency_ms),
             word_count=len(generated_message.split()),
+            vector=vector_telemetry,
         )
+        persist_session_telemetry(request.session_id, entropy)
 
         stored_message = await save_message_to_storage(
             session_id=request.session_id,
@@ -1484,17 +1584,50 @@ async def process_turn_stream(request: ProcessTurnRequest) -> StreamingResponse:
             execution_metrics=execution_metrics,
         )
 
-    async def event_stream() -> AsyncIterator[bytes]:
-        async for chunk in stream_llm_api(
-            [{"role": "user", "content": prompt}],
-            agent_config,
-            temperature_override=request.temperature,
-            on_complete=handle_stream_completion,
-        ):
-            yield (ProcessTurnStreamChunk(type="chunk", content=chunk).model_dump_json() + "\n").encode("utf-8")
+    async def handle_stream_retry(retry_after_seconds: float, attempt_number: int) -> None:
+        retry_message = f"Groq rate limit hit. Retrying in {retry_after_seconds:.1f}s"
+        await event_queue.put(
+            (ProcessTurnStreamStatus(
+                type="status",
+                stage="retrying",
+                message=retry_message,
+                retry_after_seconds=retry_after_seconds,
+                attempt_number=attempt_number,
+            ).model_dump_json() + "\n").encode("utf-8")
+        )
 
-        if final_payload is not None:
-            yield (final_payload.model_dump_json() + "\n").encode("utf-8")
+    async def event_stream() -> AsyncIterator[bytes]:
+        async def produce_stream_events() -> None:
+            try:
+                async for chunk in stream_llm_api(
+                    [{"role": "user", "content": prompt}],
+                    agent_config,
+                    temperature_override=request.temperature,
+                    on_complete=handle_stream_completion,
+                    on_retry=handle_stream_retry,
+                ):
+                    await event_queue.put(
+                        (ProcessTurnStreamChunk(type="chunk", content=chunk).model_dump_json() + "\n").encode("utf-8")
+                    )
+
+                if final_payload is not None:
+                    await event_queue.put((final_payload.model_dump_json() + "\n").encode("utf-8"))
+            finally:
+                await event_queue.put(None)
+
+        producer_task = asyncio.create_task(produce_stream_events())
+
+        try:
+            while True:
+                payload = await event_queue.get()
+                if payload is None:
+                    break
+                yield payload
+        finally:
+            if not producer_task.done():
+                producer_task.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await producer_task
 
     return StreamingResponse(event_stream(), media_type="application/x-ndjson")
 
@@ -1519,11 +1652,15 @@ async def generate(request: GenerateRequest) -> GenerateResponse:
     try:
         await save_session_topic(request.session_id, request.topic)
         
-        agent_config = await fetch_agent_config(request.agent_id)
-        context_messages = await fetch_context_messages(request.session_id, limit=5)
+        agent_config, context_messages, agent_context_matches = await asyncio.gather(
+            fetch_agent_config(request.agent_id),
+            fetch_context_messages(request.session_id, limit=5),
+            asyncio.to_thread(get_agent_context_matches, request.topic, request.agent_id),
+        )
         turn_number = len(context_messages) + 1
 
-        prompt = build_context_prompt(request.topic, context_messages, agent_config)
+        vector_telemetry = summarize_vector_telemetry(agent_context_matches)
+        prompt = build_context_prompt(request.topic, context_messages, agent_config, agent_context_matches)
         generated_message, execution_metrics = await call_llm_api(prompt, agent_config)
         save_latest_execution_metrics(execution_metrics)
         
@@ -1544,7 +1681,9 @@ async def generate(request: GenerateRequest) -> GenerateResponse:
             entropy=entropy,
             latency_ms=latency_ms,
             word_count=word_count,
+            vector=vector_telemetry,
         )
+        persist_session_telemetry(request.session_id, entropy)
         
         # Persist message to storage
         stored_message = await save_message_to_storage(

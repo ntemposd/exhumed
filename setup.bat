@@ -13,6 +13,12 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
+npm --version >nul 2>&1
+if %errorlevel% neq 0 (
+    echo ERROR: npm is required for the Next.js frontend and was not found in PATH.
+    exit /b 1
+)
+
 if not exist ".venv" (
     echo Creating virtual environment in .venv ...
     python -m venv .venv
@@ -44,12 +50,15 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-echo Installing frontend dependencies ...
-pip install -r frontend\requirements.txt
+echo Installing Next.js frontend dependencies ...
+pushd frontend
+npm install
 if %errorlevel% neq 0 (
-    echo ERROR: Failed to install frontend dependencies.
+    popd
+    echo ERROR: Failed to install Next.js frontend dependencies.
     exit /b 1
 )
+popd
 
 if not exist ".env" (
     copy .env.example .env >nul
@@ -64,5 +73,5 @@ echo.
 echo Start backend:
 echo   .\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 echo Start frontend (new terminal):
-echo   .\.venv\Scripts\streamlit.exe run frontend/app.py --server.port 8501
+echo   cd frontend ^&^& npm run dev
 echo.

@@ -1,139 +1,103 @@
-# 💀 Exhum
+# EXHUMED
 
-Digital exhumation of historical logic. A multi-agent system where historical figures debate each other in real time.
+EXHUMED is a Redis-backed, Vector-augmented multi-agent debate system where historical personas debate a shared topic while the app tracks inference, diversity, and retrieval telemetry in real time.
 
-Built as an experiment in orchestrating LLM agents, managing context, and designing structured interactions between systems.
+## What It Is
 
----
+The current runtime stack is:
 
-## What this does
+- FastAPI backend in `backend/`
+- active Next.js frontend in `frontend/`
+- Upstash Redis for live session state and agent registry
+- Upstash Vector for speaker-specific historical knowledge retrieval
+- OpenAI-compatible inference provider, currently configured for Groq
 
-- Runs multiple AI agents with distinct personas  
-- Orchestrates turn-based debates with strict response constraints  
-- Tracks system performance (latency, token usage, context limits) in real time  
+## Start Here
 
----
+- Current architecture and runtime behavior: `docs/architecture.md`
+- API payload examples: `docs/api-examples.md`
+- How to add a new speaker source: `docs/adding-speakers.md`
 
-## How it works
+## Quick Start
 
-- **Backend:** FastAPI orchestrating asynchronous LLM calls  
-- **Frontend:** Streamlit interface for interaction and monitoring  
-- **Prototype Frontend:** Next.js 15 + Vercel AI SDK chat client in `front/`  
-- **LLM Engine:** Configurable OpenAI-compatible LLM provider for low-latency inference  
+### 1. Configure `.env`
 
-Each agent follows a constrained dialogue loop (max 60 words), ensuring focused responses and preventing context drift.
+Create a repo-root `.env` with at least:
 
----
-
-## Why I built this
-
-To explore how multi-agent systems behave in structured environments, and how product constraints (latency, cost, context) shape system design.
-
----
-
-## Key ideas
-
-- Multi-agent orchestration  
-- Context management  
-- Real-time system telemetry  
-- Designing constraints for better outputs  
-
----
-
-## Deployment
-
-- Backend: Railway
-- Frontend: Streamlit Cloud
-- Next.js Prototype Frontend: Vercel
-- Domain: exhumed.streamlit.app
-
----
-
-## Run Locally
-
-This app uses a FastAPI backend and a Streamlit frontend. To run it locally, start both services in separate terminals.
-
-### 1. Create and configure `.env`
-
-Copy `.env.example` to `.env` and add your real credentials for:
-
-- `UPSTASH_REDIS_REST_URL`
-- `UPSTASH_REDIS_REST_TOKEN`
-- `UPSTASH_VECTOR_REST_URL`
-- `UPSTASH_VECTOR_REST_TOKEN`
-- `LLM_API_KEY`
-
-Optional browser-origin settings for the Next.js frontend:
-
-- `CORS_ALLOW_ORIGINS=http://localhost:3000,http://127.0.0.1:3000`
-- `CORS_ALLOW_ORIGIN_REGEX=https://.*\.vercel\.app`
+```dotenv
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+UPSTASH_VECTOR_REST_URL=...
+UPSTASH_VECTOR_REST_TOKEN=...
+LLM_API_KEY=...
+LLM_API_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL_ID=llama-3.1-8b-instant
+```
 
 ### 2. Install dependencies
 
-On Windows:
+Windows:
 
 ```bat
 setup.bat
 ```
 
-On macOS / Linux:
+macOS / Linux:
 
 ```bash
 ./setup.sh
 ```
 
-### 3. Start the backend
+These scripts install backend Python dependencies and the active Next.js frontend dependencies.
 
-```bash
-python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-The backend runs at `http://localhost:8000`.
-
-### 4. Start the frontend
-
-In a new terminal, run:
-
-```bash
-streamlit run frontend/app.py --server.port 8501
-```
-
-The frontend runs at `http://localhost:8501`.
-
-### 5. Start the Next.js frontend prototype
-
-The new frontend lives beside the Streamlit app in `front/` and talks directly to the FastAPI backend via browser requests.
-
-```bash
-cd front
-npm install
-npm run dev
-```
-
-Create `front/.env.local` from `front/.env.example` if you need a non-default backend URL.
-
-The Next.js frontend runs at `http://localhost:3000`.
-
-### 6. Optional: use the virtual environment executables directly
+### 3. Run the backend
 
 Windows:
 
 ```bat
 .\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
-.\.venv\Scripts\streamlit.exe run frontend/app.py --server.port 8501
 ```
 
 macOS / Linux:
 
 ```bash
 ./.venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
-./.venv/bin/streamlit run frontend/app.py --server.port 8501
 ```
 
-### 7. Optional: run with Docker
+### 4. Run the active frontend
 
 ```bash
-docker-compose up --build
+cd frontend
+npm install
+npm run dev
 ```
 
-This starts the backend on `http://localhost:8000` and the frontend on `http://localhost:8501`.
+App URLs:
+
+- backend: `http://localhost:8000`
+- Next.js frontend: `http://localhost:3000`
+
+## Repository Layout
+
+```text
+backend/                     FastAPI app, service layer, ingestion scripts
+frontend/                    Active Next.js frontend
+data/                        Historical source documents for speakers
+static/                      Shared static assets
+docs/                        Current architecture and usage docs
+docker-compose.yml           Backend Docker setup
+```
+
+## Current Highlights
+
+- Redis is the canonical store for live session state.
+- Vector stores historical source chunks for each speaker.
+- Each debate turn can retrieve speaker-specific context from Vector.
+- The Next.js telemetry sidebar shows execution, token, diversity, and Vector usage metrics.
+- Prompt construction now guards against continuing source scenes verbatim.
+
+## Notes
+
+- The Next.js frontend is the most up-to-date client.
+- Docker Compose currently starts only the backend. Run the Next.js app separately from `frontend/`.
+- Historical ingestion is currently implemented for Socrates and Steve Jobs, with the script designed to expand to more speakers.

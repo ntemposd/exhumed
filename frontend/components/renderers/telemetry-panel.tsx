@@ -1,0 +1,64 @@
+// TelemetryPanel is now a thin renderer for a fully prepared telemetry view
+// model. Heavy derivation happens in a dedicated hook closer to the parent.
+import type { TelemetryPanelViewModel } from "../types";
+import { TelemetryServiceStatus } from "./telemetry-service-status";
+import { TelemetrySummarySections } from "./telemetry-summary-sections";
+
+type TelemetryPanelProps = {
+  viewModel: TelemetryPanelViewModel;
+};
+
+export function TelemetryPanel({ viewModel }: TelemetryPanelProps) {
+  const {
+    servicesState,
+    onlineServices,
+    serviceRows,
+    performanceRows,
+    totalVectorHits,
+    vectorTurnCount,
+    uniqueVectorSources,
+    uniqueVectorSourceLabels,
+    vectorRows,
+    displayedTotalTokens,
+    requestCount,
+    tokenTableRows,
+    sessionBurnUsd,
+    observedRatio,
+    diversityValue,
+    diversityLabel,
+    vocalShareRows,
+  } = viewModel;
+
+  return (
+    <aside className="telemetryColumn">
+      <div className="panel telemetryPanel">
+        <div className="telemetryHero">
+          <h2 className="telemetryHeroTitle">TELEMETRY</h2>
+        </div>
+
+        <TelemetryServiceStatus
+          servicesState={servicesState}
+          onlineServices={onlineServices}
+          serviceRows={serviceRows}
+        />
+
+        <TelemetrySummarySections
+          performanceRows={performanceRows}
+          totalVectorHits={totalVectorHits}
+          vectorTurnCount={vectorTurnCount}
+          uniqueVectorSources={uniqueVectorSources}
+          uniqueVectorSourceLabels={uniqueVectorSourceLabels}
+          vectorRows={vectorRows}
+          displayedTotalTokens={displayedTotalTokens}
+          requestCount={requestCount}
+          tokenTableRows={tokenTableRows}
+          sessionBurnUsd={sessionBurnUsd}
+          observedRatio={observedRatio}
+          diversityValue={diversityValue}
+          diversityLabel={diversityLabel}
+          vocalShareRows={vocalShareRows}
+        />
+      </div>
+    </aside>
+  );
+}

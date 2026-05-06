@@ -1,4 +1,6 @@
+------
 This is a prepared text of the Commencement Address delivered by Steve Jobs, CEO of Apple Computer and of Pixar Animation Studios, on June 12, 2005.
+------
 
 I’m honored to be with you today for your commencement from one of the finest universities in the world. Truth be told, I never graduated from college. And this is the closest I’ve ever gotten to a college graduation.
 
@@ -95,3 +97,1316 @@ Stewart and his team put out several issues of The Whole Earth Catalog. And then
 On the back cover of their final issue was a photograph of an early-morning country road—the kind you might find yourself hitchhiking on if you were so adventurous. Beneath it were the words “Stay hungry. Stay foolish.” It was their farewell message as they signed off.
 
 “Stay hungry. Stay foolish.” And I have always wished that for myself. And now, as you graduate to begin anew, I wish that for you. Stay hungry. Stay foolish. Thank you all very much.
+
+------
+Steve Jobs The Lost Interview 1995 - Full Transcript and Highlights
+------
+
+Job’s entry into personal computers
+Cringely: So how did you get involved with personal computers?
+
+Jobs: Hmm. Well, um..I ran into my first computer when I was about 10 or 11. And it’s hard to remember back then. But I’m an old fossil now. I’m an old fossil. So when I was 10 or 11 was about 30 years ago. And no one had ever seen a computer. To the extent that they’d seen them in movies, and they were these big boxes with whirring..For some reason, they fixated on the tape drives as being the icon of what the computer was, or flashing lights somehow. And so nobody had ever seen one. They were very mysterious, very powerful things, that did something in the background. And so, to see one and actually get to use one was a real privilege back then. And I got into NASA, the Ames Research Center down here. I got to use a time-sharing terminal. So I didn’t actually see the computer, but I saw a time-sharing terminal. And in those days.. Again, it’s hard to remember how primitive it was. There was no such thing as a computer with a graphics video display. It was literally a printer. It was a teletype printer with a keyboard on it. And so you would keyboard these commands in, and then you would wait for a while, and the thing would go.. And it would tell you something out. But even with that, it was still remarkable, especially for a 10-year-old, that you could write a program in BASIC, let’s say, or FORTRAN. And actually, this machine would take your idea, and it would execute your idea and give you back some results. And if they were the results that you predicted, your program really worked. It was an incredibly thrilling experience. So, I became very captivated by a computer. And a computer, to me, was still a little mysterious,’cause it was at the other end of this wire, and I’d never really seen the actual computer itself. And then I got tours of computers after that, and saw the insides. And then I was part of this group at Hewlett-Packard. When I was 12, I called up Bill Hewlett, who lived in Hewlett-Packard at the time. And again, this dates me, but there was no such thing as an unlisted telephone number then. So I could just look in the book, and looked his name up. And he answered the phone, and I said, “Hi. My name’s Steve Jobs. You don’t know me, but I’m 12 years old, and I’m building a frequency counter, and I’d like some spare parts.” And so, he talked to me for about 20 minutes. I’ll never forget it as long as I live. And he gave me the parts, but he also gave me a job working at Hewlett-Packard that summer. And I was 12 years old then. And that really made a remarkable influence on me. Hewlett-Packard was really the only company I’d ever seen in my life at that age, and it formed my view of what a company was, and how well they treated their employees. They didn’t know about cholesterol back then. But at that time, they used to bring a big cartful of donuts and coffee out at 10 every morning. Everybody would take a coffee and donut break. And just little things like that, it was clear that the company recognized that its true value was its employees. So anyway, things led to things with Hewlett-Packard, and I started going up to their Palo Alto research labs every Tuesday night with a small group of people to meet some of their researchers and stuff, and I saw the first desktop computer ever made, which was the Hewlett-Packard 9100. It was about as big as a suitcase, but it actually had a small cathode-ray tube display in it, and it was completely self-contained. There was no wire going off behind the curtain somewhere. And I fell in love with it. And you could program it in BASIC and APL. And I would just, for hours, get a ride up to Hewlett-Packard and just hang around that machine and write programs for it. And so that was the early days. And I met Steve Wozniak around that time, too. Well, maybe a little earlier when I was about 14, 15 years old. And we immediately hit it off. He was the first person I’d met that knew more about electronics than I did, and so I was..I liked him a lot, and he was maybe five years older than I. He’d gone off to college and gotten kicked out for pulling pranks, and was living with his parents, and going to De Anza, the local junior college. So we became fast friends, and started doing projects together. We read about..We read about the story in Esquire magazine about this guy named Captain Crunch who could supposedly make free telephone calls. You’ve heard about this, I’m sure. And again, we were captivated. How could anybody do this? And we thought it must be a hoax. And we started looking through the libraries, looking for the secret tones that would allow you to do this. And it turned out, we were at Stanford Linear Accelerator Center one night, and way in the bowels of their technical library, way down at the last bookshelf, in the corner bottom rack, we found an AT&T technical journal that laid out the whole thing. And that’s another moment I’ll never forget. When we saw this journal, we thought, “My God! It’s all real.” And so, we set out to build a device to make these tones. And the way it worked was, you know when you make a long-distance call, you used to hear..(mimicking dial tones) Right? In the background? They were tones that sounded like the touch tone you could make on your phone, but they were a different frequency, so you couldn’t make them. It turned out that, that was the signal from one telephone computer to another controlling the computers in the network. And AT&T made a fatal flaw when they designed the original telephone network, digital telephone network, was they put the signaling from computer to computer in the same band as your voice, which meant that if you could make those same signals, you could put it right in through the handset. And literally, the entire AT&T international phone network would think you were an AT&T computer. So after three weeks we finally built a box like this that worked. And I remember, the first call we made was down to LA, one of Woz’s relatives down in Pasadena. We dialed the wrong number, but we woke some guy up in the middle of the night, and we were yelling at him like, “Don’t you understand we made this call for free?” And this person didn’t appreciate that. But it was miraculous, and we built these little boxes to do blue boxing, as it was called, and we put a little note in the bottom of them. Our logo was, “He’s got the whole world in his hands.” And they worked. We built the best blue box in the world. It was all digital. No adjustments. And so you could go up to a pay phone and you could take a trunk over to White Plains, and then take a satellite over to Europe, and then go to Turkey, take a cable back to Atlanta. And you could go around the world. You could go around the world five or six times ‘cause we learned all the codes for how to get on the satellites and stuff. And then, you could call the pay phone next door, and so you could shout in the phone, and after about a minute, it would come out the other phone. It was.. It was miraculous. And you might ask, “Well, what’s so interesting about that?” What’s so interesting is that we were young. And what we learned was that we could build something ourselves that could control billions of dollars’ worth of infrastructure in the world. That was what we learned, We didn’t know much. We could build a little thing that could control a giant thing. And that was an incredible lesson. I don’t think there would have ever been an Apple computer had there not been blue boxing.
+
+Cringeley: Woz said you called the Pope?
+
+Jobs: Yeah, we did call the Pope. He pretended to be Henry Kissinger. And we got the number of the Vatican, and we called the Pope. And they started waking people up in the hierarchy. I don’t know, cardinals and this and that. And they actually sent someone to wake up the Pope when, finally, we just burst out laughing, and they realized that we weren’t Henry Kissinger. Yeah, and so, we never got to talk to the Pope, but it was very funny.
+
+Cringeley: So..So the jump from blue boxes to personal computers, what sparked that?
+
+Jobs: Well..Necessity, in the sense that there was time-sharing computers available, and there was a time-sharing company in Mountain View that we could get free time on. So, uh.. But we needed a terminal, and we couldn’t afford one, so we designed and built one. And that was the first thing we ever did. We built this terminal. And so, what an Apple I was, was really an extension of this terminal putting a microprocessor on the back end. That’s what it was. So first we built the terminal, and then we built the Apple I. And we really built it for ourselves because we couldn’t afford to buy anything. And we’d scavenge parts here and there and stuff, and we’d build these all by hand. They’d take 40 to 80 hours to build one, and then they’d always be breaking cause there’s all these tiny little wires. And so, it turned out, a lot of our friends wanted to build them, too. And although they could scavenge most of the parts as well, they didn’t have the skills to build them that we had acquired by training ourselves through building them. And so, we ended up helping them build most of their computers, and it was really taking up all of our time. And we thought if we could make what’s called a printed circuit board, which is a piece of fiberglass with copper on both sides that’s etched to form the wires so that you could build a computer..You could build an Apple I in a few hours instead of 40 hours. If we only had one of those, we could sell them to all our friends for as much as it cost us to make them, and make our money back. And everybody would be happy, and we’d get a life again. So we did that. I sold my Volkswagen Bus, and Steve sold his calculator, and we got enough money to pay a friend of oursto make the artwork to make a printed circuit board. And we made some printed circuit boards, and we sold some to our friends. And I was trying to sell the rest of them, so that we could get our Microbus and calculator back. And I walked into the first computer store in the world which was the Byte Shop of Mountain View, I think, on El Camino. It metamorphosized into an adult bookstore a few years later. But at this point, it was the Byte Shop. And the person that ran it, I think his name was Paul Terrell, he said, “I’ll take 50 of those.” I said, “This is great.” He said, “But I want them fully assembled.” We’d never thought of this before. So we then kicked this around, we thought, “Why not? Why not try this?” And so, I spent the next several days on the phone talking with electronics parts distributors. We didn’t know what we were doing. And we said, “Look, here’s the parts we need. “We figured we’d buy 100 sets of parts, build 50, sell them to the Byte Shop for twice what it cost us to build them, therefore paying for the whole 100, and then we’d have 50 left, and we could make our profits by selling those. So we convinced these distributors to give us the parts on net 30 days credit. We had no idea what that meant. “Net 30? Sure.” “Sign here.” And then, so we had 30 days to pay them. And so we bought the parts, we built the products, and we sold 50 of them to the Byte Shop in Palo Alto, and got paid in 29 days. And then went and paid off the parts people in 30 days, and so we were in business. But we had the classic Marxian profit realization crisis, in that our profit wasn’t in a liquid currency, our profit was in 50 computers sitting in the corner. So then, all of a sudden, we had to think,”Wow! How are we going to realize our profit?” And so we started thinking about distribution, “Are there any other computer stores?” And we started calling the other computer storesthat we’d heard of across the country, and we just eased into business that way.
+
+On Mike Markkula’s investment in Apple
+Cringeley: The third key figure in the creation of Apple was former Intel executive Mike Markkula. I asked Steve how he came aboard.
+
+Jobs: We were designing the Apple II, and we really had much higher ambitions for the Apple II. Woz’s ambitions were, he wanted to add color graphics. My ambition was that..It was very clear to me that while there were a bunch of hardware hobbyists that could assemble their own computers or at least take our board and add the transformers for the power supply, and the case and the keyboard, et cetera, and go get the rest of the stuff. For every one of those, there were a thousand people that couldn’t do that, but wanted to mess around with programing. Software hobbyists. Just like I had been when I was 10, discovering that computer. And so my dream for the Apple II was to sell the first real packaged computer. Packaged personal computer where you didn’t have to be a hardware hobbyist at all. And so, combining both of those dreams, we actually designed the product. And I found a designer, and we designed the packaging and everything, and we wanted to make it out of plastic, and we had the whole thing ready to go. But we needed some money for tooling the case and things like that. We needed a few hundred thousand dollars. And this was way beyond our means, so I went looking for some venture capital. And I ran across one venture capitalist named Don Valentine who came over to the garage. And he later said I looked like a renegade from the human race. That was his famous quote. And he said he wasn’t willing to invest in us, but he recommended a few people that might, and one of them was Mike Markkula. So I called Mike on the phone, and Mike came over, and Mike had retired at about 30 or 31 from Intel. He was a product manager there and had gotten a little bit of stock, and made, like, a million bucks on stock options, which at that time, was quite a lot of money. And he’d been investing in oil and gas deals, and staying home and doing that sort of thing. And he, I think, was kind of antsy to get back into something, and Mike and I hit it off very well. And so Mike said, “Okay, I’ll invest after a few weeks.” And I said, “No. No. We don’t want your money. We want you.” So we convinced Mike to actually throw in with us as an equal partner. And so Mike put in some money, and Mike put in himself, and we took this design that was virtually done with the Apple II, and tooled it up and announced it a few months later at the West Coast Computer Faire.
+
+Cringeley: What was that like?
+
+Jobs: It was great. We got the best. The West Coast Computer Faire was small at that time, but to us, it was very large. And so, we had this fantastic booth there. We had a projection television showing the Apple II, and showing its graphics, which today, look very crude, but at that time, were, by far, the most advanced graphics on a personal computer. And I think..My recollection is, we stole the show. And a lot of dealers and distributors started lining up, and we were off and running.
+
+The thinking behind running a succesful company
+Cringeley: How old were you?
+
+Jobs: 21.
+
+Cringeley: You’re 21, you’re a big success. You’ve just done it by the seat of your pants. You don’t have any particular training in this. How do you learn to run a company?
+
+Jobs: Throughout the years in business, I found something, which was, I’d always ask why you do things. And the answers you invariably get are,”Oh, that’s just the way it’s done.” Nobody knows why they do what they do. Nobody thinks about things very deeply in business. That’s what I found. I’ll give you an example. When we were building our Apple Is’ in the garage, we knew exactly what they cost. When we got into a factory in the Apple II days, the accounting had this notion of a standard cost, where you’d set a standard cost, and at the end of a quarter, you’d adjust it with a variance. And I kept asking, “Well, why do we do this?”And the answer was, “Well, that’s just the way it’s done.”And after about six months of digging into this, what I realized was, the reason you do it is because you don’t really have good enough controls to know how much it costs, so you guess, and then you fix your guess at the end of the quarter, and the reason you don’t know how much it costs is because your information systems aren’t good enough. But nobody said it that way. And so, later on, when we designed this automated factory for Macintosh, we were able to get rid of a lot of these antiquated concepts and know exactly what something cost to the second. So in business, a lot of things are.. I call it folklore. They’re done because they were done yesterday and the day before. And so what that means is, if you’re willing to ask a lot of questions and think about things and work really hard, you can learn business pretty fast. It’s not the hardest thing in the world. It’s not rocket science.
+
+On why everyone should learn programming
+Cringeley: Now, when you were first coming in contact with these computers and inventing them, and before that, working on the HP 9100, you talked about writing programs. What sort of programs? What did people actually do with these things?
+
+Jobs: Hmm..See, what we did with them..Well, I’ll give you a simple example. When we were designing our blue box, we wrote a lot of custom programs to help us design it, and to do a lot of the dog work for using terms of calculating master frequencies with sub divisors to get other frequencies and things like that. We used the computer quite a bit. And to calculate how much error we would get in the frequencies, and how much could be tolerated. So, we used them in our work. But much more importantly, it had nothing to do with using them for anything practical. It had to do with using them to be a mirror of your thought process, to actually learn how to think. It was, I think, the greatest value of learning how to..I think everybody in this country should learn how to program a computer, should learn a computer language, because it teaches you how to think. It’s like going to law school. I don’t think anybody should be a lawyer, but I think going to law school would actually be useful ‘cause it teaches you how to think in a certain way. In the same way that computer programing teaches you, in a slightly different way, how to think. And so, I view computer science as a liberal art. It should be something that everybody learns. Takes a year in their life, one of the courses they take is learning how to program.
+
+Cringeley: Yeah, but I learned APL, which, obviously, is part of the reason why I’m going through life sideways.
+
+Jobs: You look back and consider itan enriching experience that taught you to think in a different way, or not?
+
+Cringeley: Uh, no. Not that particularly. Other languages perhaps more so, but I started with APL.
+
+On what its like to get rich
+Cringeley: So, obviously, the Apple II was a terrific success. Just incredibly so. And the company grew like Topsy, and eventually went public, and you guys got really rich. What’s it like to get rich?
+
+Jobs: It’s very interesting. I was worthabout over $1 million when I was 23, and over $10 million when I was 24, and over $100 million when I was 25. And it wasn’t that important because I never did it for the money. I think money is a wonderful thing because it enables you to do things. It enables you to invest in ideasthat don’t have a short-term payback and things like that. But especially at that point in my life, it was not the most important thing. The most important thing was the company, the people, the products we were making, what we were gonna enable people to do with these products, so I didn’t think about it a great deal. I never sold any stock. Just really believed that the company would do very well over the long term.
+
+The unforgettable visit to the Xerox PARC
+Cringeley: Central to the development of the personal computer was the pioneering work being done at Xerox’s Palo Alto Research Center which Steve first visited in 1979.
+
+Jobs: I had 3-4 people who kept bugging me that I ought to get my rear over to Xerox PARC and see what they were doing, and so I finally did. I went over there. And they were very kind, and they showed me what they were working on, and they showed me, But I was so blinded by the first one that One of the things they showed me was object-oriented programing. They showed me that, but I didn’t even see that. The other one they showed me was, really, a network computer system. They had over 100 Alto computers, all networked, using email, et cetera, et cetera. I didn’t even see that. I was so blinded by the first thing they showed me, which was the graphical user interface. I thought it was the best thing I’d ever seen in my life. Now, remember, it was very flawed. What we saw was incomplete. They’d done a bunch of things wrong, but we didn’t know that at the time. But still, though, they had..The germ of the idea was there and they’d done it very well. And within 10 minutes, it was obvious to me that all computers would work like this someday. It was obvious. You could argue about how many years it would take, you could argue about who the winners and losers might be, but you couldn’t argue about the inevitability. It was so obvious. You would have felt the same way had you been there.
+
+Cringeley:Those are the exact words that Paul Allen used. It’s really interesting. You saw it, then you brought some people back with you? And what happened the next time? They made you cool your heels for a while?
+
+Jobs: No.
+
+Cringeley: No? Well, Adele Goldberg says otherwise. And she said that she argued against doing it for 3 hours and they took you other places and showed you other things while she was arguing.
+
+Jobs: Oh! Oh! You mean they were reluctant to show us the demo?
+
+Cringeley: She was.
+
+Jobs: Oh, okay. Well, I have no idea. But they did show us. So..And it’s good that they showed us, because the technology crashed and burned at Xerox.
+
+Cringeley: Yeah, why?
+
+On Xerox’s failure (ignoring the product people)
+Jobs: Oh, I actually thought a lot about that. And I learned more about that with John Sculley later on, and I think I understand it now pretty well. What happens is, like with John Sculley..John came from PepsiCo, and they, at most, would change their product once every 10 years. To them, a new product was, like, a new-size bottle, right? So if you were a product person, you couldn’t change the course of that company very much. So who influenced the success of PepsiCo? The sales and marketing people. Therefore, they were the ones that got promoted, and therefore, they were the ones that ran the company. Well, for PepsiCo, that might have been okay. But it turns out, the same thing can happen in technology companies that get monopolies. Like, oh, IBM and Xerox. If you were a product person at IBM or Xerox..So you make a better copier or a better computer. So what? When you have a monopoly market share, the company is not any more successful. So the people that can make the company more successful are sales and marketing people, and they end up running the companies. And the product people get driven out of the decision-making forums. And the companies forget what it means to make great products. The product sensibility and the product genius that brought them to that monopolistic position gets rotted out by people running these companies who have no conception of a good product versus a bad product. They have no conception of the craftsmanship that’s required to take a good idea and turn it into a good product. And they really have no feeling in their hearts usually about wanting to really help the customers. So that’s what happened at Xerox. The people at Xerox PARC used to call the people that ran Xerox “toner heads.”And they just had..These toner heads would come out to Xerox PARC, and they just had no clue about what they were seeing. Toner is what you put into a copier. The toner that you add to an industrial copier. So basically, they were copier he.. The people at Xerox PARC used to call the people that ran Xerox “toner heads.”And they just had..These toner heads would come out to Xerox PARC, and they just had no clue about what they were seeing. Toner is what you put into a copier. The toner that you add to an industrial copier. So basically, they were copier heads that just had no clue about a computer or what it could do. And so they just grabbed defeat from the greatest victory in the computer industry. Xerox could have owned the entire computer industry today. Could have been a company 10 times its size. Could have been IBM. Could have been the IBM of the ’90s. Could have been the Microsoft of the ’90s. So..But anyway, that’s all ancient history. It doesn’t really matter anymore.
+
+Cringeley: Sure. You mentioned IBM. When IBM entered the market, was that a daunting thing for you at Apple?
+
+Jobs: Oh, sure. Here was Apple, a one-billion-dollar company. And here was IBM, at that time, probably about 30-some-odd-billion-dollar company entering the market. Sure, it was. It was very scary. We made a very big mistake, though. IBM’s first product was terrible. It was really bad. And we made a mistake of not realizing that a lot of other people had a very strong vested interest in helping IBM make it better. So if it had just been up to IBM, they would have crashed and burned. But IBM did have, I think, a genius in their approach, which was to have a lot of other people have a vested interest in their success. And that’s what saved them in the end.
+
+On implementing vision and why some companies fail at it
+Cringeley: So you came back from visiting Xerox PARC with a vision. And how did you implement the vision?
+
+Jobs: Well, I got our best people together and started to get them working on this. The problem was that we’d hired a bunch of people from Hewlett-Packard. And they didn’t get this idea. They didn’t get it. I remember having dramatic arguments with some of these people who thought the coolest thing in user interface was soft keys at the bottom of a screen. They had no concept of proportionally-spaced fonts, no concept of a mouse. As a matter of fact, I remember arguing with these folks, people screaming at me that it would take us five years to engineer a mouse and it would cost $300 to build. And I finally got fed up. I just went outside and found David Kelley Design, and asked him to design me a mouse. And in 90 days, we had a mouse we could build for 15 bucks that was phenomenally reliable. So I found that, in a way, Apple did not have the caliber of people that was necessary to seize this idea in many ways. And there was a core team that did, but there was a larger team that mostly had come from Hewlett-Packard that didn’t have a clue.
+
+Cringeley: Well, there comes this issue of professionalism. There is a dark side and a light side to it, isn’t there?
+
+Jobs: Well, no. You know what it is? No, it’s not dark and light. It’s that people get confused. Companies get confused. When they start getting bigger, they want to replicate their initial success. And a lot of them think, “Well, somehow there is some magic in the process of how that success was created.” So they start to try to institutionalize process across the company. And before very long, people get very confused that the process is the content. And that’s, ultimately, the downfall of IBM. IBM has the best process people in the world. They just forgot about the content. And that’s what happened a little bit at Apple, too. We had a lot of people who were great at management process. They just didn’t have a clue as to the content. And in my career, I found that the best people are the ones that really understand the content, and they’re a pain in the butt to manage. But you put up with it because they’re so great at the content. And that’s what makes great products. It’s not process. It’s content. So we had a little bit of that problem at Apple. And that problem eventually resulted in the Lisa, which had its moments of brilliance. In a way, it was very far ahead of its time, but there wasn’t enough fundamental content understanding. Apple drifted too far away from its roots. To these Hewlett-Packard guys, $10,000 was cheap. To our market, to our distribution channels, $10,000 was impossible. So we produced a product that was a complete mismatch for the culture of our company, for the image of our company, for the distribution channels of our company, for our current customers. None of them could afford a product like that. And it failed.
+
+Cringeley: Now you and John Couch fought for leadership of the Lisa. How did that come about?
+
+Jobs: Absolutely, and I lost. Well, I thought Lisa was in serious trouble. I thought Lisa was going off in this very bad direction as I’ve just described. And I could not convince enough people in the senior management of Apple that that was the case and we ran the place as a team for the most part. So I lost. And at that point in time.. I brooded for a few months. But it was not very long after that that it really occurred to me that if we didn’t do something here..The Apple II was running out of gas, and we needed to do something with this technology fastor else Apple might cease to exist as the company that it was. And so I formed a small team to do the Macintosh, and we were on a mission from God to save Apple. No one else thought so, but it turned out we were right. And as we evolved the Mac, it became very clear that this was also a way of reinventing Apple. We reinvented everything. We reinvented manufacturing. I visited probably 80 automated factories in Japan, and we built the world’s first automated computer factory in the world in California here. So we adopted the 68,000 microprocessor that Lisa had. We negotiated a price that was a fifth of what Lisa was going to pay for it because we were going to use it in much higher volume. And we really started to design this product that could be sold for $1,000 called the Macintosh. And we didn’t make it. We could have sold it at $2,000. Although, we came out at $2,500. And we spent four years of our life doing that. We built the product. We built the automated factory, the machine to build the machine. We built a completely new distribution system. We built a completely different marketing approach. And I think it worked pretty well.
+
+On execution and building a motivated team
+Cringeley: Now, you motivated this team. You had to guide them. Build the team, motivate it, guide them, deal with them. We’ve interviewed just lots and lots of people from your Macintosh team. And what it keeps coming down to is your passion, your vision, and..How do you order your priorities in there? What’s important to you in the development of a product?
+
+Jobs: You know..One of the things that really hurt Apple was after I left, John Sculley got a very serious disease, and that disease.. I’ve seen other people get it, too. It’s the disease of thinking that a really great idea is 90% of the work, and that if you just tell all these other people, “Here is this great idea,” then, of course, they can go off and make it happen. And the problem with that is that there is just a tremendous amount of craftsmanship in between a great idea and a great product. And as you evolve that great idea, it changes and grows. It never comes out like it starts because you learn a lot more as you get into the subtleties of it, and you also find there is tremendous tradeoffs that you have to make. There are just certain things you can’t make electrons do. There are certain things you can’t make plastic do or glass do or factories do or robots do. And as you get into all these things, designing a product is keeping 5,000 things in your brain, these concepts, and fitting them all together and continuing to push to fit them together in new and different ways to get what you want. And every day you discover something new, that is a new problem or a new opportunity to fit these things together a little differently. And it’s that process that is the magic. And so we had a lot of great ideas when we started. But what I’ve always felt, that a team of people doing something they really believe in is like..When I was a young kid, there was a widowed man that lived up the street. And he was in his 80s. He was a little scary-looking. And I got to know him a little bit. I think he might have paid me to mow his lawn or something. And one day, he said, “Come on into my garage. I want to show you something.” And he pulled out this dusty, old rock tumbler. It was a motor and a coffee can and a little band between them. And he said, “Come on with me.” We went out to the back and we got just some rocks. Some regular, old, ugly rocks. And we put them in the can with a little bit of liquid and a little bit of grit powder. And we closed the can up, and he turned this motor on, and he said, “Come back tomorrow.” And this can was making a racket as the stones went around. And I came back the next day, and we opened the can, and we took out these amazingly beautiful polished rocks. The same common stones that had gone in, through rubbing against each other like this, creating a little bit of friction, creating a little bit of noise, had come out these beautiful polished rocks. And that’s always been, in my mind, my metaphor for a team working really hard on something they’re passionate about is that it’s through the team, through that group of incredibly talented people, bumping up against each other, having arguments, having fights sometimes, making some noise, and working together, they polish each other and they polish the ideas, and what comes out are these really beautiful stones. So it’s hard to explain, and it’s certainly not the result of one person. People like symbols, so I’m the symbol of certain things. But it really was a team effort on the Mac. Now, in my life, I observed something fairly early on at Apple, which..I didn’t know how to explain it then, but I’ve thought a lot about it since. Most things in life, the dynamic range between average and best is at most 2-1. If you go to New York City, and you get an average taxicab driver versus the best taxicab driver, you’re probably going to get to your destination with the best taxicab maybe 30% faster. In an automobile, what’s the difference between average and the best? Maybe 20%. The best CD player and an average CD player? I don’t know. 20%. 2-1 is a big dynamic range in most of life. In software, and it used to be the case in hardware, too, the difference between average and the best is 50-to-1, maybe 100-to-1. Very few things in life are like this. But what I was lucky enough to spend my life in, is like this. And so I’ve built a lot of my success off finding these truly gifted people, and not settling for B and C players but really going for the A players, and I found something. I found that when you get enough A players together, when you go through the incredible work to find five of these A players, they really like working with each other because they’ve never had a chance to do that before. And they don’t want to work with B and C players. And so it becomes self-policing, and they only want to hire more A players, and so you build up these pockets of A players, and it propagates. And that’s what the Mac team was like. They were all A players. And these were extraordinarily talented people.
+
+Cringeley: But they’re also people who now say that they don’t have the energy anymore to work for you.
+
+Jobs: Sure. Oh, I think if you talk to a lot of people on the Mac team, they will tell you it was the hardest they’ve ever worked in their life. Some of them will tell you that it was the happiest they’ve ever been in their life. But I think all of them will tell you that is certainly one of the most intense and cherished experiencesthey will ever have in their life. You know, it’s..Some of those things are not sustainable for some people.
+
+On giving feedback to the team
+Cringeley: What does it mean when you tell someone their work is shit?
+
+Jobs: It usually means their work is shit. Sometimes, it means, “I think your work is shit, and I’m wrong.” But usually, it means their work is not anywhere near good enough.
+
+Cringeley: I had this great quote from Bill Atkinson who says, when you say someone’s work is shit, you really mean, “I don’t quite understand it. Would you please explain it to me?” Jobs: No, that’s not usually what I meant. When you get really good people, they know they’re really good, and you don’t have to baby people’s egos so much, and what really matters is the work. And everybody knows that. That’s all that matters is the work. People are being counted on to do specific pieces of the puzzle. And the most important thing, I think, you can do for somebody who is really good and who’s really being counted on is to point out to them when their work isn’t good enough. And to do it very clearly and to articulate why, and to get them back on track. And you need to do that in a way that does not call into question your confidence in their abilities, but leaves not too much room for interpretation that the work that they have done for this particular thing is not good enough to support the goal of the team. And that’s a hard thing to do. And I’ve always taken a very direct approach. And I think if you talk to people that have worked with me, the really good people have found it beneficial. Some people have hated it. And I’m also one of these people that I don’t really care about being right. I just care about success. So, you’ll find a lot of people that will tell you that I had a very strong opinion and they presented evidence to the contrary, and five minutes later, I completely changed my mind. Because I’m like that. I don’t mind being wrong. I’ll admit that I’m wrong a lot. It doesn’t really matter to me too much. What matters to me is that we do the right thing.
+
+Apple’s entry into desktop publishing
+Cringeley: So how and why did Apple get into desktop publishing which would become the Mac’s killer app?
+
+Jobs: I don’t know if you know this, but we got the first Canon laser printer engine shipped in the United States at Apple, and we had it hooked up to a Lisa, actually imaging pages before anybody. Before HP. Long before HP, long before Adobe. But I heard a few times, people would tell me, “Hey, there are these guys over in this garage that left Xerox PARC. You ought to go see them.” And I finally went and saw them, and I saw what they were doing, and it was better than what we were doing. And they were gonna be a hardware company. They wanted to make printers and the whole thing. And so I talked them into being a software company. And we had canceled our internal project. And a bunch of people wanted to kill me over this, but we did it. And I had cut a deal with Adobe to use their software, and we bought 19.9% of Adobe at Apple. They needed some financing. We wanted a little bit of control. And we were off to the races, and so we got the engines from Canon. We designed the first laser printer controller at Apple. And we got the software from Adobe, and we introduced the LaserWriter. And no one at the company wanted to do it but a few of us in the Mac group. Everybody thought a $7,000 printer was crazy. What they didn’t understand was you could share it with AppleTalk. They understood it intellectually, but they didn’t understand it viscerally because the last really expensive thing we tried to sell was Lisa. So we pushed this thing through. And I had to basically do it over a few dead bodies, but we pushed this thing through, and it was the first laser printer on the market, as you know, and the rest is history. When I left Apple, Apple was the largest printer company measured by revenue in the world. It lost that distinction to Hewlett-Packard after I left, unfortunately. But when I left, it was the largest printer company in the world.
+
+Cringeley: Did you envision desktop publishing? Was that a no-brainer?
+
+Jobs: You know..Yes. But.. We also envisioned really a networked office. And so, in January of 1985, when we had our annual meeting and introduced our new products, I made probably the largest marketing blunder of my career by announcing the Macintosh Office instead of just desktop publishing. And we had desktop publishing as a major component of that, but we announced a bunch of other stuff as well, and I think we should have just focused on desktop publishing at that time.
+
+On the departure from Apple
+Cringeley: After serious disagreements with Apple CEO John Sculley, Steve left the company in 1985. Tell us about your departure from Apple.
+
+Jobs: Oh, it was very painful. I’m not even sure I want to talk about it. What can I say? I hired the wrong guy (Sculley). And he destroyed everything I’d spent 10 years working for. Starting with me, but that wasn’t the saddest part. I would have gladly left Apple if Apple would have turned out like I’d wanted it to. He basically got on a rocket ship that was about to leave the pad. And the rocket ship left the pad. And it kind of went to his head. He got confused, and thought that he built the rocket ship. And then he changed the trajectory so that it was inevitably going to crash into the ground.
+
+Cringeley: But it was always the..In the pre-Macintosh days, and the early Macintosh days, it was always the Steve and John show. the hip for a while there. And then something happened to split you. What was that catalyst?
+
+Jobs: Well, what happened was that the industry went into a recession in late 1984. Sales started seriously contracting. And John didn’t know what to do. He had not a clue. And there was a leadership vacuum at the top of Apple. There were fairly strong general managers running the divisions. I was running the Macintosh division, somebody else was running the Apple II division, et cetera. There were some problems with some of the divisions. There was a person running the storage division that was completely out to lunch. And a bunch of things that needed to be changed. But all those problems got put in a pressure cooker because of this contraction in the market place. And there was no leadership. John was in a situation where the board was not happy and where he was probably not long for the company. And one thing I did not ever see about John until that time was he had an incredible survival instinct. Somebody once told me, “This guy didn’t get to be the president of PepsiCo without these kinds of instincts.” And it was true. And John decided that a really good person to be the root of all these problems would be me. And so, we came to loggerheads. And John had cultivated a very close relationship with the board. And they believed him. So, that’s what happened.
+
+Cringeley: So there were competing visions for the company?
+
+Jobs: Oh, clearly. Well, not so much competing visions for the company, ‘cause I don’t think John had a vision for the company.
+
+Cringeley: Well, I guess I’m asking, what was your vision that lost out in this instance?
+
+Jobs: It wasn’t an issue of vision. It was an issue of execution. In the sense that my belief was that Apple needed much stronger leadership, to unite these various factions that we had created with the divisions, that the Macintosh was the future of Apple, that we needed to rein back expenses dramatically in the Apple II area, that we needed to be spending very heavily in the Macintosh area. Things like that. And John’s vision was that he should remain the CEO of the company. And anything that would help him do that would be acceptable. I think that Apple was in a state of paralysis in the early part of 1985. And I wasn’t, at that time, capable, I don’t think, of running the company as a whole. I was 30 years old. And I don’t think I had enough experience to run $2billion company. Unfortunately, John didn’t either. So anyway, I was told, in no uncertain terms, that there was no job for me. It would have been far smarter for Apple to let me work on the next..I volunteered. I said, “Why don’t I start a research division?” And give me a few million bucks a year and I’ll go hire some really great people. “We’ll do the next great thing.” And I was told there was no opportunity to do that. So, my office was taken away. It was.. I’ll get real emotional if we keep talking about this. Anyway.. But that’s irrelevant. I’m just one person, and the company was a lot more people than me. So that’s not the important part. The important part was the values of Apple over the next several years were systematically destroyed.
+
+Cringeley: I then asked Steve for his thoughts on the state of Apple. Remember, this was 1995, a year before he would go back to Apple. Remember, too, that when Apple bought NeXT a year after this interview, Steve immediately sold the Apple stock he received as part of the sale.
+
+Jobs: Apple’s dying today. Apple’s dying a very painful death. It’s on a glide slope to die. And the reason is because..When I walked out the door at Apple, we had a 10-year lead on everybody else in the industry. Macintosh was 10 years ahead. We watched Microsoft take 10 years to catch up with it. Well, the reason that they could catch up with it was because Apple stood still. The Macintosh that’s shipping today is 25% different than the day I left. They’ve spent hundreds of millions of dollars a year on R&D. A total of, probably, $5 billion on R&D. What did they get for it? I don’t know. But it was..What happened was the understanding of how to move these things forward and how to create these new products somehow evaporated. And I think a lot of the good people stuck around for a while. But there wasn’t an opportunity to get together and do this ‘cause there wasn’t any leadership to do that. So, what’s happened with Apple now is that they’ve fallen behind in many respects, certainly in market share. And most importantly, their differentiation has been eroded by Microsoft. And so, what they have now is, they have their installed base. Which is not growing, and which is shrinking slowly, but will provide a good revenue stream for several years. But it’s a glide slope that’s just gonna go like this. So, it’s unfortunate. And I don’t really think it’s reversible at this point in time.
+
+On Microsoft
+Cringeley: What about Microsoft? That’s the juggernaut now. And it’s a Ford LTD going into the future. It’s definitely not a Cadillac. It’s not a BMW. It’s just..What’s going on there? How did those guys do that?
+
+Jobs: Well, Microsoft’s orbit was made possible by a Saturn V booster called IBM. And I know Bill would get upset with me for saying this, but of course it was true. And much to Bill and Microsoft’s credit, they used that fantastic opportunity to create more opportunity for themselves. Most people don’t remember, but until 1984 with the Mac, Microsoft was not in the applications business. It was dominated by Lotus. And Microsoft took a big gamble to write for the Mac. And they came out with applications that were terrible. But they kept at it and they made them better, and eventually, they dominated the Macintosh application market. And then used a springboard of Windows to get into the PC market with those same applications. And now they dominate the applications in the PC space, too. characteristics. I think they’re very strong opportunists, and I don’t mean that in a bad way. Japanese. They just keep on coming. They were able to do that because of the revenue stream from the IBM deal. But nonetheless, they made the most of it, and I give them a lot of credit for that. The only problem with Microsoft is they just have no taste. They have absolutely no taste. And what that means is..I don’t mean that in a small way, I mean that in a big way. In the sense that…they don’t think of original ideas and they don’t bring much culture into their product. And you say, “Well, why is that important?” Well, proportionally-spaced fonts come from typesetting and beautiful books. That’s where one gets the idea. If it weren’t for the Mac, they would never have that in their products. And so, I guess I am saddened, not by Microsoft’s success. I have no problem with their success. They’ve earned their success for the most part. I have a problem with the fact that they just make really third-rate products. Their products have no spirit to them. Their products have no spirit or enlightenment about them. They are very pedestrian. And the sad part is that most customers don’t have a lot of that spirit either. But the way that we’re going to ratchet up our species is to take the best and to spread it around to everybody, so that everybody grows up with better things and starts to understand the subtlety of these better things. And Microsoft’s just.. It’s McDonald’s. So that’s what saddens me. Not that Microsoft has won, but that Microsoft’s products don’t display…more insight and more creativity.
+
+On the origins of NeXT
+Cringeley: So, what are you doing about it? Tell us about NeXT.
+
+Jobs: Well, I’m not doing anything about it. Because NeXT is too small of a company to do anything about that. I’m just watching it. And there is really nothing I can do about it.
+
+Cringeley: Next, we talked about NeXT, the company Steve was running in 1995 which Apple was soon to buy. NeXT software would become the heart of the Mac in the form of OS X.
+
+Jobs: Well, maybe the best thing, since we don’t have much time, is I just tell you what NeXT is today. The innovation in the industry is in software. And there hasn’t ever been a real revolution in how we created software. Certainly not in the last 20 years. Matter of fact, it’s gotten worse. While the Macintosh was a revolution for the end user to make it easier to use, it was the opposite for the developer. The developer paid the price. And software got much more complicated to write as it became easier to use for the end user. So, software is infiltrating everything we do these days. In businesses, software is one of the most potent competitive weapons. The most successful business war was MCI’s Friends and Family in the last 10 years. And what was that? It was a brilliant idea and it was custom billing software. AT&T didn’t respond for 18 months, yielding billions of dollars’ worth of market share to MCI, not because they were stupid but because they couldn’t get the billing software done. So in ways like that and smaller ways, software is becoming an incredible force in this world. To provide new goods and services to people, whether it’s over the Internet or what have you. Software is going to be a major enabler in our society. We have taken another one of those brilliant original ideas at Xerox PARC that I saw in 1979, but didn’t see really clearly then, called object-oriented technology. And we have perfected it and commercialized it here and become the biggest supplier of it to the market. And this object technology lets you build software 10 times faster and is better. And so that’s what we do. And we’ve got a small-to- medium-sized business and we’re the largest supplier of objects. We’re a 50-to-75-million-dollar company. Got about 300 people. And that’s what we do.
+
+Vision for Web
+Cringeley: The end of the third show, actually is the one moment where we do look into the future..as Channel 4 has asked us to do that. And so what’s your vision of 10 years from now with this technology that you’re developing?
+
+Jobs: Well, I think the Internet and the Web.. in software and in computing today. I think one is objects, but the other one is the Web. The Web is incredibly exciting because it is the fulfilment of a lot of our dreams that the computer would ultimately not be primarily a device for computation but metamorphosize into a device for communication. And with the Web, that’s finally happening. And secondly, it’s exciting because Microsoft doesn’t own it, and therefore, there’s a tremendous amount of innovation happening. So I think that the Web is going to be profound in what it does to our society. As you know, about 15% of the goods and services in the US are sold via catalogs or over the television. All that is gonna go on the Web and more. Billions and billions. Soon tens of billions of dollars’ worth of goods and services are gonna be sold on the Web. A way to think about it is that it is the ultimate direct-to-customer distribution channel. Another way to think about it is the smallest company in the world can look as large as the largest company in the world on the Web. So I think the Web..As we look back 10 years from now, the Web is going to be the defining technology. The defining social moment for computing. And I think it’s going to be huge. I think it’s breathed a whole new generation of life into personal computing. And I think it’s going to be huge. Just forget about what we’re doing. Just as an industry, the Web is gonna open a whole new door to this industry.
+
+Cringeley: And it’s another one of those things that it’s obvious once it happens, but five years ago, who would have guessed?
+
+Jobs: Right. That’s right. Isn’t this a wonderful place we live in?
+
+Talking about his passion
+Cringeley: I was keen to know about Steve’s passion. What drove him?
+
+Jobs: I read an article when I was very young in Scientific American, and it measured the efficiency of locomotion for various species on the planet. So for bears and chimpanzees and raccoons and birds and fish. How many kilocalories per kilometer did they spend to move?And humans were measured, too. And the condor won. It was the most efficient. And mankind, the crown of creation, came in with a rather unimpressive showing about a third of the way down the list. But somebody there had the brilliance to test a human riding a bicycle. Blew away the condor. All the way off the charts. And I remember, this really had an impact on me. I really remember this that humans are tool builders, and we build tools that can dramatically amplify our innate human abilities. And to me..We actually ran an ad like this very early at Apple. The personal computer was the bicycle of the mind. And I believe that with every bone in my body that of all the inventions of humans, the computer is going to rank near, if not at, the top as history unfolds and we look back. And it is the most awesome tool that we have ever invented, and I feel incredibly lucky to be at exactly the right place in Silicon Valley, at exactly the right time, historically, where this invention has taken form. And as you know, when you set a vector off in space, if you can change its direction a little bit at the beginning, it’s dramatic when it gets a few miles out in space. I feel we are still, really, at the beginning of that vector. And if we can nudge it in the right directions, it will be a much better thing as it progresses on. I think we’ve had a chance to do that a few times, and it brings all of us associated with it tremendous satisfaction.
+
+Cringeley: But how do you know what’s the right direction?
+
+Jobs: Ultimately, it comes down to taste. It comes down to taste. It comes down to trying to expose yourself to the best things that humans have done, and then try to bring those things into what you are doing. Picasso had a saying. He said, “Good artists copy. Great artists steal.” And we have always been shameless about stealing great ideas. And I think part of what made the Macintosh great was that the people working on it were musicians and poets and artists and zoologists and historians who also happened to be the best computer scientists in the world. But if it hadn’t been for computer science, these people would have all been doing amazing things in life in other fields. And they brought with them, we all bought to this effort, a very liberal arts air, a very liberal arts attitude that we wanted to pull in the best that we saw in these other fields into this field. And I don’t think you get that if you’re very narrow.
+
+On being a hippie
+Cringeley: One of the questions I asked everyone in the series was,”Are you a hippie or a nerd?” Jobs: Oh, if I had to pick one of I’m clearly a hippie. All the people I worked with were clearly in that category, too.
+
+Cringeley: Really? Why? Do you seek out hippies, or are they attracted to you?
+
+Jobs: Well, ask yourself, “What is a hippie?” This is an old word that has a lot of connotations, but to me, ‘cause I grew up..Remember that the ’60s happened in the early ’70s, right? So we have to remember that. And that’s sort of when I came of age, so I saw a lot of this. And a lot of it happened right in our backyard here. So, to me, the spark of that was that there was something beyond what you see every day. There is something going on here in life..Beyond just a job, and a family, and there is something more going on. There is another side of the coin that we don’t talk about much, and we experience it when there’s gaps, when we just aren’t really..When everything is not ordered and perfect, when there is a gap, you experience this inrush of something. And a lot of people have said all throughout history, you find out what that was. Whether it’s Thoreau, or whether it’s some Indian mystics, or whoever it might be, and the hippie movement got a little bit of that, and they wanted to find out what that was about, and that life wasn’t about what they saw their parents doing. And of course, the pendulum swung too far the other way, and it was crazy, but there was a germ of something there. And it’s the same thing that causes people to wanna be poets instead of bankers. And I think that’s a wonderful thing. And I think that that same spirit can be put into products, and those products can be manufactured and given to people, and they can sense that spirit. If you talk to people that use the Macintosh, they love it. You don’t hear people loving products very often. Really. But you could feel it in there. There was something really wonderful there. So, I don’t think that most of the really best people that I’ve worked with have worked with computers for the sake of working with computers. They’ve worked with computers because they are the medium that is best capable of transmitting some feeling that you have, that you want to share with other people. And before they invented these things, all these people would have done other things. But computers were invented, and they did come along, and all these people did get interested in school or before school, and said, “Hey, this is the medium that I think I can say something in.”
+
+
+------
+Thoughts on Flash, an open letter, April 2010
+------
+
+Apple has a long relationship with Adobe. In fact, we met Adobe’s founders when they were in their proverbial garage. Apple was their first big customer, adopting their Postscript language for our new Laserwriter printer. Apple invested in Adobe and owned around 20% of the company for many years. The two companies worked closely together to pioneer desktop publishing and there were many good times. Since that golden era, the companies have grown apart. Apple went through its near death experience, and Adobe was drawn to the corporate market with their Acrobat products. Today the two companies still work together to serve their joint creative customers – Mac users buy around half of Adobe’s Creative Suite products – but beyond that there are few joint interests.
+
+I wanted to jot down some of our thoughts on Adobe’s Flash products so that customers and critics may better understand why we do not allow Flash on iPhones, iPods and iPads. Adobe has characterized our decision as being primarily business driven – they say we want to protect our App Store – but in reality it is based on technology issues. Adobe claims that we are a closed system, and that Flash is open, but in fact the opposite is true. Let me explain.
+
+First, there’s “Open”.
+
+Adobe’s Flash products are 100% proprietary. They are only available from Adobe, and Adobe has sole authority as to their future enhancement, pricing, etc. While Adobe’s Flash products are widely available, this does not mean they are open, since they are controlled entirely by Adobe and available only from Adobe. By almost any definition, Flash is a closed system.
+
+Apple has many proprietary products too. Though the operating system for the iPhone, iPod and iPad is proprietary, we strongly believe that all standards pertaining to the web should be open. Rather than use Flash, Apple has adopted HTML5, CSS and JavaScript – all open standards. Apple’s mobile devices all ship with high performance, low power implementations of these open standards. HTML5, the new web standard that has been adopted by Apple, Google and many others, lets web developers create advanced graphics, typography, animations and transitions without relying on third party browser plug-ins (like Flash). HTML5 is completely open and controlled by a standards committee, of which Apple is a member.
+
+Apple even creates open standards for the web. For example, Apple began with a small open source project and created WebKit, a complete open-source HTML5 rendering engine that is the heart of the Safari web browser used in all our products. WebKit has been widely adopted. Google uses it for Android’s browser, Palm uses it, Nokia uses it, and RIM (Blackberry) has announced they will use it too. Almost every smartphone web browser other than Microsoft’s uses WebKit. By making its WebKit technology open, Apple has set the standard for mobile web browsers.
+
+Second, there’s the “full web”.
+
+Adobe has repeatedly said that Apple mobile devices cannot access “the full web” because 75% of video on the web is in Flash. What they don’t say is that almost all this video is also available in a more modern format, H.264, and viewable on iPhones, iPods and iPads. YouTube, with an estimated 40% of the web’s video, shines in an app bundled on all Apple mobile devices, with the iPad offering perhaps the best YouTube discovery and viewing experience ever. Add to this video from Vimeo, Netflix, Facebook, ABC, CBS, CNN, MSNBC, Fox News, ESPN, NPR, Time, The New York Times, The Wall Street Journal, Sports Illustrated, People, National Geographic, and many, many others. iPhone, iPod and iPad users aren’t missing much video.
+
+Another Adobe claim is that Apple devices cannot play Flash games. This is true. Fortunately, there are over 50,000 games and entertainment titles on the App Store, and many of them are free. There are more games and entertainment titles available for iPhone, iPod and iPad than for any other platform in the world.
+
+Third, there’s reliability, security and performance.
+
+Symantec recently highlighted Flash for having one of the worst security records in 2009. We also know first hand that Flash is the number one reason Macs crash. We have been working with Adobe to fix these problems, but they have persisted for several years now. We don’t want to reduce the reliability and security of our iPhones, iPods and iPads by adding Flash.
+
+In addition, Flash has not performed well on mobile devices. We have routinely asked Adobe to show us Flash performing well on a mobile device, any mobile device, for a few years now. We have never seen it. Adobe publicly said that Flash would ship on a smartphone in early 2009, then the second half of 2009, then the first half of 2010, and now they say the second half of 2010. We think it will eventually ship, but we’re glad we didn’t hold our breath. Who knows how it will perform?
+
+Fourth, there’s battery life.
+
+To achieve long battery life when playing video, mobile devices must decode the video in hardware; decoding it in software uses too much power. Many of the chips used in modern mobile devices contain a decoder called H.264 – an industry standard that is used in every Blu-ray DVD player and has been adopted by Apple, Google (YouTube), Vimeo, Netflix and many other companies.
+
+Although Flash has recently added support for H.264, the video on almost all Flash websites currently requires an older generation decoder that is not implemented in mobile chips and must be run in software. The difference is striking: on an iPhone, for example, H.264 videos play for up to 10 hours, while videos decoded in software play for less than 5 hours before the battery is fully drained.
+
+When websites re-encode their videos using H.264, they can offer them without using Flash at all. They play perfectly in browsers like Apple’s Safari and Google’s Chrome without any plugins whatsoever, and look great on iPhones, iPods and iPads.
+
+Fifth, there’s Touch.
+
+Flash was designed for PCs using mice, not for touch screens using fingers. For example, many Flash websites rely on “rollovers”, which pop up menus or other elements when the mouse arrow hovers over a specific spot. Apple’s revolutionary multi-touch interface doesn’t use a mouse, and there is no concept of a rollover. Most Flash websites will need to be rewritten to support touch-based devices. If developers need to rewrite their Flash websites, why not use modern technologies like HTML5, CSS and JavaScript?
+
+Even if iPhones, iPods and iPads ran Flash, it would not solve the problem that most Flash websites need to be rewritten to support touch-based devices.
+
+Sixth, the most important reason.
+
+Besides the fact that Flash is closed and proprietary, has major technical drawbacks, and doesn’t support touch based devices, there is an even more important reason we do not allow Flash on iPhones, iPods and iPads. We have discussed the downsides of using Flash to play video and interactive content from websites, but Adobe also wants developers to adopt Flash to create apps that run on our mobile devices.
+
+We know from painful experience that letting a third party layer of software come between the platform and the developer ultimately results in sub-standard apps and hinders the enhancement and progress of the platform. If developers grow dependent on third party development libraries and tools, they can only take advantage of platform enhancements if and when the third party chooses to adopt the new features. We cannot be at the mercy of a third party deciding if and when they will make our enhancements available to our developers.
+
+This becomes even worse if the third party is supplying a cross platform development tool. The third party may not adopt enhancements from one platform unless they are available on all of their supported platforms. Hence developers only have access to the lowest common denominator set of features. Again, we cannot accept an outcome where developers are blocked from using our innovations and enhancements because they are not available on our competitor’s platforms.
+
+Flash is a cross platform development tool. It is not Adobe’s goal to help developers write the best iPhone, iPod and iPad apps. It is their goal to help developers write cross platform apps. And Adobe has been painfully slow to adopt enhancements to Apple’s platforms. For example, although Mac OS X has been shipping for almost 10 years now, Adobe just adopted it fully (Cocoa) two weeks ago when they shipped CS5. Adobe was the last major third party developer to fully adopt Mac OS X.
+
+Our motivation is simple – we want to provide the most advanced and innovative platform to our developers, and we want them to stand directly on the shoulders of this platform and create the best apps the world has ever seen. We want to continually enhance the platform so developers can create even more amazing, powerful, fun and useful applications. Everyone wins – we sell more devices because we have the best apps, developers reach a wider and wider audience and customer base, and users are continually delighted by the best and broadest selection of apps on any platform.
+
+Conclusions.
+
+Flash was created during the PC era – for PCs and mice. Flash is a successful business for Adobe, and we can understand why they want to push it beyond PCs. But the mobile era is about low power devices, touch interfaces and open web standards – all areas where Flash falls short.
+
+The avalanche of media outlets offering their content for Apple’s mobile devices demonstrates that Flash is no longer necessary to watch video or consume any kind of web content. And the 250,000 apps on Apple’s App Store proves that Flash isn’t necessary for tens of thousands of developers to create graphically rich applications, including games.
+
+New open standards created in the mobile era, such as HTML5, will win on mobile devices (and PCs too). Perhaps Adobe should focus more on creating great HTML5 tools for the future, and less on criticizing Apple for leaving the past behind.
+
+-----
+Keynote 2007 iphone introduction
+-----
+This is a day I've been looking forward to for two and a half years.
+
+Every once in a while, a revolutionary product comes along that changes everything. And Apple has been - well, first of all, one's very fortunate if you get to work on just one of these in your career.
+Apple's been very fortunate. It's been able to introduce a few of these into the world.
+In 1984, we introduced the Macintosh. It didn't just change Apple, it changed the whole computer industry.
+In 2001, we introduced the first iPod, and it didn't just change the way we all listen to music, it changed the entire music industry.
+Well, today, we're introducing three revolutionary products of this class.
+
+The first one: is a widescreen iPod with touch controls.
+The second: is a revolutionary mobile phone.
+And the third is a breakthrough Internet communications device.
+
+So, three things: a widescreen iPod with touch controls; a revolutionary mobile phone; and a breakthrough Internet communications device.
+An iPod, a phone, and an Internet communicator. An iPod, a phone - are you getting it?
+These are not three separate devices, this is one device, and we are calling it iPhone.
+Today, today Apple is going to reinvent the phone, and here it is.
+No, actually here it is, but we're gonna leave it there for now.
+
+So, before we get into it, let me uh talk about a category of things. The most advanced phones are called smart phones. So they say.
+And they typically combine a phone plus some e-mail capability, plus they say it's the Internet. It's sort of the baby Internet, into one device, and they all have these plastic little keyboards on them.
+uh And the problem is that they're not so smart and they're not so easy to use, so if you kinda make a Business School 101 graph of the smart axis and the easy-to-use axis, phones, regular cell phones are kinda right there, they're not so smart, and they're -you know- not so easy to use.
+uhm But smart phones are definitely a little smarter, but they actually are harder to use. They're really complicated. Just for the basic stuff a hard time figuring out how to use them.
+Well, we don't wanna do either one of these things. What we wanna do is make a leapfrog product that is way smarter than any mobile device has ever been, and super-easy to use.
+This is what iPhone is. OK?
+
+So, we're gonna reinvent the phone.
+Now, we're gonna start with a revolutionary user interface. is the result of years of research and development, and of course, it's an interplay of hardware and software.
+Now, why do we need a revolutionary user interface? I mean, here's four smart phones, right? Motorola Q, the BlackBerry, Palm Treo, Nokia E62 the usual suspects.
+And, what's wrong with their user interfaces? Well, the problem with them is really sort of in the bottom 40 there. It's, it's this stuff right here.
+They all have these keyboards that are there whether you need them or not to be there.
+And they all have these control buttons that are fixed in plastic and are the same for every application. Well, every application wants a slightly different user interface, a slightly optimized set of buttons, just for it.
+And what happens if you think of a great idea six months from now? You can't run around and add a button to these things. They're already shipped.
+So what do you do?
+It doesn't work because the buttons and the controls can't change. They can't change for each application, and they can't change down the road if you think of another great idea you wanna add to this product.
+
+Well, how do you solve this?
+Hmm. It turns out, we have solved it!
+We solved it in computers 20 years ago. We solved it with a bit-mapped screen that could display anything we want. Put any user interface up. And a pointing device. We solved it with the mouse. Right?
+We solved this problem. So how're we gonna take this to a mobile device?
+What we gonna do is get rid of all these buttons and just make a giant screen.
+A giant screen.
+Now, how are we gonna communicate this? We don't wanna carry around a mouse, right?
+So what are we gonna do? Oh, a stylus, right?
+We're gonna use a stylus.
+No. No. Who wants a stylus?
+You have to get em and put em away, and you lose em. Yuck.
+Nobody wants a stylus. So let's not use a stylus.
+We're gonna use the best pointing device in the world. We're gonna use a pointing device that we're all born with - we're born with ten of them. We're gonna use our fingers.
+We're gonna touch this with our fingers. And we have invented a new technology called multi-touch, which is phenomenal.
+It works like magic.
+You don't need a stylus. It's far more accurate than any touch display that's ever been shipped.
+It ignores unintended touches, it's super-smart.
+You can do multi-finger gestures on it.
+And boy, have we patented it.
+
+So, so we have been very lucky to have brought a few revolutionary user interfaces to the market in our time.
+First was the mouse.
+The second was the click wheel.
+And now, we're gonna bring multi-touch to the market.
+And each of these revolutionary user interfaces has made possible a revolutionary product, the Mac, the iPod and now the iPhone.
+So, a revolutionary user interface.
+We're gonna build on top of that with software. Now, software on mobile phones is like baby software.
+It's not so powerful, and today we gonna show you a software breakthrough. Software that's at least five years ahead of what's on any other phone.
+Now how do we do this? Well, we start with a strong foundation: iPhone runs OSX.
+Now, why, why would we wanna run such a sophisticated operating system on a mobile device? Well, because it's got everything we need.
+It's got multi-tasking.
+It's got the best networking.
+It already knows how to power manage. We've been doing this on mobile computers for years. It's got awesome security.
+And the right apps.
+It's got everything from Cocoa and the graphics and it's got core animation built in and it's got the audio and video that OSX is famous for.
+It's got all the stuff we want.
+And it's built right into iPhone. And that has let us create desktop class applications and networking, right.
+Not the crippled stuff that you find on most phones. This is real, desktop-class applications.
+
+Now, you know, one of the pioneers of our industry, Alan Kay, has had a lot of great quotes throughout the years. And I ran across one of them recently that explains how we look at this.
+Explains why we go about doing things the way we do, cause we love software.
+And here's the quote: "People who are really serious about software should make their own hardware."
+You know, Alan said this 30 years ago, and this is how we feel about it.
+And so we're bringing breakthrough software to a mobile device for the first time.
+It's five years ahead of anything on any other phone.
+The second thing we're doing is we're learning from the iPod, syncing with iTunes.
+You know, we're gonna ship our 100 millionth iPod this year, and that's a 10s of millions of people that know how to sync these devices with their PCs or Mac and sync all of their media right on to their iPod.
+Right?
+So you just drop your iPod in, and it automatically syncs.
+You're gonna do the same thing with iPhone. It automatically syncs to your PC or Mac right through iTunes.
+And iTunes is gonna sync all of your media onto your iPhone: Your music, your audio books, podcasts, movies, TV shows, music videos.
+But it also syncs a ton of data: Your contacts, your calendars and your photos, which you can get on your iPod today, your notes, your bookmarks from your Web browser, your e-mail accounts, your whole e-mail set-up. All that stuff can be moved over to your iPhone completely automatically.
+It's really nice.
+And we do it, we do it through iTunes.
+Again, you go to iTunes and you set it up. Just like you'd set up an iPod or an Apple TV. And you set up what you want synced to your iPhone. And it's just like an iPod. Charge and sync. So sync with iTunes.
+
+Third thing I wanna talk about a little is design.
+We've designed something wonderful for your hand, just wonderful.
+And this is what it looks like.
+It's got a three-and-a-half-inch screen on it. It's really big.
+And, it's the highest-resolution screen we've ever shipped. It's 160 pixels per inch.
+Highest we've ever shipped. It's gorgeous.
+And on the front, there's only one button down there.
+We call it the home button. Takes you home from wherever you are.
+And that's it. Let's take a look at the side.
+It's really thin. It's thinner than any smart phone out there, at 11.6 millimeters.
+Thinner than the Q, thinner than the BlackJack, thinner than all of them.
+It's really nice.
+And we've got some controls on the side, we've got a little switch for ring and silent, we've got a volume up and down control.
+Let's look at the back.
+On the back, the biggest thing of note is we've got a two-megapixel camera built right in.
+The other side, we're back in the front.
+So let's take a look at the top now.
+We've got a headset jack. 3 and a half millimeter all your iPod headphones fit right in.
+We've got a place, a little tray for your SIM card, and we've got one switch for sleep and wake. Just push it to go to sleep, push it to wake up.
+Let's take a look at the bottom.
+We've got a speaker, we've got a microphone, and we've got our 30-pin iPod connector.
+So that's the bottom.
+
+Now, we've also got some stuff you can't see.
+We've got three really advanced sensors built into this phone.
+The first one is a proximity sensor. It senses when physical objects get close, so when you bring iPhone up to your ear, to take a phone call, it turns off the display, and it turns off the touch sensor, instantly.
+Well, why do you wanna do that?
+Well, one to save battery, but two, so you don't get spurious inputs from your face into the touch screen.
+Just automatically turns them off, take it away, boom, it's back on.
+So it's got a proximity sensor built in.
+It's got an ambient light sensor, as well. We sense the ambient lighting conditions and adjust the brightness of the display to match the ambient lighting conditions.
+Again, better user experience, saves power.
+And the third thing we've got is an accelerometer, so that we can tell when you switch from portrait to landscape. It's pretty cool. Show it to you in a minute. So three advanced sensors built in.
+
+So, let's go ahead and turn it on.
+This is the size of it. It fits beautifully in the palm of your hand.
+So, an iPod, a phone, and an internet communicator.
+Let's start with the iPod. You can touch your music.
+You can just touch your music, it's so cool.
+You've got a widescreen video.
+You can find your music even faster.
+Gorgeous album art on this display.
+Built-in speaker, and, why not? Cover flow. First time ever on an iPod.
+So rather than talk about this some more, let me show it to you.
+
+Alrighty.
+Now, I've got some special iPhones up here, they've got a little special board in them so I can get some digital video out, and I've got a little cord here which goes up to these projectors, and uh so I've got some great images, and you get to see what it really looks like.
+So, let me, I've got a camera here so you can see what I'm doing with my finger for a few seconds.
+And uh let me go ahead and get that picture within picture up.
+I'm gonna go ahead and just push the sleep/wake button and there we go, right there.
+And to unlock the phone I just take my finger and slide it across.
+Want to see that again? Sleep.
+We wanted something you couldn't do by accident in your pocket.
+Just slide it across. Boom.
+And this is the home screen of iPhone right here.
+And so if I want to get in the iPod, I just go down to that lower right hand corner and push this icon right here, and boom, I'm in the iPod.
+I wanna get home, I push the home button right here, and I'm home.
+Back in the iPod. I am back in the iPod.
+Now, here I am you see five buttons across the bottom.
+Playlists, artists, songs, videos and more. I'm in artists right now.
+Well, how do I scroll through my lists of artists?
+How do I do this? I just take my finger, and I scroll.
+That's it. Isn't that cool?
+A little rubber banding up when I run off the edge.
+
+And if I wanna pick somebody, let's say I wanna pick the Beatles, I just tap them, and here's the Beatles songs with their albums right here.
+If I wanna play Sgt. Pepper's I just hit Sgt. Pepper's right there, and uh Little Help From My Friends.
+Look at this gorgeous album artwork here.
+Of course, I've got a volume control.
+Now, I've got a little button up in the corner right here, you can see in the upper right-hand corner, I can hit that and flip the album art around.
+There's all the other songs back here.
+And I can play Lovely Rita if I want to.
+Flip it back around. Very simple.
+Right, I can set some stars back here just by setting the arrows. Right?
+That's a five star album. Isn't that cool? Yeah, it's pretty nice.
+
+Now, let me show you something else.
+I just take my unit here, and I turn it landscape mode, oh, look what happens!
+I'm in cover flow.
+Let's go into Dylan here, let's play Like a Rolling Stone. I just thumb through, just thumb through my albums.
+It's really easy.
+Anytime I find something I like, I can just turn it around, and play something.
+It's that easy.
+
+It's that simple.
+Isn't that great? Yeah.
+Alright. I could play with this for a long time. uh
+
+Now, Again, I've got playlists here.
+I can go into my playlists. I've got artists. I've got songs.
+Uh I've got more over here. I've got you know albums.
+I've got a great album view again that shows all my album artwork right here if I want.
+uh And uh I've also got audio books and compilations and things like that.
+I've also got videos here.
+So I push videos and uh I've got here i've got a video podcast loaded on, and a music video.
+And I've got a TV show and a movie, and I'd like you to just show the uh TV show here. This is an episode from The Office. All videos we look at in uh.. in landscape.
+
+We have touch controls on here, of course.
+Isn't that awesome? Isn't that awesome?
+Let's go uh
+
+Now I wanna show you uh a movie playing. Let's play Pirates of the Caribbean, the second one, here.
+Great movie, by the way. And uh
+
+Now this is a widescreen movie so I just double-tap and I can see the whole thing here, or I can fill up the screen, whichever I like.
+
+And again, I've got on-screen controls here. Isn't this cool?
+So we can be watching feature-length movies just like this.
+Alrighty. So that... is the iPod.
+Pretty cool, huh?
+We've just started. So again, touch your music. Scroll through your songs, scroll through your playlists.
+It's incredible. Widescreen video like you've never seen on a portable device, 160 pixels per inch, gorgeous screen quality.
+Gorgeous album art, and cover flow.
+It's the best iPod we've ever made.
+Again, some of the screen shots. It's unbelievable.
+Here's some album art I just put up, so you can see what it looks like.
+Just, no matter what you like, it looks pretty doggone gorgeous.
+And of course, cover flow and video, with on-screen controls.
+
+You know, I was showing this to somebody
+I was giving a demo to somebody a little while ago, who had never seen this before, inside Apple. And I uh finished the demo, I said what do you think.
+He told me this, he said, you had me at scrolling.
+So, the iPhone with the most amazing iPod ever.
+You can now touch your music.
+
+So that's the iPod.
+Now, let's take a look at a revolutionary phone.
+We wanna reinvent the phone.
+Now, what's the killer app?
+The killer app is making calls!
+It's amazing, it's amazing how hard it is to make calls on most phones.
+Most people actually dial them every time.
+Most people don't have very many numbers in their address book they use their recents as their address book. Right?
+How many of you do that? I bet more than a few.
+So, we wanna let you use contacts like never before.
+You can sync your iPhone with your PC or Mac and bring down all your contacts right into your phone. So you've got everybody's numbers with you at all times.
+We have something that's going to revolutionize voice mail today. We call it visual voice mail.
+Wouldn't it be great if you had six voice mails if you didn't have to listen to five of them first before you wanted to listen to the sixth?
+Wouldn't that be great if you had random access voice mail?
+Well, we've got it. Just like e-mail you can go directly to the voice mails that interest you. Excellent audio audio quality. iPhone is a quad-band, GSM plus Edge phone.
+We have decided, we decided, to go with the most popular international standard, which is GSM. We're on that bandwagon, headed on that roadmap, and uh plan to make 3G phones and all sorts of other amazing things in the future. So, quad-band GSM plus edge, and of course we have WiFi and Bluetooth 2.0 EDR built in, as well.
+
+And so this is what it looks like when you get a call.
+This is what it sounds like. It's one of our ring tones, you can pick of course.
+
+So, I wanna show you four things.
+I wanna show you the phone app, photos, got a calendar, and SMS messaging.
+The kind of things you would find on a typical phone, but in a very untypical way now.
+So let's go ahead and take a look.
+So let's go to our phone, first.
+You see that icon in the lower left-hand corner, the phone?
+I just push it right here, and boom, I'm in the phone.
+And I've got five buttons across the bottom: favorites, recents, contacts, keypad and voice mail. I'm in contacts, right now, again. How do I move around my contacts?
+I just scroll through them.
+And so, let's say I wanna make a call to Jony Ive.
+I can just push here, and I see Jony Ive's context, with all his information: his three phone numbers, his e-mail, whatever else, his address, whatever else I've got.
+It's all in one place.
+And if I wanna call Jony, all I do is push his phone number. I'll call his mobile number right now. And now, we are calling Jony here.
+
+Hey, Jony, how you doing?
+Well, it's been 2 and a half years, and I.. I can't tell you how thrilled I am to make the first public phone call with iPhone.
+I remember when we first started working on this, and it's just.. it's just unbelievable. Wah, whoa, what is this? I've got another call coming in. Jony, can I put you on hold for a minute? Ok. So I put Jony on hold and
+
+Hi Phil.
+
+Sorry Phil! As you can see, it's put Jony on hold, and Phil, I can just touch Jony and bring Jony back. Hey, Jony are you there?
+Hey listen, uh Phil called. Do you mind if I conference him in?
+
+You can see the button has changed to merge calls right there in the middle, so I just push that right here, and now, I've created a conference call.
+Jony, you there? Phil, you there?
+
+So here we are, and uh listen I gotta get back to my keynote, so uh if I wanna do that, what i'm gonna.. I just touch this arrow right here, and uh I'm gonna go ahead and take Jony private here and uh put Phil on hold. Jony, do you have anything to say on the first phone call?
+
+It's not too shabby. You take care, Jony.
+And I end this call. and it..Phil's on hold. I take him off of hold.
+Phil, thanks very much, I gotta get back to the keynote now.
+Bye-Bye.
+Alrighty.
+
+So, now I've also got a way to make a list of favorites here, from my most-often called numbers so I can just touch it once and dial.. dial the number.
+And I might wanna add somebody to favorites, so let's say I wanna add Phil Schiller, I just push that plus button in the upper right-hand corner right there, and up pop my favorites, and I can just go to uh the S is here and there's Phil, so uh Phil Schiller is right there.
+And uh I'll put, let's say I wanna put Phil's work number, and it's added Phil, right there you can see the favorites.
+I can edit favorites by pushing the edit button in the upper left-hand corner, and I can move Phil up if I want to, you know maybe to the top.
+And uh let's see, i'm not gonna.. you know type Tony's changed his number I've got to update this anyway, so I'm gonna get rid of that and I can just remove Tony. Boom, there we go.
+It's that simple to edit these things. Very, very easy.
+I've got recents right here, which is all my recent phone calls.
+If I wanna see the ones I've missed, which are in red, I can just go up and touch that button at the top, and boom, those are all the ones I've missed, and those are all the calls that I've placed or have gotten.
+If I wanna dial the phone, if I'm real last-century, I can push keypad here, and uh I can dial a call just with oops, called four, sorry.
+Wrong number.
+uh 408 uh 996-1010.
+And it formats the numbers and uh if I want to, I can just keep dialing, let's say it's a European number, and the numbers just keep getting smaller, real simple.
+Very simple to dial with the keypad.
+Now let me show you visual voice mail. This is so cool.
+This is a collaboration that we've done, which I'll talk more about later, and uh it allows us to have random access voice mail.
+Go directly to the voice mails we want.
+So as an example, I come to my voice mail, and I say, oh, there's one by Al Gore.
+I wanna hear that one. I just push it.
+
+Now, if I wanna call Al back right now, I can just push that call back button.
+But I wanna listen to one from Tim Cook I've got here, so let me listen to Tim.
+
+Isn't this awesome?
+And so I've got voice mail how I wanna listen to it, when I wanna listen to it, in any order I wanna listen to it with visual voice mail.
+So that is a quick tour of the phone app.
+Now what I wanna do is show you SMS texting.
+So I just go to that SMS icon in the upper-left-hand corner and push it.
+And I not only have SMS texting, but I have multiple sessions.
+So I can be carrying on conversations with people, and every time I get a new message from them, I'll be alerted to that, and go check it out.
+So. As an example here, I've got Eddie Q and I've been carrying on a conversation with Eddie, and I just tap this, and here's the conversation I've been carrying on right here, right.
+And if there's a new message it will tell me.
+And so there's a new message from Phil, and uh let's see the conversation was what:
+
+Hey Steve
+Hi
+Still on for dinner tonight?
+absolutely
+your turn to pick
+hmmm I pick Sushi Ran
+how about 7 o clock tonight?
+and I say, I can can just say, you know
+sounds great
+
+And I've got this little keyboard which is phenomenal.
+It does error prot uh prevention and correction.
+Not that I won't make some, I probably will.
+But it's actually really fast to type on. It's faster than all these little plastic keyboards on all these smart phones.
+So I can just say sounds great, see you there.
+And I can send that. And there it is, right.
+It's that simple.
+And when Phil messages me back, I'll be alerted, I'll see the dot, and I can just go pick up that conversation where it left off.
+If I wanna send a message to Eddie I or Scott, I just push this and send a message and go.
+It's so simple.
+So that's SMS messaging, and uh you know again, you've seen the keyboard, it's pretty awesome. We'll come back to that a little bit later.
+
+And the third app I wanna show you as part of the phone package is photos.
+You know, we have a two-megapixel camera built in, as I said. We also have the coolest photo management app uh ever, certainly on a mobile device, but I think maybe ever.
+And uh so here's uh here's our photos. I'm going to go into our photo library, and this is our library and again, I can just scroll through photos here with my finger.
+Pretty cool. Let me go to uh photo album, I'll pick Italy, and I just uh, let's start at the top.
+And to go through pictures, I just swipe them.
+I can just swipe through my photo library. Oh there's one that's uh that's landscape. I can just turn my device and take a look at it. Pretty cool, huh?
+So.. Alright? So I can even swipe when I'm in landscape here.
+Yeah? Isn't this awesome?
+The other thing I can do is uh I can take any of these pictures and uh I can make them bigger. And uh So let me go ahead and get the camera back up yeah there it is right there.
+I can uh.. I can just take my fingers and I can, we call it the pinch, I can bring them closer together and move them further apart to make it bigger or smaller.
+And So I can just move them further apart and stretch the image.
+Isn't that cool?
+I can move it around, and... isn't that cool?
+And now, now what I can do is I can uh pick to uh make this my uh wallpaper.
+And of course, I could you know.. jigger it around then and just set the wallpaper, and now when I uh if I'm back at home and I go to sleep, when I wake up from here on out, until I reset it, that's my wallpaper.
+Whenever I'm making a call, that's what I'm gonna see. Boom.
+There we go. So photos, SMS and the phone app.
+That is part of our phone package for iPhone.
+
+Get a call, again, really great call management features, just scroll through contacts with your finger.
+All the information at your fingertips here.
+Favorites, last century, visual voice mail.
+Calendar, SMS texting, incredible photo app, the ability to just take any picture and make it your wallpaper.
+It's pretty unbelievable, and I think when you have a chance to get your hand on it, you'll agree, we have reinvented the phone. OK.
+
+So, now, let's take a look at an Internet communications device as part of iPhone.
+So what's this all about?
+Well, we've got some real breakthroughs here.
+To start off with, we've got rich, html e-mail on iPhone.
+The first time really rich e-mail on a mobile device. And it works with any IMAP or POP e-mail service. You got your favorite mail service, it'll likely work with it.
+And it's rich text e-mail.
+We wanted the best web browser in the world on our phone, not a baby web browser or a WAP browser, a real Web browser, and we picked the best one in the world, Safari, and we have Safari running on iPhone.
+It is the first fully usable html browser on a phone.
+
+Third, we have Google Maps.
+Maps, satellite images, directions and traffic.
+This is unbelievable, wait till you see it. We have widgets, starting off with weather and stocks. And this communicates with the Internet over EDGE and wi-fi.
+And iPhone automatically detects WiFi and switches seamlessly to.
+You don't have to manage the network. It just does the right thing.
+Now, I wanna take a second and talk about email. we hook up to almost any IMAP or POP3 mail service. I just want to give you some examples. IMAP of course is the best because you can keep your folders and all your e-mail on the server and access it from anywhere.
+uh Yahoo Mail is IMAP. Microsoft Exchange has an IMAP option. And obviously .mac mail is IMAP, as well.
+POP3, Google Gmail, AOL Mail, and most ISPs are POP3 e-mail.
+
+Now, I wanna take a minute and highlight one.
+Yahoo Mail.
+Yahoo Mail is the biggest mail service in the world.
+They have over a quarter billion users.
+Biggest e-mail service in the world, and today, we are announcing with Yahoo that they are going to provide free push IMAP e-mail to all iPhone customers.
+So, this isn't just IMAP e-mail.
+It is push IMAP e-mail. So when you get a message, it will push it right out to the phone for you. Same as a BlackBerry. Free IMAP push e-mail from Yahoo.
+So we think this is a pretty big deal.
+So what I'd like to do now is I'd like to show you: Mail, Safari, Google Maps and widgets running on iPhone.
+So let's go see.
+
+So let's go into mail.
+Second icon from the left on the bottom there.
+I just touch it with my finger, and boom, I'm there.
+And so I've got an in-box here, and this is, by the way, running live on Yahoo IMAP e-mail.
+This stuff is coming off a Yahoo server somewhere up in the cloud.
+And uh so I can say James Vincent here sent me an e-mail.
+And he's a proud father.
+And there we there we go. And I can just scroll here.
+I've got in-line photos, rich text e-mail. there we go.
+So let's look at another one. Phil Schiller.
+She loved the gift.
+Again, in-line photos, rich text, pretty nice.
+Shopping list. Again, rich text right here. Pretty cool.
+Directions to Sushi Ran for tonight's dinner.
+Now, iPhone of course parses out phone numbers and as you can see there's a phone number in blue.
+I can just touch it, and boom, I'm gonna call this place.
+I don't really wanna call them so I'm going to end the call here.
+But you get the idea.
+And uh this last one uh, Ken Bereskin is uh one of our marketing folks.
+He just returned from Antarctica. Ken's a great photographer, and he took all these great photos of uh of penguins in Antarctica.
+It's really cool. Look at this, it's great. Right in your e-mail, right on your phone.
+And if I want to, by the way, I can uh look at my e-mail with a split view just like I do on my computer, and so I can select something here and just look at it down here if I want to peruse my messages real fast and just find that one message I was looking for.
+But I actually like the full-screen view.
+And of course, we have a standard in-box and drafts, and sent, and eh and and all sorts of folders you can put things in as well.
+So it's real e-mail, just like you're used to uh on your computer, right here on your phone.
+It's extraordinary.
+And again, free IMAP e-mail from Yahoo.
+
+Now, let me go ahead and just uh create an e-mail message.
+Show you what that's like.
+So again, when I don't need a keyboard it's not there.
+When I do, it's there. I want to send a message to uh, let's say, Phil.
+I just type PH, and boom, Phil Schiller, it's address completion and maybe I'll send one to Scott Forrestal, as well, and there's Scott right there, and uh let's say the subject is uh dinner.
+Dinner and uh.. uh.. you know. oops.
+See you tonight. Boom, and I just hit send.
+Sends that e-mail, and we're done.
+So that is mail. Full desktop class e-mail running on a mobile device.
+
+Alright, now I wanna show you something incredible.
+I wanna show you Safari running on a mobile device.
+So let's go to the Web, and here we are.
+I'm gonna load in, rather than apple.com here, a little uh.. more universal site.
+I'm gonna load in the New York Times, it's kind of a slow site because it's got a lot of images, but here we are loading and we're loading over WiFi right now.
+And rather than just give you a WAP version of the New York Times, rather than give you this wrapped version all around, we're showing you the whole New York Times Web site, and there it is.
+And Guess what I can do, I can just put this into landscape mode, and there it is right there.
+And I can scroll here if I want.
+Scroll up and down here. Still loading it in.
+There we go. Or I can just get back like this.
+Now, this is really great and I can see the whole page but of course I can't read it.
+It's a little too small. So I can get in with my fingers and pinch it but we have an optimization here. I can just double-tap on anything and it automatically fills up the screen with it.
+And I can just scroll around like this and scroll over here and I can even make this text bigger if I want to, and there it is.
+Just double-tap again to get back to the full page. Isn't this cool?
+So I can just. Look at this.
+There is the New York Times. And again, any article I want, boom, there we go.
+Boom. Unbelievable.
+Now, you can look at multiple Web pages as well. You can have multiple Web pages open. So I just push this button in the lower-right hand corner.
+Shrinks it down, and I can add a new page if I want.
+And uh I'll go to uh Amazon here out of my bookmarks.
+So let's go to Amazon. And I love to go the DVD section of Amazon and see what DVDs are selling.
+I like it especially when Disney's are at the top.
+Uh, and, uh so here's Amazon coming, and even before the whole page is loaded on, I'm just going to double-tap on this, and.. and uh I'm gonna say let's go to the DVD section here, and now it's doing that.
+And here we are.
+And there's a section over here on the right hand side, right there, and these are the top sellers, updated hourly.
+Oh look, Al's Inconvenient Truth is number one.
+Alright. And here's all the other movies.
+Grey's Anatomy, I like that. Pirates of the Caribbean. Fantastic.
+And so I've got this right here, and I can go back to the New York Times if I want.
+You know. Zoom up to that picture so we can all see it.
+And again, here isn't this cool?
+Just go over there and go back to this one.
+I can get rid of them just by hitting the X. And there we go.
+Isn't that incredible? Safari.
+You know, if you've ever used what's called a Web browser on a mobile phone, you'll know how incredible this is.
+I hope you'll never really know, because it's it's bad out there today, and this is a revolution of the first order, to really bring the real Internet to your phone.
+
+Let me show you something about widgets here.
+uh Let's go to stocks right now, i'm gonna load stock information off the Web, and uh just right onto the phone here.
+Oh, look, Apple's up!
+That's great!
+Well, I could look at different graphs here if I want to.
+And uh that's fantastic. Let's look at the percentages here.
+Oh, good. Good good. So I've got stocks right here, and uh I can go look at the weather.
+Let's see what uh what it's like outside.
+49 degrees, but it's supposed to get to 61 today, so that's good.
+We'll just stay in here until it warms up.
+Now, I've got uh Paris right here. I can have as many of these as I want, so it's nighttime in Paris. It's actually warmer in Paris at night than it is here today.
+Wow. Aspen, well, no snow till later in the week.
+And Hawaii. Oh, it's raining, that's not good.
+Well, anyway, here's four places. Hawaii, Aspen, Paris and San Francisco, and again, the weather widget.
+
+Now, to conclude with the Internet device section here, I wanna show you something truly remarkable, which is, Google Maps on iPhone.
+I hit our maps application here and it's coming up.
+And it shows us North America, and I'm gonna go to Moscone West.
+That's where we are right now.
+And here we are. Boom.
+That's where we are. Now, what I'm gonna do, is I'm gonna go uh look for something.
+I'm gonna certainly want a cup of coffee afterwards, so I'm just gonna look for Starbucks, right?
+Starbucks, so I'm gonna search for Starbucks, and sure enough, there's all the Starbucks.
+Now, I can get a list of Starbucks here, so I can pick that one if I want, and I can even go look at that Starbucks, and there it is, and let's give em a call.
+
+Yes, I'd like to order 4,000 lattes to go, please.
+No, just kidding, wrong number. Thank you. Bye-bye. OK.
+
+Now, I can zoom in by just again pinching if I want to.
+Or I can just double click to zoom in, and uh I get just uh higher and higher resolution versions of the map.
+So let's go somewhere else here that I've got bookmarked.
+And uh let's go to the Washington Monument.
+And so here's Washington, D.C, and I could uh just double-tap and uh I'm going in a little further here.
+Just double-tapping in.
+And there's the Washington Monument there, and I'll double-tap in again.
+And uh but now I wanna show you something else. Satellite images.
+So I just hit this button called satellite down at the bottom. and It's gonna replace the map with satellite images, there we go.
+And uh I can just double-tap in, and double-tap in again.
+And uh let's it's catching up to me.
+There we go.
+And let's double-tap in again.
+This is the Washington Monument.
+There we go. Look at this.
+I can see people down there.
+Whoops, there we go.
+Yep. Isn't that incredible?
+Right on my phone! It's unbelievable.
+So let's go, uh I've got another one, uh the Eiffel Tower, which is very cool.
+I set this one to be uh, look at this, there's the Eiffel Tower.
+There's people at the Eiffel Tower you can see.
+Look at that. Isn't that incredible?
+And here, one last one I have to show you, the Colosseum in Rome.
+So again, here we are in Rome. That's as far as we can go with the map, but we can go a little further with the satellite.
+There's the Colosseum. There's the Roman Colosseum.
+Satellite imagery, right on the phone.
+Look at that. That's the Colosseum. Unbelievable.
+Right on the phone. What do you think? Isn't that incredible?
+
+So, so, all these amazing things.
+This is a breakthrough Internet communicator built right into iPhone.
+The first rich html e-mail on a phone.
+The first real Web browser on a phone.
+Best version of Google Maps on the planet, widgets, and all with edge and Wifi networking. We're very, very happy with this.
+Again, e-mail. Push e-mail IMAP free Yahoo and almost any other IMAP and POP mail service you wanna hook up to.
+Incredible new technology for entering text; far better than we've seen on phones before.
+A real browser on the phone. We can see real Web pages in portrait or landscape.
+We can zoom in on what we wanna take a look at more closely.
+Google Maps and widgets.
+It's the internet in your pockets for the first time ever.
+Now, you can't you can't really think about the Internet, of course, without thinking about Google, right?
+And for Google, what we have on our phone, working with them is of course Google search, we have that built right into the browser.
+Just type what you want, hit Google and you're off.
+And Google Maps. We've been working very closely with them to make this all happen.
+We're thrilled with the results...
+
+Ok, now, you also can't think about the Internet without thinking about Yahoo.
+And again on the phone, we've got Yahoo Search built right in, you can select which one you wanna use.
+Just type in something, hit that Yahoo button and boom, you're off.
+And of course, we also have Yahoo IMAP e-mail services.
+
+You know, it's been great having the two greatest companies on the Web right down the block.
+Google and Yahoo.
+And we've been able to work with these guys really closely, and it's been an incredible pleasure to work on this great technology and bring it to everybody in iPhone.
+So thank you guys so much. You've really helped us put the Internet in your pocket.
+
+So. Internet communicator, an iPod and a phone.
+Let's put them all together and see what you can do in a real-life scenario.
+So. Let's take a look.
+I'm uh I wanna listen to some music, so I'm gonna go into my iPod here and uh let's see uh, in artists, I wanna listen to uh, oh, maybe Red Hot Chili Peppers, I love those guys.
+And so I'm listening to a song of theirs.
+And let's see what happens when I get a phone call.
+Music fades out. Screen changes. Got a phone call coming in.
+So I can ignore it, but I think I'm gonna answer it.
+So I'll answer it. Howdy. Hi Phil.
+Now it knows who Phil is cause he is in my address book.
+So it puts his little picture here and everything up there. Uh Hi Phil listen I'm kind of busy right now. What can I do for you?
+
+Oh, OK, uh hold on just a sec.
+So I push the home button here, down at the bottom to go home right here, and I'm still on the call.
+You can see the uh the phone thing flashing right there on the lower left.
+And I go into photos and now I'm in photos and again you can see the bar across the top, the green bar, I can just touch that to return to the call.
+And uh Phil wants a photo that uh he wanted to use it for his screensaver, it was one of the ones that was taken in Hawaii, I think it was this one.
+Yep, there it is. So you want me to mail this to you, Phil?
+Alright, So I again I just go down here and push this button, and rather than use it as wallpaper, I'm going to e-mail it.
+And uh so watch what happens now.
+It shrinks it a little bit, and then a compose windows will come up right behind it.
+There we go. And uh I will uh just tap in the to field and send this to Phil here, Phil Schiller there we go.
+And uh the e-mail is there, yep, it's there, and I'm just gonna send it.
+Hey, Phil, that should be on its way right now.
+
+Yup, Any else? uhm Let me go check it out.
+I Got uh.. I think I've got Fandango in my uh bookmarks here.
+And uh, yes, I do. Let's go to Fandango, figure out what movies are playing.
+
+Yeah, ok. Here is fandango let's just double tap and here is the movies playing.
+yep. How about we go see uh â€œnight at the museumâ€? I haven't seen that yet.
+Great, alrighty. Hey, take care Phil.
+now what I'm gonna do is: To go back to my uh call I just touch the top here, and I'm back at my call, and I'm just gonna go ahead and end the call.
+And uh What happens now?
+Back in my music.
+So, this is what it's like when you put it all together.
+iPhone. Today Apple is reinventing the phone.
+
+Now how does this stack up.
+Let's go back to to these guys.
+Let's take a look.
+Well, these are their these are their home screens.
+And again, as you recall, this is iPhone's home screen.
+uhm this this is what their contacts look like.
+This is what iPhone's contacts look like, and again, you just pick one and you see everything about that person, all the information you have.
+This is what mail looks like on these smart phones.
+Again this what mail looks like on iPhone.
+You have rich, html, rich text e-mail.
+This is what calendars look like on these guys.
+This is what calendars look like on iPhone.
+This is what the Web looks like, and we tried to make it look as good as we could on these.
+It usually looks worse and this is what you get, and of course, this is what you get on iPhone, and you can zoom in and see anything you want.
+And this is what you get for music players, nobody really uses them much.
+Uh and this is what you get on iPhone.
+So after today, I don't think anyone is gonna look at these phones quite the same way again.
+
+Now let me tell you about some accessories we've got for iPhone.
+Got some great stereo headphones we're gonna be shipping.
+And uh they've got a little addition to them, which is this little thing right over here.
+It's a microphone and a switch, so you can talk, uh you have them in there, you can get a call and just talk.
+they've beautiful reception on the microphone. And just push it together to answer a call or hang up on a call.
+And so you can be wearing them and.. it just dangles right there and picks up your voice beautifully.
+And we also have a Bluetooth accessory headset that we're gonna be shipping and there it is right there.
+It's incredibly small and uh just to let you see what it looks like, it's got one button on the top for answering and hanging up a phone call.
+You never have to turn it off or on. It just goes to sleep.
+It automatically pairs with iPhone so you don't have to worry about pairing.
+It's really simple. And uh it's very tiny.
+This is what it looks like in-ear. It's just beautiful.
+It's the coolest one that we've ever seen.
+So Bluetooth headset coming as well.
+
+Battery life. There's a lot of stuff.
+A lot of these phones, a lot of these smart phones have pretty pretty low battery lives.
+We've managed to get five hours of battery, and that's for talk time, video or browsing.
+Five hours of battery life, and 16 hours of audio playback.
+So that's dramatically better than any of these smart phones.
+There is a tremendous amount of high technology in iPhone.
+We've been pushing the state of the art in every facet of this design.
+So let me just talk a little bit about it here.
+We've got the multi-touch screen. A first.
+Miniaturization, more than we've done before.
+A lot of custom silicon.
+Tremendous power management.
+OSX inside a mobile device.
+Featherweight precision enclosures.
+Three advanced sensors.
+Desktop class applications, and of course, the widescreen video iPod.
+We've been innovating like crazy for the last few years on this, and we filed for over 200 patents for all the inventions in iPhone, and we intend to protect them.
+So, a lot of high technology.
+I think we're advancing the state of the art in every aspect of this design.
+So iPhone is like having your life in your pocket. It's the ultimate digital device.
+
+So what should we price it at?
+Well, what do these things normally cost?
+An iPod, the most popular iPod, $199 for 4 gig nano.
+What's a smart phone cost?
+Well, they say you get the phone and some of the Internet with it, although that's questionable. But they cost somewhere around $299. You can get them for $199. Palm just introduced one at $399 yesterday, so they generally average about $299 with a two-year contract.
+Now, these phones sort of do music but nobody uses them for music because they're not very good and so they end up buying an iPod to go with the phone.
+We know, we sell the iPod.
+And so people spend $499 on this combination.
+What should we charge for iPhone?
+Cause iPhone has got a lot more than this stuff, right.
+It's got video. Real video.
+It's got what, this beautiful gorgeous wide screen.
+It's got multi-touch user interface. It's got WiFi.
+It's got a real browser. It's got html e-mail.
+It's got coverflow and on and on and on.
+And this stuff would normally cost hundreds of dollars.
+So how much more than $499 should we price iPhone?
+Well, we thought long and hard about it, because iPhone just does so much stuff.
+So much better experience on call, on managing your contacts, and visual voice mail.
+Random access voice mail for the first time.
+Texting and e-mail and real browser and Google Maps.
+Tremendous iPod and cover flow and video.
+What should we price this thing at?
+Well, for a 4 gigabyte model, we're gonna price it at that same $499. No premium whatsoever. $499.
+And we're gonna have an 8 gigabyte model for just $599.
+So we're gonna price it starting at $499.
+Now, when's its gonna be available?
+We're gonna be shipping these in June. Yeah, June.
+We're announcing it today because with products like this we gotta go and get FCC approval which takes a few months, and we thought it would be better if we introduced this rather than ask the FCC introduce it for us.
+So here we are, and we're gonna be shipping it in June in the U.S.
+We're going to Europe hopefully by the fourth calendar quarter of this year.
+And Asia in 2008.
+So June, in just a few months, we'll be shipping in the U.S.
+And when we do, our partner is gonna be Cingular.
+We've chosen Cingular. They are they are the best and most popular network in the country.
+58 million subscribers. They are number one.
+And they're gonna be our exclusive partner in the U.S.
+Now, it's a unique partnership though.
+We're not just gonna be selling phones and services together.
+We're gonna be doing innovation together.
+We worked with Cingular on visual voice mail.
+Because it's an innovation that requires both innovation on the phone and in the network.
+You can't do it in just one place.
+You have to do it in both places and collaborate.
+And so visual voice mail is the first fruit of this collaboration, and you will see more.
+And when we start shipping in June, we will be selling iPhone through our own stores, and through Cingular stores.
+
+You know, as Stan Sigman the CEO of Cingular, said we started working together at about 2 years ago and we come from pretty different worlds.
+The telecommunications industry, the computer industry and of course music with the iPod.
+And, uh and yet we have worked wonderfully together and we love these guys.
+And we think we're gonna bring some great stuff to the market over the years together.
+
+So, Let's take a look at uh, at this market, and how big it is.
+My clicker's not working.
+Oh. There it is.
+Maybe it is working. So how big is this market, well let's take a look.
+No.
+Alrighty.
+Clicker is not working.
+Alright. They're scrambling backstage right now.
+
+You know, when I was in high school.
+Steve Wozniak and I, mostly Steve, uh made this little device called the TV jammer.
+And it, was, it was this little oscillator that put out frequencies that would screw up the TV.
+And Woz would have it in his pocket, and we'd go into like a dorm at Berkeley where he was going to school and a bunch of folks was watching like Star Trek and he'd screw up the TV, and somebody'd go up to fix it, and and just as they had their foot off the ground, he'd turn it back on.
+And If they put their foot back on the ground he'd screw up the TV again.
+And within five minutes he'd have somebody like this for the rest of the Star Trek episode.
+
+Ok. So maybe it's working now, maybe they're gonna have to click em for me.
+
+So game consoles.
+26 million game consoles were sold in 2006 worldwide, actually a little smaller than you'd think. It's not such a big market.
+Digital cameras dwarfed it at 94 million.
+MP3 players 135 million. And PCs, about 209.
+Mobile phones, just about a billion last year, worldwide.
+So what does this tell you?
+What this tells you is, that 1 percent market share equals 10 million units.
+This is a giant market.
+If you just One percent market share, you're gonna sell 10 million phones.
+And this is exactly what we're gonna try to do in 2008, our first full year in the market, is grab 1 percent market share and go from there.
+So we're gonna enter a very competitive market, lotta players, we think we're gonna have the best product in the world, and we're gonna go for it and see if we can get 1 percent market share, 10 million units in 2008, and go from there.
+
+So, today, we've added to the Mac and the iPod.
+We've added Apple TV and now iPhone.
+And you know, the Mac is the only one that you think really of as a computer. Right?
+And so we've thought about this and we thought, you know, maybe our name should reflect this a little bit more than it does.
+So we're announcing today we're dropping the computer from our name, and from this day forward, we're gonna be known as Apple Incorporated, to reflect the product mix that we have today.
+And I didn't sleep a wink last night.
+And uh I was so excited about today, because we've been so lucky at Apple.
+We've had some real revolutionary products.
+The Mac in 1984 is an experience that those of us that were there will never forget.
+And I don't think the world will forget it either.
+The iPod in 2001 changed everything about music, and we're gonna do it again with the iPhone in 2007.
+We're very excited about this.
+You know, there's an old Wayne Gretzky quote that I love.
+I skate to where the puck is going to be, not where it has been.
+And we've always tried to do that at Apple.
+Since the very very beginning.
+And we always will. So thank you very very much for being a part of this.
+
+Now
+
+thanks
+
+Thank you very much.
+
+Thank you.
+
+----
+Internal Apple Meeting (1997 - Think Different era)
+----
+Good morning.
+
+We were up until 3 o'clock last night finishing this advertising.
+
+And I want to show it to you in a minute, see what you think of it.
+
+I've been back about 8 to 10 weeks.
+
+And we've been working really hard.
+
+And what we're trying to do is not something really highfalutin.
+
+We're trying to get back to the basics.
+
+We're trying to get back to the basics of great products, great marketing, and great distribution.
+
+And I think that Apple has pockets of greatness, but in some ways has drifted away from doing the basics really well.
+
+So we started with the product line.
+
+We looked at the product road map going out for a few years.
+
+And we said, a lot of this doesn't make sense.
+
+And it's way too much stuff.
+
+And there's not enough focus.
+
+And so we actually got rid of 70% of the stuff on the product road map.
+
+I mean, I couldn't figure out the damn product line after a few weeks.
+
+I kept saying, well, what is this model?
+
+How does this fit?
+
+And I started talking to customers, and they couldn't figure it out either.
+
+And so you're going to see the product line get much simpler.
+
+And you're going to see the product line get much better.
+
+And there's some new stuff coming out that's incredibly nice.
+
+In addition, we've been able to focus a lot more on the 30% of the gems and add some new stuff in that is going to take us in some whole new direction.
+
+So we are incredibly excited about the products.
+
+And I think we're really thinking differently about the kinds of products we have to build.
+
+And the engineering team, is incredibly excited.
+
+I mean, I came out of the meeting with people that had just gotten their projects canceled, and they were three feet off the ground with excitement because they finally understood where in the heck we were going.
+
+And they were really excited about the strategy.
+
+In the same way, we, I think, have not been as we have not kept up with innovations in our distribution.
+
+Well, I'll give you an example.
+
+I'm sure it was talked about this morning.
+
+But we've got anywhere from two to three months of inventory in our manufacturing supplier pipeline and about an equal amount in our distribution channel pipeline.
+
+So we're having to make guesses four, five, six months in advance about what the customer wants.
+
+And we're not smart enough to do that.
+
+I don't think Einstein's smart enough to do that.
+
+So what we're going to do is get really simple and start taking inventory out of those pipelines so we can let the customer tell us what they want, and we can respond to it super fast.
+
+And you're going to see us be doing a lot of things like that today.
+
+It's just the first of many things we're going to be doing with you.
+
+So we're going to be not only, I think, catching up to where the best of the best are in distribution, but we're going to actually be innovating and be
+
+breaking some new ground, I think, in the coming several months.
+
+And I'm pretty excited about that as well in the distribution manufacturing side of things.
+
+And that gets us to the marketing side of things.
+
+To me, marketing is about values.
+
+This is a very complicated world.
+
+It's a very noisy world.
+
+And we're not going to get a chance to get people to remember much about us.
+
+No company is.
+
+And so we have to be really clear on what we want them to know about us.
+
+Now, Apple, fortunately, is one of the half a dozen best brands in the whole world, right up there with Nike, Disney, Coke, Sony.
+
+It is one of the greats of the greats, not just in this country, but all around the globe.
+
+But even a great brand needs investment and caring if it's going to retain its relevance and vitality.
+
+And the Apple brand has clearly suffered from neglect in this area in the last few years.
+
+And we need to bring it back.
+
+The way to do that is not to talk about speeds and feeds.
+
+It's not to talk about nips and megahertz.
+
+It's not to talk about why we're better than Windows.
+
+The dairy industry tried for 20 years to convince you that milk was good for you.
+
+It's a lie, but they tried anyway.
+
+And the sales were going like this.
+
+And then they tried Got Milk and the sales have gone like this.
+
+Got Milk doesn't even talk about the product.
+
+Matter of fact, it focuses on the absence of the product.
+
+But the best example of all and one of the greatest jobs of marketing in the universe has ever seen is Nike.
+
+Remember, Nike sells a commodity.
+
+They sell shoes.
+
+And yet, when you think of Nike, you feel something different than a shoe company.
+
+In their ads, as you know, they don't ever talk about the product.
+
+They don't ever tell you about their air soles and why they're better than Reebok's air soles.
+
+What does Nike do in their advertising?
+
+They honor great athletes, and they honor great athletics.
+
+That's who they are.
+
+That's what they are about.
+
+Apple spends a fortune on advertising.
+
+You'd never know it.
+
+You'd never know it.
+
+So when I got here, Apple just fired their agency.
+
+They were doing a competition with 23 agencies that four years from now would have picked one.
+
+And we blew that up.
+
+And we hired Chiat/Day, the ad agency that I was fortunate enough to work with years ago.
+
+We created some award-winning work, including the commercial voted the best ad ever made in 1984 by advertising professionals.
+
+And we started working about eight weeks ago.
+
+And the question we asked was, our customers want to know who is Apple and what is it that we stand for?
+
+Where do we fit in this world?
+
+And what we're about isn't making boxes for people to get their jobs done, although we do that well.
+
+We do that better than almost anybody in some cases.
+
+But Apple's about something more than that.
+
+Apple at the core, its core value is that we believe that people with passion can change the world for the better.
+
+That's what we believe.
+
+And we've had the opportunity to work with people like that.
+
+We've had an opportunity to work with people like you, with software developers, with customers who have done it in some big and some small ways.
+
+And we believe that in this world.
+
+People can change it for the better.
+
+And that those people that are crazy enough to think they can change the world are the ones that actually do.
+
+And so what we're going to do in our first brand marketing campaign in several years is to get back to that core value.
+
+A lot of things have changed.
+
+The market's a totally different place than it was a decade ago.
+
+And Apple's totally different.
+
+And Apple's place in it is totally different.
+
+And believe me, the products and the distribution strategy and the manufacturing are totally different.
+
+And we understand that.
+
+But values and core values, those things shouldn't change.
+
+The things that Apple believed in at its core are the same things that Apple really stands for today.
+
+And so we wanted to find a way to communicate this.
+
+And what we have is something that I am very moved by.
+
+It honors those people who have changed the world.
+
+Some of them are living, some of them are not.
+
+But the ones that aren't, as you'll see, you know that if they'd ever used a computer, it would have been a Mac.
+
+The theme of the campaign is "Think Different".
+
+It's honoring the people who think different and who move this world forward.
+
+And it is what we are about.
+
+It touches the soul of this company.
+
+So I'm going to go ahead and roll it, and I hope that you feel the same way about it I do.
+
+So that puts it out there.
+
+That puts us out there saying, this is who we are.
+
+This is what we stand for.
+
+I don't know, do you like it?
+
+Yeah?
+
+Good.
+
+I know that some people will criticize us for not talking about all those things about why we have better plug and play.
+
+But we've got to let people know who Apple is and why it's still relevant in this world.
+
+And I think this will do a pretty good job.
+
+We are breaking this campaign this Sunday in a rather poetic way.
+
+The Wonderful World of Disney is restarting on ABC.
+
+And the first thing they're showing this Sunday night, I believe it's at 7 o'clock, is the network premiere of Toy Story.
+
+And we, We're going to have two 60-second spots.
+
+This commercial will run twice, once in the first hour and once in the second hour.
+
+We are then going to break some newspaper ads in the Journal, the Times, the Mercury, the Examiner, USA Today, really stating the manifesto, the words.
+
+And then I'm going to show you what's going to break within two weeks.
+
+We've got some phenomenal print.
+
+This ad will run throughout most of October on television.
+
+And we're breaking some phenomenal print within a few weeks, mostly on the back covers of magazines, some on the inside.
+
+We've got some incredible billboards.
+
+And we're even painting some giant walls in about five or six major cities.
+
+Before I show you this stuff, I want to let you know that in this day and age, to use any of these people, whether alive or dead, you need major permission from either themselves, if they're alive, or their estates representatives if they're dead.
+
+Almost all of these people have never appeared in an advertisement before and never would until we asked them.
+
+I mean, I got permission from Yoko Ono a few days ago to use John.
+
+And it's been an incredibly moving experience for me that these people, both living and dead, their estates, have felt so strongly about Apple that they were willing to let us do this.
+
+I don't think there is another company on earth that could have done this campaign.
+
+And that, to me, is something very special.
+
+So I got a videotape here of some of the print and the outdoor stuff.
+
+And if we could just run that, I want you to get a feel for that.
+
+This is an example of a print ad you might see in the back of the magazine.
+
+This was an image owned by Time Warner that they've never released before.
+
+Martha Graham.
+
+Thomas Edison.
+
+Alfred Hitchcock.
+
+You can't see it on the video, but these images are just stunning.
+
+Look at this.
+
+Outdoor Muhammad Ali.
+
+All this stuff is going up in the next two weeks.
+
+You know who that is?
+
+Rosa Parks.
+
+There'll be five buses running around five major cities like that.
+
+So that's what we're doing.
+
+We've been working pretty hard to wrap this up the last few days and nights, but it's the best work I've seen in an awful long time.
+
+I think it's the best work Apple's ever done.
+
+Now, advertising is not everything.
+
+And we've got some incredibly exciting product announcements coming up soon.
+
+Some incredibly exciting things in general are going to be happening over the next 90 to 120 days.
+
+And I really deeply appreciate all of the commitment that's in this room and with the people not in this room to turning this company around.
+
+This company is absolutely going to turn around.
+
+As a matter of fact, I think the question now is not, can we turn around Apple?
+
+I think that's the booby prize.
+
+I think it's, can we make Apple really great again?
+
+So thank you for your time.
