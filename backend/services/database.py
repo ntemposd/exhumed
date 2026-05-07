@@ -16,6 +16,8 @@ class EmbeddingProvider(Protocol):
 
 
 class SentenceTransformerEmbeddingProvider:
+    """Lazy sentence-transformer wrapper used only when local embeddings are needed."""
+
     def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> None:
         self.model_name = model_name
         self._model = None
@@ -47,6 +49,8 @@ class TelemetrySnapshot:
 
 
 class DatabaseService:
+    """Encapsulates Redis-backed session state and Vector-backed speaker retrieval."""
+
     def __init__(
         self,
         *,
@@ -83,6 +87,7 @@ class DatabaseService:
         return value.replace("\\", "\\\\").replace("'", "\\'")
 
     def set_chat_history(self, session_id: str, history: Sequence[Dict[str, Any]]) -> None:
+        """Replace the full stored message history for a session."""
         key = self._history_key(session_id)
         pipeline = self.redis.pipeline()
         pipeline.delete(key)
@@ -92,7 +97,16 @@ class DatabaseService:
         pipeline.expire(key, self.history_ttl_seconds)
         pipeline.exec()
 
+    def store_chat_message(self, session_id: str, message: Dict[str, Any]) -> None:
+        """Append a single message while preserving the session TTL."""
+        key = self._history_key(session_id)
+        pipeline = self.redis.pipeline()
+        pipeline.rpush(key, json.dumps(dict(message)))
+        pipeline.expire(key, self.history_ttl_seconds)
+        pipeline.exec()
+
     def get_chat_history(self, session_id: str) -> List[Dict[str, Any]]:
+        """Load and normalize all persisted messages for a session."""
         entries = self.redis.lrange(self._history_key(session_id), 0, -1) or []
         history: List[Dict[str, Any]] = []
 
@@ -108,11 +122,30 @@ class DatabaseService:
         history.sort(key=lambda item: int(item.get("turn_number", 0)))
         return history
 
-    def append_chat_message(self, session_id: str, message: Dict[str, Any]) -> List[Dict[str, Any]]:
-        history = self.get_chat_history(session_id)
-        history.append(dict(message))
-        self.set_chat_history(session_id, history)
+    def get_recent_chat_history(self, session_id: str, limit: int) -> List[Dict[str, Any]]:
+        """Read only the trailing window needed for prompt context or turn-local telemetry."""
+        if limit <= 0:
+            return []
+
+        entries = self.redis.lrange(self._history_key(session_id), -limit, -1) or []
+        history: List[Dict[str, Any]] = []
+
+        for raw_entry in entries:
+            try:
+                item = json.loads(self._decode_redis_value(raw_entry))
+            except json.JSONDecodeError:
+                continue
+
+            if isinstance(item, dict):
+                history.append(dict(item))
+
+        history.sort(key=lambda item: int(item.get("turn_number", 0)))
         return history
+
+    def append_chat_message(self, session_id: str, message: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Append one message and return the normalized session history."""
+        self.store_chat_message(session_id, message)
+        return self.get_chat_history(session_id)
 
     def set_telemetry_metrics(
         self,
@@ -121,6 +154,7 @@ class DatabaseService:
         logic_entropy: float,
         semantic_overlap: float,
     ) -> None:
+        """Persist the latest derived telemetry snapshot for a session."""
         payload = json.dumps(
             {
                 "logic_entropy": float(logic_entropy),
@@ -132,6 +166,7 @@ class DatabaseService:
         self.redis.expire(key, self.telemetry_ttl_seconds)
 
     def get_telemetry_metrics(self, session_id: str) -> TelemetrySnapshot:
+        """Return the stored telemetry snapshot for a session if one exists."""
         payload = self.redis.get(self._telemetry_key(session_id))
         if not payload:
             return TelemetrySnapshot()
@@ -157,6 +192,7 @@ class DatabaseService:
         include_metadata: bool = True,
         include_data: bool = True,
     ) -> List[Dict[str, Any]]:
+        """Retrieve speaker-specific knowledge chunks from Upstash Vector."""
         filter_expression = f"agent_id = '{self._escape_filter_value(agent_id)}'"
         try:
             results = self.vector_index.query(
@@ -203,6 +239,7 @@ class DatabaseService:
         history_limit: int = 5,
         context_limit: int = 5,
     ) -> str:
+        """Compose a retrieval-augmented system prompt from history and Vector matches."""
         history = self.get_chat_history(session_id)[-history_limit:]
         context_matches = self.get_agent_context(query_text, agent_id, top_k=context_limit)
 
@@ -232,6 +269,7 @@ def create_database_service(
     *,
     embedding_provider: Optional[EmbeddingProvider] = None,
 ) -> DatabaseService:
+    """Construct the default database service from environment-backed Upstash clients."""
     redis_url = os.environ["UPSTASH_REDIS_REST_URL"]
     redis_token = os.environ["UPSTASH_REDIS_REST_TOKEN"]
     vector_url = os.environ["UPSTASH_VECTOR_REST_URL"]

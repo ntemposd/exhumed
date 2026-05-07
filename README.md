@@ -100,4 +100,4 @@ docker-compose.yml           Backend Docker setup
 
 - The Next.js frontend is the most up-to-date client.
 - Docker Compose currently starts only the backend. Run the Next.js app separately from `frontend/`.
-- Historical ingestion is currently implemented for Socrates and Steve Jobs, with the script designed to expand to more speakers.
+- Historical ingestion is currently implemented for multiple speakers. See `backend/README.md` for the current backend module map and per-speaker ingestion plan.

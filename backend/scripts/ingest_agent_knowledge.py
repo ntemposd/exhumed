@@ -1,10 +1,19 @@
 from __future__ import annotations
 
+"""Prepare and ingest speaker source texts into Upstash Vector.
+
+The script is organized in three stages:
+1. speaker-specific source extraction
+2. speaker-specific chunking
+3. payload construction and optional Upstash upsert
+"""
+
 import argparse
 import os
 import re
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
+from typing import Callable, Dict, List, Pattern
 
 from dotenv import load_dotenv
 
@@ -102,14 +111,28 @@ AGENT_SOURCE_CONFIG: Dict[str, Dict[str, str]] = {
     }
 }
 
+SourceDocument = Dict[str, str]
+
+
+@dataclass(frozen=True)
+class AgentIngestPlan:
+    speaker_name: str
+    extraction_summary: str
+    chunking_summary: str
+    document_extractor: Callable[[str], List[SourceDocument]]
+    chunker: Callable[[str, int, int], List[str]]
+
 
 def parse_args() -> argparse.Namespace:
+    """Parse CLI arguments for ingestion, inspection, and dry-run modes."""
     parser = argparse.ArgumentParser(description="Ingest speaker knowledge into Upstash Vector")
     parser.add_argument("--agent-id", default="agt_001", help="Agent identifier, e.g. agt_001")
+    parser.add_argument("--list-agents", action="store_true", help="List supported speaker ingestion plans")
+    parser.add_argument("--describe-agent", help="Print the ingestion plan for one agent id and exit")
     parser.add_argument(
         "--source-file",
-        default=str(REPO_ROOT / "data" / "agt_001.txt"),
-        help="Path to the source text file",
+        default=None,
+        help="Path to the source text file. Defaults to data/<agent-id>.txt",
     )
     parser.add_argument("--chunk-size", type=int, default=1200, help="Target chunk size in characters")
     parser.add_argument("--chunk-overlap", type=int, default=200, help="Overlap size in characters")
@@ -119,6 +142,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def clean_whitespace(text: str) -> str:
+    """Normalize line endings and collapse excess whitespace between sections."""
     text = text.replace("\r\n", "\n").replace("\r", "\n")
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
@@ -126,18 +150,29 @@ def clean_whitespace(text: str) -> str:
 
 
 def slugify(value: str) -> str:
+    """Convert a human-readable source title into a stable metadata slug."""
     slug = re.sub(r"[^a-z0-9]+", "_", value.lower())
     return slug.strip("_") or "source"
 
 
 def build_source_document(agent_id: str, text: str, **overrides: str) -> Dict[str, str]:
+    """Merge base agent source metadata with extracted source text and overrides."""
     document = dict(AGENT_SOURCE_CONFIG[agent_id])
     document.update(overrides)
     document["text"] = clean_whitespace(text)
     return document
 
 
+def resolve_source_path(agent_id: str, source_file: str | None) -> Path:
+    """Resolve the on-disk source file for an agent, honoring explicit overrides."""
+    if source_file:
+        return Path(source_file)
+
+    return REPO_ROOT / "data" / f"{agent_id}.txt"
+
+
 def extract_heading_section(text: str, start_heading: str, end_heading: str) -> str:
+    """Extract a heading-delimited slice from a structured source text."""
     start_marker = f"\n{start_heading}\n"
     end_marker = f"\n{end_heading}\n"
 
@@ -163,6 +198,7 @@ def extract_project_gutenberg_work_body(
     ebook_title: str,
     work_heading: str,
 ) -> str:
+    """Extract a single work body from a Project Gutenberg omnibus source file."""
     start_marker = f"*** START OF THE PROJECT GUTENBERG EBOOK {ebook_title.upper()} ***"
     end_marker = f"*** END OF THE PROJECT GUTENBERG EBOOK {ebook_title.upper()} ***"
     heading_marker = f"\n{work_heading}\n"
@@ -189,6 +225,7 @@ def extract_project_gutenberg_work_body(
 
 
 def extract_apology_body(text: str) -> str:
+    """Extract the main Apology dialogue body from the Socrates source file."""
     start_marker = "\nAPOLOGY\n"
     end_marker = "*** END OF THE PROJECT GUTENBERG EBOOK APOLOGY ***"
 
@@ -209,6 +246,7 @@ def extract_apology_body(text: str) -> str:
 
 
 def extract_stanford_speech_body(text: str) -> str:
+    """Drop the title line and return the main Stanford speech body."""
     lines = [line.rstrip() for line in text.replace("\r\n", "\n").replace("\r", "\n").split("\n")]
     if not lines:
         raise ValueError("Stanford speech source is empty")
@@ -222,6 +260,7 @@ def extract_stanford_speech_body(text: str) -> str:
 
 
 def extract_art_of_war_body(text: str) -> str:
+    """Extract the handbook body of The Art of War without Gutenberg framing."""
     start_marker = "\nChapter I. LAYING PLANS\n"
     end_marker = "*** END OF THE PROJECT GUTENBERG EBOOK THE ART OF WAR ***"
 
@@ -242,6 +281,7 @@ def extract_art_of_war_body(text: str) -> str:
 
 
 def extract_thoughts_on_art_and_life_body(text: str) -> str:
+    """Keep the main Leonardo notebook text and trim bibliography appendices."""
     start_marker = "\nTHOUGHTS ON LIFE\n"
     end_markers = [
         "\nBIBLIOGRAPHICAL NOTE\n",
@@ -266,6 +306,7 @@ def extract_thoughts_on_art_and_life_body(text: str) -> str:
 
 
 def extract_twilight_of_the_idols_selected_body(text: str) -> str:
+    """Extract the configured Nietzsche sections that seed the current corpus."""
     section_markers = [
         ("MAXIMS AND MISSILES", "THE PROBLEM OF SOCRATES"),
         ("“REASON” IN PHILOSOPHY", "HOW THE “TRUE WORLD” ULTIMATELY BECAME A FABLE"),
@@ -285,6 +326,7 @@ def extract_twilight_of_the_idols_selected_body(text: str) -> str:
 
 
 def extract_my_life_selected_body(text: str) -> str:
+    """Remove site noise and keep the selected Trotsky memoir chapter body."""
     lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
     kept_lines: List[str] = []
 
@@ -317,6 +359,7 @@ def extract_my_life_selected_body(text: str) -> str:
 
 
 def extract_my_inventions_body(text: str) -> str:
+    """Extract Tesla's autobiography body between the configured start and footer markers."""
     start_marker = "\nI. My Early Life.\n"
     end_marker = "\n\n\n\nThis work is in the public domain in the United States"
 
@@ -337,6 +380,7 @@ def extract_my_inventions_body(text: str) -> str:
 
 
 def extract_jobs_source_documents(text: str) -> List[Dict[str, str]]:
+    """Split the Steve Jobs corpus into speech, interview, keynote, or letter documents."""
     normalized_text = text.replace("\r\n", "\n").replace("\r", "\n").lstrip("\ufeff")
     separator_pattern = re.compile(r"(?:^|\n)-{5,}\n(?P<title>[^\n]+)\n-{5,}\n")
     matches = list(separator_pattern.finditer(normalized_text))
@@ -402,172 +446,81 @@ def extract_jobs_source_documents(text: str) -> List[Dict[str, str]]:
     return documents
 
 
-def extract_source_documents(agent_id: str, text: str) -> List[Dict[str, str]]:
-    if agent_id == "agt_001":
-        return [
-            build_source_document(
-                agent_id,
-                extract_apology_body(text),
-                source_title="Apology",
-                source_slug="apology",
-                section="apology_body",
-                source_type="dialogue",
-                voice_type="primary_adjacent",
-            ),
-            build_source_document(
-                agent_id,
-                extract_project_gutenberg_work_body(text, ebook_title="Crito", work_heading="CRITO"),
-                source_title="Crito",
-                source_slug="crito",
-                section="crito_body",
-                source_type="dialogue",
-                voice_type="primary_adjacent",
-            ),
-        ]
-    if agent_id == "agt_002":
-        return extract_jobs_source_documents(text)
-    if agent_id == "agt_005":
-        return [
-            build_source_document(
-                agent_id,
-                extract_heading_section(text, "THE SECOND BOOK", "THE THIRD BOOK"),
-                source_title="Meditations - Second Book",
-                source_slug="meditations_second_book",
-                section="second_book",
-                source_type="meditations",
-            ),
-            build_source_document(
-                agent_id,
-                extract_heading_section(text, "THE FOURTH BOOK", "THE FIFTH BOOK"),
-                source_title="Meditations - Fourth Book",
-                source_slug="meditations_fourth_book",
-                section="fourth_book",
-                source_type="meditations",
-            ),
-        ]
-    if agent_id == "agt_003":
-        return [build_source_document(agent_id, extract_art_of_war_body(text))]
-    if agent_id == "agt_007":
-        return [build_source_document(agent_id, extract_thoughts_on_art_and_life_body(text))]
-    if agent_id == "agt_011":
-        return [build_source_document(agent_id, extract_my_life_selected_body(text))]
-    if agent_id == "agt_012":
-        return [build_source_document(agent_id, extract_twilight_of_the_idols_selected_body(text))]
-    if agent_id == "agt_013":
-        return [build_source_document(agent_id, extract_my_inventions_body(text))]
-
-    raise ValueError(f"No source extractor configured for {agent_id}")
+def extract_socrates_source_documents(text: str) -> List[SourceDocument]:
+    """Build the Socrates source set from the Apology and Crito texts."""
+    return [
+        build_source_document(
+            "agt_001",
+            extract_apology_body(text),
+            source_title="Apology",
+            source_slug="apology",
+            section="apology_body",
+            source_type="dialogue",
+            voice_type="primary_adjacent",
+        ),
+        build_source_document(
+            "agt_001",
+            extract_project_gutenberg_work_body(text, ebook_title="Crito", work_heading="CRITO"),
+            source_title="Crito",
+            source_slug="crito",
+            section="crito_body",
+            source_type="dialogue",
+            voice_type="primary_adjacent",
+        ),
+    ]
 
 
-def extract_body(agent_id: str, text: str) -> str:
-    if agent_id == "agt_001":
-        return extract_apology_body(text)
-    if agent_id == "agt_002":
-        return extract_stanford_speech_body(text)
-    if agent_id == "agt_003":
-        return extract_art_of_war_body(text)
-    if agent_id == "agt_007":
-        return extract_thoughts_on_art_and_life_body(text)
-    if agent_id == "agt_011":
-        return extract_my_life_selected_body(text)
-    if agent_id == "agt_012":
-        return extract_twilight_of_the_idols_selected_body(text)
-    if agent_id == "agt_013":
-        return extract_my_inventions_body(text)
-
-    raise ValueError(f"No body extractor configured for {agent_id}")
-
-
-def _seed_overlap_sections(section_texts: List[str], overlap_budget: int) -> List[str]:
-    if overlap_budget <= 0:
-        return []
-
-    overlap_sections: List[str] = []
-    consumed = 0
-
-    for section in reversed(section_texts):
-        additional = len(section) if not overlap_sections else len(section) + 2
-        if overlap_sections and consumed + additional > overlap_budget:
-            break
-        overlap_sections.insert(0, section)
-        consumed += additional
-        if consumed >= overlap_budget:
-            break
-
-    return overlap_sections
+def extract_meditations_source_documents(text: str) -> List[SourceDocument]:
+    """Build the Marcus Aurelius source set from the selected Meditations books."""
+    return [
+        build_source_document(
+            "agt_005",
+            extract_heading_section(text, "THE SECOND BOOK", "THE THIRD BOOK"),
+            source_title="Meditations - Second Book",
+            source_slug="meditations_second_book",
+            section="second_book",
+            source_type="meditations",
+        ),
+        build_source_document(
+            "agt_005",
+            extract_heading_section(text, "THE FOURTH BOOK", "THE FIFTH BOOK"),
+            source_title="Meditations - Fourth Book",
+            source_slug="meditations_fourth_book",
+            section="fourth_book",
+            source_type="meditations",
+        ),
+    ]
 
 
-def chunk_handbook_text(text: str, *, chunk_size: int, chunk_overlap: int) -> List[str]:
+def extract_sun_tzu_source_documents(text: str) -> List[SourceDocument]:
+    """Build the Sun Tzu source set from the extracted Art of War body."""
+    return [build_source_document("agt_003", extract_art_of_war_body(text))]
+
+
+def extract_leonardo_source_documents(text: str) -> List[SourceDocument]:
+    """Build the Leonardo source set from the selected notebook text."""
+    return [build_source_document("agt_007", extract_thoughts_on_art_and_life_body(text))]
+
+
+def extract_trotsky_source_documents(text: str) -> List[SourceDocument]:
+    """Build the Trotsky source set from the cleaned memoir excerpt."""
+    return [build_source_document("agt_011", extract_my_life_selected_body(text))]
+
+
+def extract_nietzsche_source_documents(text: str) -> List[SourceDocument]:
+    """Build the Nietzsche source set from the selected Twilight sections."""
+    return [build_source_document("agt_012", extract_twilight_of_the_idols_selected_body(text))]
+
+
+def extract_tesla_source_documents(text: str) -> List[SourceDocument]:
+    """Build the Tesla source set from the extracted autobiography body."""
+    return [build_source_document("agt_013", extract_my_inventions_body(text))]
+
+
+def split_structured_sections(text: str, section_boundary_pattern: str) -> List[str]:
+    """Split a structured document into sections keyed by a heading regex."""
     lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-    section_boundary_pattern = re.compile(r"^(Chapter\s+[IVXLC]+\.|\d+(?:,\s*\d+)?\.)")
-    sections: List[str] = []
-    current_lines: List[str] = []
-
-    for raw_line in lines:
-        line = raw_line.rstrip()
-        stripped = line.strip()
-        if not stripped:
-            if current_lines and current_lines[-1] != "":
-                current_lines.append("")
-            continue
-
-        if current_lines and section_boundary_pattern.match(stripped):
-            section_text = clean_whitespace("\n".join(current_lines))
-            if section_text:
-                sections.append(section_text)
-            current_lines = [stripped]
-            continue
-
-        current_lines.append(stripped)
-
-    if current_lines:
-        section_text = clean_whitespace("\n".join(current_lines))
-        if section_text:
-            sections.append(section_text)
-
-    chunks: List[str] = []
-    current_sections: List[str] = []
-    current_length = 0
-
-    for section in sections:
-        section_length = len(section)
-        separator_length = 2 if current_sections else 0
-
-        if current_sections and current_length + separator_length + section_length > chunk_size:
-            chunks.append(clean_whitespace("\n\n".join(current_sections)))
-            current_sections = _seed_overlap_sections(current_sections, chunk_overlap)
-            current_length = len("\n\n".join(current_sections)) if current_sections else 0
-            separator_length = 2 if current_sections else 0
-
-        if section_length > chunk_size:
-            if current_sections:
-                chunks.append(clean_whitespace("\n\n".join(current_sections)))
-                current_sections = []
-                current_length = 0
-
-            for paragraph_chunk in chunk_text(section, chunk_size=chunk_size, chunk_overlap=chunk_overlap):
-                if paragraph_chunk:
-                    chunks.append(paragraph_chunk)
-            continue
-
-        current_sections.append(section)
-        current_length += separator_length + section_length
-
-    if current_sections:
-        chunks.append(clean_whitespace("\n\n".join(current_sections)))
-
-    return [chunk for chunk in chunks if chunk]
-
-
-def chunk_structured_text(
-    text: str,
-    *,
-    chunk_size: int,
-    chunk_overlap: int,
-    section_boundary_pattern: str,
-) -> List[str]:
-    lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-    boundary_regex = re.compile(section_boundary_pattern)
+    boundary_regex: Pattern[str] = re.compile(section_boundary_pattern)
     sections: List[str] = []
     current_lines: List[str] = []
 
@@ -591,6 +544,54 @@ def chunk_structured_text(
         section_text = clean_whitespace("\n".join(current_lines))
         if section_text:
             sections.append(section_text)
+
+    return sections
+
+
+def extract_source_documents(agent_id: str, text: str) -> List[Dict[str, str]]:
+    """Dispatch to the configured source-document extractor for the selected agent."""
+    return get_agent_ingest_plan(agent_id).document_extractor(text)
+
+
+def _seed_overlap_sections(section_texts: List[str], overlap_budget: int) -> List[str]:
+    """Carry trailing sections forward when structured chunkers need overlap context."""
+    if overlap_budget <= 0:
+        return []
+
+    overlap_sections: List[str] = []
+    consumed = 0
+
+    for section in reversed(section_texts):
+        additional = len(section) if not overlap_sections else len(section) + 2
+        if overlap_sections and consumed + additional > overlap_budget:
+            break
+        overlap_sections.insert(0, section)
+        consumed += additional
+        if consumed >= overlap_budget:
+            break
+
+    return overlap_sections
+
+
+def chunk_handbook_text(text: str, *, chunk_size: int, chunk_overlap: int) -> List[str]:
+    """Chunk handbook-style texts on chapter and numbered subsection boundaries."""
+    return chunk_structured_text(
+        text,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        section_boundary_pattern=r"^(Chapter\s+[IVXLC]+\.|\d+(?:,\s*\d+)?\.)",
+    )
+
+
+def chunk_structured_text(
+    text: str,
+    *,
+    chunk_size: int,
+    chunk_overlap: int,
+    section_boundary_pattern: str,
+) -> List[str]:
+    """Chunk sectioned texts while preserving major section boundaries when possible."""
+    sections = split_structured_sections(text, section_boundary_pattern)
 
     chunks: List[str] = []
     current_sections: List[str] = []
@@ -633,31 +634,8 @@ def chunk_banded_structured_text(
     max_chunk_size: int,
     section_boundary_pattern: str,
 ) -> List[str]:
-    lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-    boundary_regex = re.compile(section_boundary_pattern)
-    sections: List[str] = []
-    current_lines: List[str] = []
-
-    for raw_line in lines:
-        stripped = raw_line.strip()
-        if not stripped:
-            if current_lines and current_lines[-1] != "":
-                current_lines.append("")
-            continue
-
-        if current_lines and boundary_regex.match(stripped):
-            section_text = clean_whitespace("\n".join(current_lines))
-            if section_text:
-                sections.append(section_text)
-            current_lines = [stripped]
-            continue
-
-        current_lines.append(stripped)
-
-    if current_lines:
-        section_text = clean_whitespace("\n".join(current_lines))
-        if section_text:
-            sections.append(section_text)
+    """Chunk aphoristic texts into bounded bands without over-fragmenting short sections."""
+    sections = split_structured_sections(text, section_boundary_pattern)
 
     def split_long_section(section: str) -> List[str]:
         sentences = re.split(r"(?<=[.!?])\s+", section)
@@ -763,37 +741,150 @@ def chunk_banded_structured_text(
     return rebalanced_chunks
 
 
-def chunk_source_text(agent_id: str, text: str, *, chunk_size: int, chunk_overlap: int) -> List[str]:
-    if agent_id == "agt_003":
-        return chunk_handbook_text(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    if agent_id == "agt_011":
-        return chunk_structured_text(
-            text,
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            section_boundary_pattern=r"^CHAPTER\s+[IVXLC]+",
-        )
-    if agent_id == "agt_012":
-        min_chunk_size = max(300, chunk_size - 60)
-        max_chunk_size = max(min_chunk_size, chunk_size + 40)
-        return chunk_banded_structured_text(
-            text,
-            min_chunk_size=min_chunk_size,
-            max_chunk_size=max_chunk_size,
-            section_boundary_pattern=r"^\d+$",
-        )
-    if agent_id == "agt_013":
-        return chunk_structured_text(
-            text,
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
-            section_boundary_pattern=r"^[IVXLC]+\.\s",
-        )
-
+def chunk_default_strategy(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
+    """Apply the default paragraph-and-sentence chunking strategy."""
     return chunk_text(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
 
 
+def chunk_sun_tzu_strategy(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
+    """Apply the Sun Tzu handbook chunking strategy."""
+    return chunk_handbook_text(text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+
+
+def chunk_trotsky_strategy(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
+    """Apply the Trotsky chapter-aware chunking strategy."""
+    return chunk_structured_text(
+        text,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        section_boundary_pattern=r"^CHAPTER\s+[IVXLC]+",
+    )
+
+
+def chunk_nietzsche_strategy(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
+    """Apply the Nietzsche banded aphorism chunking strategy."""
+    min_chunk_size = max(300, chunk_size - 60)
+    max_chunk_size = max(min_chunk_size, chunk_size + 40)
+    return chunk_banded_structured_text(
+        text,
+        min_chunk_size=min_chunk_size,
+        max_chunk_size=max_chunk_size,
+        section_boundary_pattern=r"^\d+$",
+    )
+
+
+def chunk_tesla_strategy(text: str, chunk_size: int, chunk_overlap: int) -> List[str]:
+    """Apply the Tesla roman-numeral section chunking strategy."""
+    return chunk_structured_text(
+        text,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        section_boundary_pattern=r"^[IVXLC]+\.\s",
+    )
+
+
+AGENT_INGEST_PLANS: Dict[str, AgentIngestPlan] = {
+    "agt_001": AgentIngestPlan(
+        speaker_name="Socrates",
+        extraction_summary="Extract the Apology and Crito bodies from a shared Project Gutenberg source file.",
+        chunking_summary="Use default paragraph and sentence chunking because the dialogue reads cleanly without custom section bands.",
+        document_extractor=extract_socrates_source_documents,
+        chunker=chunk_default_strategy,
+    ),
+    "agt_002": AgentIngestPlan(
+        speaker_name="Steve Jobs",
+        extraction_summary="Split the file into a leading Stanford speech plus any later dash-delimited interviews, keynotes, or letters.",
+        chunking_summary="Use default paragraph and sentence chunking across each extracted source document.",
+        document_extractor=extract_jobs_source_documents,
+        chunker=chunk_default_strategy,
+    ),
+    "agt_003": AgentIngestPlan(
+        speaker_name="Sun Tzu",
+        extraction_summary="Keep the handbook body starting at Chapter I and strip the Project Gutenberg footer.",
+        chunking_summary="Chunk on chapter and numbered section boundaries so each vector keeps strategic units intact.",
+        document_extractor=extract_sun_tzu_source_documents,
+        chunker=chunk_sun_tzu_strategy,
+    ),
+    "agt_005": AgentIngestPlan(
+        speaker_name="Marcus Aurelius",
+        extraction_summary="Select the Second and Fourth books from the configured source text.",
+        chunking_summary="Use default paragraph chunking because each selected book is already aphoristic and compact.",
+        document_extractor=extract_meditations_source_documents,
+        chunker=chunk_default_strategy,
+    ),
+    "agt_007": AgentIngestPlan(
+        speaker_name="Leonardo da Vinci",
+        extraction_summary="Keep the main Thoughts on Life body and stop before bibliography and reference appendices.",
+        chunking_summary="Use default paragraph chunking for notebook-style fragments.",
+        document_extractor=extract_leonardo_source_documents,
+        chunker=chunk_default_strategy,
+    ),
+    "agt_011": AgentIngestPlan(
+        speaker_name="Leon Trotsky",
+        extraction_summary="Remove duplicated site-navigation noise, then keep the selected chapter body beginning at the first chapter heading.",
+        chunking_summary="Chunk on chapter boundaries so memoir context stays grouped by chapter.",
+        document_extractor=extract_trotsky_source_documents,
+        chunker=chunk_trotsky_strategy,
+    ),
+    "agt_012": AgentIngestPlan(
+        speaker_name="Friedrich Nietzsche",
+        extraction_summary="Extract the selected Twilight of the Idols sections configured for the current corpus.",
+        chunking_summary="Use banded structured chunking to keep numbered aphorism groups near the target size without over-fragmenting them.",
+        document_extractor=extract_nietzsche_source_documents,
+        chunker=chunk_nietzsche_strategy,
+    ),
+    "agt_013": AgentIngestPlan(
+        speaker_name="Nikola Tesla",
+        extraction_summary="Keep the My Inventions body from the first roman-numeral section through the public-domain footer boundary.",
+        chunking_summary="Chunk on roman-numeral section headings so each autobiographical movement stays coherent.",
+        document_extractor=extract_tesla_source_documents,
+        chunker=chunk_tesla_strategy,
+    ),
+}
+
+
+def get_agent_ingest_plan(agent_id: str) -> AgentIngestPlan:
+    """Return the configured ingestion plan for an agent or fail fast."""
+    if agent_id not in AGENT_INGEST_PLANS:
+        raise ValueError(f"Unsupported agent id: {agent_id}")
+
+    return AGENT_INGEST_PLANS[agent_id]
+
+
+def format_agent_plan(agent_id: str) -> str:
+    """Render a human-readable summary of one agent's ingestion plan."""
+    plan = get_agent_ingest_plan(agent_id)
+    source_path = resolve_source_path(agent_id, None)
+
+    return "\n".join(
+        [
+            f"Agent: {agent_id}",
+            f"Speaker: {plan.speaker_name}",
+            f"Default source file: {source_path.name}",
+            f"Source extraction: {plan.extraction_summary}",
+            f"Chunking: {plan.chunking_summary}",
+        ]
+    )
+
+
+def format_agent_plan_catalog() -> str:
+    """Render the supported ingestion-plan catalog for CLI inspection."""
+    lines = ["Supported speaker ingestion plans:"]
+
+    for agent_id, plan in sorted(AGENT_INGEST_PLANS.items()):
+        lines.append(f"- {agent_id}: {plan.speaker_name}")
+
+    return "\n".join(lines)
+
+
+def chunk_source_text(agent_id: str, text: str, *, chunk_size: int, chunk_overlap: int) -> List[str]:
+    """Chunk a source document using the strategy configured for its agent."""
+    plan = get_agent_ingest_plan(agent_id)
+    return plan.chunker(text, chunk_size, chunk_overlap)
+
+
 def chunk_text(text: str, *, chunk_size: int, chunk_overlap: int) -> List[str]:
+    """Chunk free-form text by paragraphs first, then by sentences when needed."""
     paragraphs = [segment.strip() for segment in text.split("\n\n") if segment.strip()]
     if len(paragraphs) >= 2:
         first_paragraph = paragraphs[0]
@@ -860,6 +951,7 @@ def build_chunk_payloads(
     source_document: Dict[str, str],
     chunks: List[str],
 ) -> List[Dict[str, object]]:
+    """Build Upstash Vector payloads with stable ids and source metadata."""
     payloads: List[Dict[str, object]] = []
     for index, chunk in enumerate(chunks, start=1):
         payloads.append(
@@ -885,6 +977,7 @@ def build_chunk_payloads(
 
 
 def upsert_chunks(vectors: List[Dict[str, object]], *, namespace: str) -> None:
+    """Write prepared chunk payloads to Upstash Vector, optionally within a namespace."""
     if not UPSTASH_VECTOR_REST_URL or not UPSTASH_VECTOR_REST_TOKEN:
         raise ValueError("Missing UPSTASH_VECTOR_REST_URL or UPSTASH_VECTOR_REST_TOKEN in environment")
 
@@ -899,11 +992,20 @@ def upsert_chunks(vectors: List[Dict[str, object]], *, namespace: str) -> None:
 
 
 def main() -> None:
+    """Run ingestion or plan-inspection mode based on the provided CLI arguments."""
     args = parse_args()
-    if args.agent_id not in AGENT_SOURCE_CONFIG:
-        raise ValueError(f"Unsupported agent id: {args.agent_id}")
+    if args.list_agents:
+        print(format_agent_plan_catalog())
+        if not args.describe_agent:
+            return
 
-    source_path = Path(args.source_file)
+    if args.describe_agent:
+        print(format_agent_plan(args.describe_agent))
+        return
+
+    plan = get_agent_ingest_plan(args.agent_id)
+
+    source_path = resolve_source_path(args.agent_id, args.source_file)
     if not source_path.exists():
         raise FileNotFoundError(f"Source file not found: {source_path}")
 
@@ -935,6 +1037,9 @@ def main() -> None:
             f"{(sum(len(chunk) for chunk in chunks) / len(chunks)):.1f}" if chunks else f"- {source_document['source_title']}: 0 chunks"
         )
 
+    print(f"Speaker: {plan.speaker_name}")
+    print(f"Source extraction: {plan.extraction_summary}")
+    print(f"Chunking: {plan.chunking_summary}")
     print(f"Prepared {len(payloads)} chunks for {args.agent_id} from {source_path.name}")
     if source_summaries:
         print("Source breakdown:")
