@@ -305,6 +305,7 @@ select {
     max-height: 100vh;
     overflow-y: auto;
     overscroll-behavior: contain;
+    overflow-anchor: none;
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -356,6 +357,8 @@ select {
   max-height: 100vh;
   padding: 14px 18px 24px 18px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
   scrollbar-width: none;
   -ms-overflow-style: none;
   background:
@@ -428,6 +431,8 @@ select {
   max-width: min(22rem, 86vw);
   padding: 84px 16px 20px;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
   scrollbar-width: none;
   -ms-overflow-style: none;
   border-right: 3px solid var(--line);

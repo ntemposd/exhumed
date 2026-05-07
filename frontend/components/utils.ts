@@ -8,13 +8,27 @@ import type { DebateMessage, LegendDetails } from "./types";
 const DEFAULT_COUNCIL_AGENT_IDS = ["agt_001", "agt_002", "agt_003", "agt_004"];
 const INPUT_USD_PER_MILLION = 0.05;
 const OUTPUT_USD_PER_MILLION = 0.08;
+const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function createUuidV4Fallback() {
+  const template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
+  return template.replace(/[xy]/g, (character) => {
+    const randomNibble = Math.floor(Math.random() * 16);
+    const nextValue = character === "x" ? randomNibble : (randomNibble & 0x3) | 0x8;
+    return nextValue.toString(16);
+  });
+}
 
 export function makeSessionId() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }
 
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  return createUuidV4Fallback();
+}
+
+export function isValidSessionId(value: string) {
+  return UUID_V4_PATTERN.test(value.trim());
 }
 
 export function clampNumber(value: number, minValue: number, maxValue: number) {

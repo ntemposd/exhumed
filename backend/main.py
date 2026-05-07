@@ -8,6 +8,7 @@ Storage stack:
 """
 
 import asyncio
+from contextlib import asynccontextmanager
 from functools import partial
 import json
 import logging
@@ -18,6 +19,7 @@ from typing import Any, Callable, Dict, List, Literal, Optional
 from uuid import UUID
 
 from dotenv import load_dotenv
+import httpx
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
@@ -27,6 +29,12 @@ from upstash_redis import Redis
 from upstash_vector import Index
 
 try:
+    from backend.api.agents import create_agent_router
+    from backend.api.discussion import create_discussion_router
+    from backend.api.exports import create_export_router
+    from backend.api.root import create_root_router
+    from backend.api.sessions import create_session_router
+    from backend.api.telemetry import create_telemetry_router
     from backend.services.agent_registry import AgentRegistryService
     from backend.services.database import DatabaseService, SentenceTransformerEmbeddingProvider
     from backend.services.discussion_service import DiscussionService
@@ -38,6 +46,12 @@ try:
     from backend.utils.pdf_export import export_session_pdf
     from backend.utils.text_metrics import calculate_jaccard_entropy
 except ModuleNotFoundError:
+    from api.agents import create_agent_router
+    from api.discussion import create_discussion_router
+    from api.exports import create_export_router
+    from api.root import create_root_router
+    from api.sessions import create_session_router
+    from api.telemetry import create_telemetry_router
     from services.agent_registry import AgentRegistryService
     from services.database import DatabaseService, SentenceTransformerEmbeddingProvider
     from services.discussion_service import DiscussionService
@@ -125,32 +139,6 @@ if not LLM_API_KEY:
 
 if missing_env:
     raise ValueError(f"Missing required environment variables: {', '.join(missing_env)}")
-
-redis = Redis(url=UPSTASH_REDIS_REST_URL, token=UPSTASH_REDIS_REST_TOKEN)
-vector_index = Index(url=UPSTASH_VECTOR_REST_URL, token=UPSTASH_VECTOR_REST_TOKEN)
-database_service = DatabaseService(
-    redis_client=redis,
-    vector_index=vector_index,
-    embedding_provider=SentenceTransformerEmbeddingProvider(),
-)
-
-app = FastAPI(
-    title="EXHUMED",
-    version="1.1.0",
-    description="Decoupled AI discussion platform with Upstash Redis + Vector",
-)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=CORS_ALLOW_ORIGINS,
-    allow_origin_regex=CORS_ALLOW_ORIGIN_REGEX,
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-if STATIC_DIR.exists():
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-else:
-    logger.warning("Static directory not found at %s; /static route disabled", STATIC_DIR)
 
 
 class AgentConfig(BaseModel):
@@ -298,204 +286,199 @@ def _parse_agent_payload(agent_id: str, payload: str) -> AgentConfig:
         max_tokens=int(raw.get("max_tokens", 512)),
     )
 
-
-agent_registry_service = AgentRegistryService(
-    redis_client=redis,
-    decode_value=_decode_redis_value,
-    parse_agent_payload=_parse_agent_payload,
-    run_blocking_io=_run_blocking_io,
-    registry_ttl_seconds=AGENT_REGISTRY_CACHE_TTL_SECONDS,
-    config_ttl_seconds=AGENT_CONFIG_CACHE_TTL_SECONDS,
-)
-
-observability_service = ObservabilityService(
-    redis_client=redis,
-    vector_index=vector_index,
-    decode_value=_decode_redis_value,
-    run_blocking_io=_run_blocking_io,
-    execution_metrics_model=ExecutionMetrics,
-    llm_api_base_url=LLM_API_BASE_URL,
-    llm_api_key=LLM_API_KEY,
-    logger=logger,
-)
-
-session_service = SessionService(
-    redis_client=redis,
-    database_service=database_service,
-    run_blocking_io=_run_blocking_io,
-    decode_value=_decode_redis_value,
-    export_session_pdf=export_session_pdf,
-    logger=logger,
-)
-
-llm_service = LLMService(
-    api_base_url=LLM_API_BASE_URL,
-    api_key=LLM_API_KEY,
-    model_id=LLM_MODEL_ID,
-    max_retries=LLM_429_MAX_RETRIES,
-    throttle_seconds=LLM_REQUEST_THROTTLE_SECONDS,
-    execution_metrics_builder=ExecutionMetrics,
-    extract_execution_metrics=extract_execution_metrics,
-    build_stream_execution_metrics=build_stream_execution_metrics,
-    logger=logger,
-)
+redis: Redis
+vector_index: Index
+database_service: DatabaseService
+agent_registry_service: AgentRegistryService
+observability_service: ObservabilityService
+session_service: SessionService
+llm_service: LLMService
+turn_workflow_service: TurnWorkflowService
+discussion_service: DiscussionService
 
 
-turn_workflow_service = TurnWorkflowService(
-    fetch_agent_config=agent_registry_service.fetch_agent_config,
-    fetch_context_messages=session_service.fetch_context_messages,
-    get_agent_context_matches=session_service.get_agent_context_matches,
-    sanitize_generated_message=session_service.sanitize_generated_message,
-    save_latest_execution_metrics=observability_service.save_latest_execution_metrics_async,
-    persist_session_telemetry=session_service.persist_session_telemetry_async,
-    save_message_to_storage=session_service.save_message_to_storage,
-    calculate_entropy=calculate_jaccard_entropy,
-    build_telemetry=TelemetryData,
-)
+def _assign_runtime_globals(*, services: Dict[str, Any]) -> None:
+    global redis, vector_index, database_service
+    global agent_registry_service, observability_service, session_service
+    global llm_service, turn_workflow_service, discussion_service
 
-discussion_service = DiscussionService(
-    turn_workflow_service=turn_workflow_service,
-    session_service=session_service,
-    llm_service=llm_service,
-    fetch_agent_config=agent_registry_service.fetch_agent_config,
-    save_latest_execution_metrics=observability_service.save_latest_execution_metrics_async,
-    process_turn_response_model=ProcessTurnResponse,
-    process_turn_stream_chunk_model=ProcessTurnStreamChunk,
-    process_turn_stream_status_model=ProcessTurnStreamStatus,
-    process_turn_stream_final_model=ProcessTurnStreamFinal,
-    generate_response_model=GenerateResponse,
-    streaming_response_factory=StreamingResponse,
-    vector_telemetry_model=VectorTelemetry,
-    logger=logger,
-    utcnow=lambda: datetime.now(timezone.utc),
-)
+    redis = services["redis"]
+    vector_index = services["vector_index"]
+    database_service = services["database_service"]
+    agent_registry_service = services["agent_registry_service"]
+    observability_service = services["observability_service"]
+    session_service = services["session_service"]
+    llm_service = services["llm_service"]
+    turn_workflow_service = services["turn_workflow_service"]
+    discussion_service = services["discussion_service"]
 
 
-@app.get("/")
-async def root() -> Dict[str, Any]:
+def _build_services() -> Dict[str, Any]:
+    redis_client = Redis(url=UPSTASH_REDIS_REST_URL, token=UPSTASH_REDIS_REST_TOKEN)
+    vector_client = Index(url=UPSTASH_VECTOR_REST_URL, token=UPSTASH_VECTOR_REST_TOKEN)
+    database = DatabaseService(
+        redis_client=redis_client,
+        vector_index=vector_client,
+        embedding_provider=SentenceTransformerEmbeddingProvider(),
+    )
+    agent_registry = AgentRegistryService(
+        redis_client=redis_client,
+        decode_value=_decode_redis_value,
+        parse_agent_payload=_parse_agent_payload,
+        run_blocking_io=_run_blocking_io,
+        registry_ttl_seconds=AGENT_REGISTRY_CACHE_TTL_SECONDS,
+        config_ttl_seconds=AGENT_CONFIG_CACHE_TTL_SECONDS,
+    )
+    observability = ObservabilityService(
+        redis_client=redis_client,
+        vector_index=vector_client,
+        decode_value=_decode_redis_value,
+        run_blocking_io=_run_blocking_io,
+        execution_metrics_model=ExecutionMetrics,
+        llm_api_base_url=LLM_API_BASE_URL,
+        llm_api_key=LLM_API_KEY,
+        logger=logger,
+    )
+    session = SessionService(
+        redis_client=redis_client,
+        database_service=database,
+        run_blocking_io=_run_blocking_io,
+        decode_value=_decode_redis_value,
+        export_session_pdf=export_session_pdf,
+        logger=logger,
+    )
+    llm = LLMService(
+        api_base_url=LLM_API_BASE_URL,
+        api_key=LLM_API_KEY,
+        model_id=LLM_MODEL_ID,
+        max_retries=LLM_429_MAX_RETRIES,
+        throttle_seconds=LLM_REQUEST_THROTTLE_SECONDS,
+        execution_metrics_builder=ExecutionMetrics,
+        extract_execution_metrics=extract_execution_metrics,
+        build_stream_execution_metrics=build_stream_execution_metrics,
+        logger=logger,
+    )
+    turn_workflow = TurnWorkflowService(
+        fetch_agent_config=agent_registry.fetch_agent_config,
+        fetch_context_messages=session.fetch_context_messages,
+        get_agent_context_matches=session.get_agent_context_matches,
+        sanitize_generated_message=session.sanitize_generated_message,
+        save_latest_execution_metrics=observability.save_latest_execution_metrics_async,
+        persist_session_telemetry=session.persist_session_telemetry_async,
+        save_message_to_storage=session.save_message_to_storage,
+        calculate_entropy=calculate_jaccard_entropy,
+        build_telemetry=TelemetryData,
+    )
+    discussion = DiscussionService(
+        turn_workflow_service=turn_workflow,
+        session_service=session,
+        llm_service=llm,
+        fetch_agent_config=agent_registry.fetch_agent_config,
+        save_latest_execution_metrics=observability.save_latest_execution_metrics_async,
+        process_turn_response_model=ProcessTurnResponse,
+        process_turn_stream_chunk_model=ProcessTurnStreamChunk,
+        process_turn_stream_status_model=ProcessTurnStreamStatus,
+        process_turn_stream_final_model=ProcessTurnStreamFinal,
+        generate_response_model=GenerateResponse,
+        streaming_response_factory=StreamingResponse,
+        vector_telemetry_model=VectorTelemetry,
+        logger=logger,
+        utcnow=lambda: datetime.now(timezone.utc),
+    )
     return {
-        "name": "EXHUMED",
-        "version": "1.1.0",
-        "status": "operational",
-        "storage": "upstash-redis-vector",
-        "endpoints": {
-            "process_turn": "/process-turn (POST)",
-            "generate_with_telemetry": "/generate (POST) - includes Jaccard Entropy telemetry",
-            "chat_stream": "/chat/stream (POST) - plain text streaming for the Next.js frontend",
-            "export_pdf": "/export-pdf/{session_id} (GET)",
-            "list_agents": "/agents (GET)",
-            "register_agent": "/agents/register (POST)",
-            "get_session_topic": "/sessions/{session_id}/topic (GET)",
-            "set_session_topic": "/sessions/{session_id}/topic (POST)",
-        },
+        "redis": redis_client,
+        "vector_index": vector_client,
+        "database_service": database,
+        "agent_registry_service": agent_registry,
+        "observability_service": observability,
+        "session_service": session,
+        "llm_service": llm,
+        "turn_workflow_service": turn_workflow,
+        "discussion_service": discussion,
     }
 
 
-@app.get("/services-status")
-async def services_status() -> Dict[str, Any]:
-    return await observability_service.check_services()
+def _build_lifespan(*, llm_service: LLMService, observability_service: ObservabilityService):
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        shared_http_client = httpx.AsyncClient(timeout=httpx.Timeout(90.0, read=90.0))
+        llm_service.set_shared_http_client(shared_http_client)
+        observability_service.set_shared_http_client(shared_http_client)
+        app.state.shared_http_client = shared_http_client
+        try:
+            yield
+        finally:
+            llm_service.set_shared_http_client(None)
+            observability_service.set_shared_http_client(None)
+            app.state.shared_http_client = None
+            await shared_http_client.aclose()
+
+    return lifespan
 
 
-@app.get("/telemetry/latest")
-async def latest_telemetry() -> Dict[str, Any]:
-    metrics = observability_service.fetch_latest_execution_metrics()
-    if metrics is None:
-        return {"status": "idle", "metrics": None}
-    return {"status": "ok", "metrics": metrics.model_dump(mode="json")}
+def create_app() -> FastAPI:
+    services = _build_services()
+    _assign_runtime_globals(services=services)
 
+    app = FastAPI(
+        title="EXHUMED",
+        version="1.1.0",
+        description="Decoupled AI discussion platform with Upstash Redis + Vector",
+        lifespan=_build_lifespan(
+            llm_service=services["llm_service"],
+            observability_service=services["observability_service"],
+        ),
+    )
+    app.state.services = services
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=CORS_ALLOW_ORIGINS,
+        allow_origin_regex=CORS_ALLOW_ORIGIN_REGEX,
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    if STATIC_DIR.exists():
+        app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+    else:
+        logger.warning("Static directory not found at %s; /static route disabled", STATIC_DIR)
 
-@app.get("/sessions/{session_id}/topic")
-async def get_session_topic(session_id: UUID) -> Dict[str, Any]:
-    topic = await session_service.fetch_session_topic(session_id)
-    return {"session_id": str(session_id), "topic": topic}
-
-
-@app.post("/sessions/{session_id}/topic")
-async def set_session_topic(session_id: UUID, request: SessionTopicUpdateRequest) -> Dict[str, Any]:
-    await session_service.save_session_topic(session_id, request.topic)
-    return {"status": "ok", "session_id": str(session_id), "topic": request.topic}
-
-
-@app.delete("/sessions/{session_id}")
-async def clear_session(session_id: UUID) -> Dict[str, Any]:
-    try:
-        await session_service.clear_session_storage(session_id)
-        return {"status": "ok", "session_id": str(session_id)}
-    except Exception as exc:
-        logger.error("Error clearing session %s: %s", session_id, exc)
-        raise HTTPException(status_code=500, detail="Error clearing session")
-
-
-@app.post("/agents/register")
-async def register_agent(request: AgentRegisterRequest) -> Dict[str, Any]:
-    payload = {
-        "display_name": request.display_name,
-        "system_prompt": request.system_prompt,
-        "temperature": request.temperature,
-        "max_tokens": request.max_tokens,
-    }
-
-    try:
-        await agent_registry_service.register_agent(request.agent_id, payload)
-        return {"status": "ok", "agent_id": request.agent_id}
-    except Exception as exc:
-        logger.error("Error registering agent %s: %s", request.agent_id, exc)
-        raise HTTPException(status_code=500, detail="Error registering agent")
-
-
-@app.get("/agents")
-async def list_agents() -> Dict[str, Any]:
-    try:
-        agents = await agent_registry_service.list_agents()
-        return {"agents": agents}
-    except Exception as exc:
-        logger.error("Error listing agents: %s", exc)
-        raise HTTPException(status_code=500, detail="Error retrieving agents")
-
-
-@app.post("/process-turn", response_model=ProcessTurnResponse)
-async def process_turn(request: ProcessTurnRequest) -> ProcessTurnResponse:
-    return await discussion_service.process_turn(request)
-
-
-@app.post("/process-turn/stream")
-async def process_turn_stream(request: ProcessTurnRequest) -> StreamingResponse:
-    return await discussion_service.process_turn_stream(request)
-
-
-@app.post("/generate", response_model=GenerateResponse)
-async def generate(request: GenerateRequest) -> GenerateResponse:
-    return await discussion_service.generate(request)
-
-
-@app.post("/chat/stream")
-async def chat_stream(request: ChatStreamRequest) -> StreamingResponse:
-    return await discussion_service.chat_stream(request)
-
-
-@app.get("/export-pdf/{session_id}")
-async def export_pdf(session_id: UUID) -> FileResponse:
-    logger.info("Exporting PDF for session: %s", session_id)
-
-    try:
-        pdf_path = await session_service.export_pdf_file(session_id)
-
-        return FileResponse(
-            path=pdf_path,
-            filename=f"exhumed_discussion_{session_id}.pdf",
-            media_type="application/pdf",
+    app.include_router(create_root_router())
+    app.include_router(create_telemetry_router(observability_service=services["observability_service"]))
+    app.include_router(
+        create_session_router(
+            session_service=services["session_service"],
+            logger=logger,
+            session_topic_update_request_model=SessionTopicUpdateRequest,
         )
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.error("Error generating PDF for %s: %s", session_id, exc)
-        raise HTTPException(status_code=500, detail="Error generating PDF export")
+    )
+    app.include_router(
+        create_agent_router(
+            agent_registry_service=services["agent_registry_service"],
+            logger=logger,
+            agent_register_request_model=AgentRegisterRequest,
+        )
+    )
+    app.include_router(
+        create_discussion_router(
+            discussion_service=services["discussion_service"],
+            process_turn_request_model=ProcessTurnRequest,
+            process_turn_response_model=ProcessTurnResponse,
+            generate_request_model=GenerateRequest,
+            generate_response_model=GenerateResponse,
+            chat_stream_request_model=ChatStreamRequest,
+        )
+    )
+    app.include_router(create_export_router(session_service=services["session_service"], logger=logger))
+    app.add_exception_handler(HTTPException, http_exception_handler)
+    return app
 
-
-@app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
     logger.error("HTTP Exception: %s", exc.detail)
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
+
+app = create_app()
 
 
 if __name__ == "__main__":

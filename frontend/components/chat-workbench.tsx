@@ -15,6 +15,7 @@ import {
   estimateTokenCount,
   getLegendDetails,
   getRoleBreakdown,
+  isValidSessionId,
   makeSessionId,
 } from "./utils";
 
@@ -36,6 +37,10 @@ export function ChatWorkbench() {
   const [targetEntropy, setTargetEntropy] = useState(0.7);
   const [isSpeakerModalOpen, setIsSpeakerModalOpen] = useState(false);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
+  const controlSidebarRef = useRef<HTMLElement | null>(null);
+  const telemetrySidebarRef = useRef<HTMLElement | null>(null);
+  const controlSidebarUserScrolledRef = useRef(false);
+  const telemetrySidebarUserScrolledRef = useRef(false);
   const { topic, setTopic, topicEditorRef, hasHydratedTopic } = useTopicEditorState({
     storageKey: TOPIC_STORAGE_KEY,
     defaultTopic: DEFAULT_TOPIC,
@@ -95,7 +100,7 @@ export function ChatWorkbench() {
   useLayoutEffect(() => {
     const storedSessionId = window.localStorage.getItem(SESSION_STORAGE_KEY);
     const storedEntropy = window.localStorage.getItem(ENTROPY_STORAGE_KEY);
-    const nextSessionId = storedSessionId || makeSessionId();
+    const nextSessionId = storedSessionId && isValidSessionId(storedSessionId) ? storedSessionId : makeSessionId();
 
     setSessionId(nextSessionId);
     window.localStorage.setItem(SESSION_STORAGE_KEY, nextSessionId);
@@ -128,6 +133,47 @@ export function ChatWorkbench() {
       window.removeEventListener("keydown", handleEscape);
     };
   }, [isSpeakerModalOpen]);
+
+  useEffect(() => {
+    const sidebarBindings = [
+      { element: controlSidebarRef.current, userScrolledRef: controlSidebarUserScrolledRef },
+      { element: telemetrySidebarRef.current, userScrolledRef: telemetrySidebarUserScrolledRef },
+    ];
+
+    const cleanups = sidebarBindings.flatMap(({ element, userScrolledRef }) => {
+      if (!element) {
+        return [];
+      }
+
+      const handleScroll = () => {
+        userScrolledRef.current = element.scrollTop > 4;
+      };
+
+      handleScroll();
+      element.addEventListener("scroll", handleScroll, { passive: true });
+
+      return [() => element.removeEventListener("scroll", handleScroll)];
+    });
+
+    return () => {
+      cleanups.forEach((cleanup) => cleanup());
+    };
+  }, [hasResolvedViewport, isSidebarOpen, isStackedViewport]);
+
+  useLayoutEffect(() => {
+    const sidebarBindings = [
+      { element: controlSidebarRef.current, userScrolledRef: controlSidebarUserScrolledRef },
+      { element: telemetrySidebarRef.current, userScrolledRef: telemetrySidebarUserScrolledRef },
+    ];
+
+    sidebarBindings.forEach(({ element, userScrolledRef }) => {
+      if (!element || userScrolledRef.current || element.scrollTop <= 0) {
+        return;
+      }
+
+      element.scrollTop = 0;
+    });
+  }, [messages]);
 
   const legendEntries = agents.map(getLegendDetails);
   const selectedCouncil = selectedAgents
@@ -277,6 +323,7 @@ export function ChatWorkbench() {
       >
         <aside
           id="exhumed-control-sidebar"
+          ref={controlSidebarRef}
           className={`sidebar ${isSidebarOpen ? "sidebarOpen" : "sidebarClosed"} ${
             isStackedViewport ? "sidebarMobile" : "sidebarDesktop"
           } ${!hasResolvedViewport ? "sidebarViewportPending" : ""}
@@ -300,7 +347,7 @@ export function ChatWorkbench() {
           onTopicChange={setTopic}
         />
 
-        <TelemetryPanel viewModel={telemetryViewModel} />
+        <TelemetryPanel viewModel={telemetryViewModel} containerRef={telemetrySidebarRef} />
       </section>
 
       <SpeakerSelectorModal

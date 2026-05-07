@@ -26,6 +26,7 @@ class ObservabilityService:
         llm_api_key: str,
         logger: Any,
         http_client_factory: Callable[..., Any] = httpx.AsyncClient,
+        shared_http_client: Optional[httpx.AsyncClient] = None,
         perf_counter: Callable[[], float] = time.perf_counter,
         utcnow: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
     ) -> None:
@@ -38,8 +39,13 @@ class ObservabilityService:
         self._llm_api_key = llm_api_key
         self._logger = logger
         self._http_client_factory = http_client_factory
+        self._shared_http_client = shared_http_client
         self._perf_counter = perf_counter
         self._utcnow = utcnow
+
+    def set_shared_http_client(self, client: Optional[httpx.AsyncClient]) -> None:
+        """Attach or clear the lifespan-managed shared HTTP client."""
+        self._shared_http_client = client
 
     def save_latest_execution_metrics(self, metrics: Any) -> None:
         """Persist the most recent execution metrics snapshot for telemetry polling."""
@@ -90,9 +96,17 @@ class ObservabilityService:
         inference_started = self._perf_counter()
         try:
             headers = {"Authorization": f"Bearer {self._llm_api_key}"}
-            async with self._http_client_factory(timeout=15.0) as client:
-                response = await client.get(f"{self._llm_api_base_url}/models", headers=headers)
+            if self._shared_http_client is not None:
+                response = await self._shared_http_client.get(
+                    f"{self._llm_api_base_url}/models",
+                    headers=headers,
+                    timeout=15.0,
+                )
                 response.raise_for_status()
+            else:
+                async with self._http_client_factory(timeout=15.0) as client:
+                    response = await client.get(f"{self._llm_api_base_url}/models", headers=headers)
+                    response.raise_for_status()
             inference_latency_ms = int((self._perf_counter() - inference_started) * 1000)
             services.append({"name": "Inference", "status": "ONLINE", "latency_ms": inference_latency_ms, "detail": None})
         except Exception as exc:

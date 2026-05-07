@@ -1,14 +1,17 @@
 // TelemetryPanel is now a thin renderer for a fully prepared telemetry view
 // model. Heavy derivation happens in a dedicated hook closer to the parent.
+import type { RefObject } from "react";
+
 import type { TelemetryPanelViewModel } from "../types";
 import { TelemetryServiceStatus } from "./telemetry-service-status";
 import { TelemetrySummarySections } from "./telemetry-summary-sections";
 
 type TelemetryPanelProps = {
   viewModel: TelemetryPanelViewModel;
+  containerRef: RefObject<HTMLElement | null>;
 };
 
-export function TelemetryPanel({ viewModel }: TelemetryPanelProps) {
+export function TelemetryPanel({ viewModel, containerRef }: TelemetryPanelProps) {
   const {
     servicesState,
     onlineServices,
@@ -30,7 +33,7 @@ export function TelemetryPanel({ viewModel }: TelemetryPanelProps) {
   } = viewModel;
 
   return (
-    <aside className="telemetryColumn">
+    <aside className="telemetryColumn" ref={containerRef}>
       <div className="panel telemetryPanel">
         <div className="telemetryHero">
           <h2 className="telemetryHeroTitle">TELEMETRY</h2>

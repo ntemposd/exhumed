@@ -15,10 +15,10 @@ type DiscussionTranscriptProps = {
 
 export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRef }: DiscussionTranscriptProps) {
   const [expandedMessageIds, setExpandedMessageIds] = useState<Record<string, boolean>>({});
-  const lastAutoScrollRef = useRef<{ messageId: string; bubbleHeight: number } | null>(null);
+  const lastAutoScrollRef = useRef<{ messageId: string; bubbleHeight: number; isThrottledWait: boolean } | null>(null);
 
   useEffect(() => {
-    // Keep the newest speech bubble visible, but only react to genuinely new or meaningfully taller bubbles.
+    // Keep the newest speech bubble visible for new turns and throttled waits, without nudging the page on every streamed token.
     const lastMessage = messages.at(-1);
     const lastBubble = transcriptRef.current?.querySelector("article:last-of-type") as HTMLElement | null;
     if (!lastBubble || !lastMessage) {
@@ -29,23 +29,31 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
       const bubbleBounds = lastBubble.getBoundingClientRect();
       const previousAutoScroll = lastAutoScrollRef.current;
       const isNewBubble = previousAutoScroll?.messageId !== lastMessage.id;
-      const grewMeaningfully = previousAutoScroll?.messageId === lastMessage.id
-        && bubbleBounds.height - previousAutoScroll.bubbleHeight > 72;
+      const isThrottledWait = Boolean(lastMessage.isThinking)
+        && isThrottledThinkingStatus(lastMessage.thinkingStatus)
+        && !sanitizeDebateMessageText(lastMessage.message, lastMessage.display_name).trim();
+      const enteredThrottledWait = previousAutoScroll?.messageId === lastMessage.id
+        && !previousAutoScroll.isThrottledWait
+        && isThrottledWait;
+      const grewMeaningfullyWhileThrottled = previousAutoScroll?.messageId === lastMessage.id
+        && isThrottledWait
+        && bubbleBounds.height - previousAutoScroll.bubbleHeight > 24;
       const viewportBottom = window.innerHeight - 88;
       const bubbleOverflow = bubbleBounds.bottom - viewportBottom;
-      const shouldKeepThinkingVisible = lastMessage.isThinking && bubbleOverflow > 8;
+      const shouldKeepThrottledWaitVisible = (enteredThrottledWait || grewMeaningfullyWhileThrottled) && bubbleOverflow > 8;
 
-      if (((isNewBubble || grewMeaningfully) && bubbleOverflow > 0) || shouldKeepThinkingVisible) {
-        const scrollBuffer = lastMessage.isThinking ? 36 : 20;
+      if ((isNewBubble && bubbleOverflow > 0) || shouldKeepThrottledWaitVisible) {
+        const scrollBuffer = isThrottledWait ? 36 : 20;
         window.scrollBy({
           top: Math.ceil(Math.max(bubbleOverflow, 0) + scrollBuffer),
-          behavior: "smooth",
+          behavior: isThrottledWait ? "auto" : "smooth",
         });
       }
 
       lastAutoScrollRef.current = {
         messageId: lastMessage.id,
         bubbleHeight: bubbleBounds.height,
+        isThrottledWait,
       };
     });
 

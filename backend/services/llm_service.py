@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import re
 import time
@@ -26,6 +27,7 @@ class LLMService:
         build_stream_execution_metrics: Callable[..., Any],
         logger: Any,
         http_client_factory: Callable[..., Any] = httpx.AsyncClient,
+        shared_http_client: Optional[httpx.AsyncClient] = None,
         sleep: Callable[[float], Awaitable[None]] = asyncio.sleep,
         perf_counter: Callable[[], float] = time.perf_counter,
     ) -> None:
@@ -39,11 +41,16 @@ class LLMService:
         self._build_stream_execution_metrics = build_stream_execution_metrics
         self._logger = logger
         self._http_client_factory = http_client_factory
+        self._shared_http_client = shared_http_client
         self._sleep = sleep
         self._perf_counter = perf_counter
         self._provider_gate_lock = asyncio.Lock()
         self._provider_last_request_at = 0.0
         self._provider_cooldown_until = 0.0
+
+    def set_shared_http_client(self, client: Optional[httpx.AsyncClient]) -> None:
+        """Attach or clear the lifespan-managed shared HTTP client."""
+        self._shared_http_client = client
 
     def build_chat_messages(
         self,
@@ -92,7 +99,8 @@ class LLMService:
             try:
                 await self._wait_for_provider_slot()
                 request_started = self._perf_counter()
-                async with self._http_client_factory(timeout=90.0) as client:
+                client_context = self._http_client_context(timeout=90.0)
+                async with client_context as client:
                     response = await client.post(api_url, json=payload, headers=headers)
                     response.raise_for_status()
                     data = response.json()
@@ -172,7 +180,8 @@ class LLMService:
                 await self._wait_for_provider_slot()
                 request_started = self._perf_counter()
 
-                async with self._http_client_factory(timeout=httpx.Timeout(90.0, read=90.0)) as client:
+                client_context = self._http_client_context(timeout=httpx.Timeout(90.0, read=90.0))
+                async with client_context as client:
                     async with client.stream("POST", api_url, json=payload, headers=headers) as response:
                         response.raise_for_status()
                         network_rtt_ms = int((self._perf_counter() - request_started) * 1000)
@@ -322,3 +331,12 @@ class LLMService:
             self._max_retries,
         )
         await self._sleep(retry_delay)
+
+    @contextlib.asynccontextmanager
+    async def _http_client_context(self, *, timeout: httpx.Timeout | float) -> AsyncIterator[httpx.AsyncClient]:
+        if self._shared_http_client is not None:
+            yield self._shared_http_client
+            return
+
+        async with self._http_client_factory(timeout=timeout) as client:
+            yield client
