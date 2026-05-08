@@ -3,6 +3,7 @@ import os
 import tempfile
 import unittest
 from datetime import datetime, timezone
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 
@@ -14,12 +15,68 @@ os.environ.setdefault("UPSTASH_REDIS_REST_TOKEN", "test-token")
 os.environ.setdefault("UPSTASH_VECTOR_REST_URL", "https://example-vector.upstash.io")
 os.environ.setdefault("UPSTASH_VECTOR_REST_TOKEN", "test-token")
 os.environ.setdefault("LLM_API_KEY", "test-key")
+os.environ.setdefault("BACKEND_STARTUP_READINESS_MODE", "off")
 
 backend_main = importlib.import_module("backend.main")
 client = TestClient(backend_main.app)
 
 
 class ApiSmokeTests(unittest.TestCase):
+    def test_startup_readiness_runs_during_app_startup(self):
+        readiness_mock = AsyncMock(
+            return_value={
+                "status": "OPTIMAL",
+                "services": [
+                    {"name": "Redis", "status": "ONLINE", "latency_ms": 1, "detail": None},
+                    {"name": "Vector", "status": "ONLINE", "latency_ms": 1, "detail": None},
+                    {"name": "Inference", "status": "ONLINE", "latency_ms": 1, "detail": None},
+                ],
+                "checked_at": "2026-05-07T00:00:00+00:00",
+            }
+        )
+        observability = SimpleNamespace(
+            set_shared_http_client=lambda client: None,
+            check_services=readiness_mock,
+        )
+        services = dict(backend_main.app.state.services)
+        services["observability_service"] = observability
+
+        with patch.object(backend_main, "build_runtime_services", return_value=services), patch.dict(
+            os.environ,
+            {"BACKEND_STARTUP_READINESS_MODE": "strict"},
+            clear=False,
+        ):
+            with TestClient(backend_main.create_app()):
+                pass
+
+        readiness_mock.assert_awaited_once()
+
+    def test_startup_readiness_fails_fast_when_dependency_is_offline(self):
+        readiness_mock = AsyncMock(
+            return_value={
+                "status": "DEGRADED",
+                "services": [
+                    {"name": "Redis", "status": "OFFLINE", "latency_ms": None, "detail": "timeout"},
+                ],
+                "checked_at": "2026-05-07T00:00:00+00:00",
+            }
+        )
+        observability = SimpleNamespace(
+            set_shared_http_client=lambda client: None,
+            check_services=readiness_mock,
+        )
+        services = dict(backend_main.app.state.services)
+        services["observability_service"] = observability
+
+        with patch.object(backend_main, "build_runtime_services", return_value=services), patch.dict(
+            os.environ,
+            {"BACKEND_STARTUP_READINESS_MODE": "strict"},
+            clear=False,
+        ):
+            with self.assertRaisesRegex(RuntimeError, "Startup readiness failed"):
+                with TestClient(backend_main.create_app()):
+                    pass
+
     def test_root_smoke(self):
         response = client.get("/")
 
@@ -27,6 +84,14 @@ class ApiSmokeTests(unittest.TestCase):
         payload = response.json()
         self.assertEqual(payload["name"], "EXHUMED")
         self.assertIn("process_turn", payload["endpoints"])
+
+    def test_request_id_header_is_returned(self):
+        request_id = "req-test-123"
+
+        response = client.get("/", headers={"X-Request-ID": request_id})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers.get("X-Request-ID"), request_id)
 
     def test_session_topic_routes(self):
         session_id = str(uuid4())
@@ -172,6 +237,21 @@ class ApiSmokeTests(unittest.TestCase):
         payload = response.json()
         self.assertEqual(payload["message"], "Ask better questions.")
         self.assertEqual(payload["telemetry"]["entropy"], 0.2)
+
+    def test_process_turn_validation_error_surfaces_details(self):
+        response = client.post(
+            "/process-turn",
+            json={
+                "session_id": "legacy-session-id",
+                "topic": "Virtue",
+                "agent_id": "agt_001",
+            },
+        )
+
+        self.assertEqual(response.status_code, 422)
+        payload = response.json()
+        self.assertIn("detail", payload)
+        self.assertTrue(any("session_id" in "/".join(str(part) for part in error["loc"]) for error in payload["detail"]))
 
     def test_services_status_route_smoke(self):
         status_mock = AsyncMock(

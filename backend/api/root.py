@@ -6,10 +6,12 @@ from fastapi import APIRouter
 
 
 def create_root_router() -> APIRouter:
+    """Build the root router that exposes the backend capability summary."""
     router = APIRouter()
 
     @router.get("/")
     async def root() -> Dict[str, Any]:
+        """Return a lightweight summary of service identity and public endpoints."""
         return {
             "name": "EXHUMED",
             "version": "1.1.0",

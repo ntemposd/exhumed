@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { backendUrl } from "@/lib/config";
+import { getRequestFailureMessage, getResponseErrorMessage } from "@/lib/http";
 import type { Agent, ProcessTurnStreamEvent } from "@/lib/types";
 
 import type { DebateMessage } from "../types";
@@ -163,13 +164,13 @@ export function useDebateController({
       });
 
       if (!response.ok) {
-        throw new Error(`Backend cleanup failed with ${response.status}`);
+        throw new Error(await getResponseErrorMessage(response, "Backend cleanup failed"));
       }
 
       setStatusNote("Debate cleared.");
       setControlError("");
     } catch (clearError) {
-      const message = clearError instanceof Error ? clearError.message : "Debate cleared locally, but backend cleanup failed.";
+      const message = getRequestFailureMessage(clearError, "Debate cleared locally, but backend cleanup failed.");
       setStatusNote(message);
       setControlError(message);
     } finally {
@@ -204,7 +205,7 @@ export function useDebateController({
       const response = await fetch(`${backendUrl}/export-pdf/${sessionId}`);
 
       if (!response.ok) {
-        throw new Error(`Transcript export failed with ${response.status}`);
+        throw new Error(await getResponseErrorMessage(response, "Transcript export failed"));
       }
 
       const pdfBlob = await response.blob();
@@ -218,7 +219,7 @@ export function useDebateController({
       window.URL.revokeObjectURL(downloadUrl);
       setStatusNote("Transcript ready.");
     } catch (downloadError) {
-      const message = downloadError instanceof Error ? downloadError.message : "Transcript export failed";
+      const message = getRequestFailureMessage(downloadError, "Transcript export failed");
       setControlError(message);
       setStatusNote(message);
     } finally {
@@ -321,6 +322,11 @@ export function useDebateController({
     const displayName = currentAgent?.display_name ?? currentAgentId;
     const requestResetSequence = resetSequenceRef.current;
     const abortController = new AbortController();
+    const slowTurnTimer = window.setTimeout(() => {
+      if (requestResetSequence === resetSequenceRef.current && turnInFlightRef.current) {
+        setStatusNote(`${displayName} is taking longer than usual. Waiting on the backend...`);
+      }
+    }, 12000);
 
     turnInFlightRef.current = true;
     currentTurnAbortControllerRef.current = abortController;
@@ -362,7 +368,7 @@ export function useDebateController({
         }
 
         if (!response.ok) {
-          throw new Error(`Turn failed with ${response.status}`);
+          throw new Error(await getResponseErrorMessage(response, "Turn execution failed"));
         }
 
         const reader = response.body?.getReader();
@@ -468,7 +474,7 @@ export function useDebateController({
           return;
         }
 
-        const message = turnError instanceof Error ? turnError.message : "Turn execution failed";
+        const message = getRequestFailureMessage(turnError, "Turn execution failed");
         clearStreamRevealQueue(thinkingId);
         setControlError(message);
         setStatusNote(message);
@@ -492,6 +498,7 @@ export function useDebateController({
           currentTurnAbortControllerRef.current = null;
           turnInFlightRef.current = false;
         }
+        window.clearTimeout(slowTurnTimer);
       }
     })();
   }, [agents, currentAgentIndex, discussionActive, selectedAgents, sessionId, targetEntropy, topic, turnCount]);

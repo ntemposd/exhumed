@@ -3,6 +3,7 @@
 This backend has three code surfaces:
 
 - `main.py`: FastAPI application entrypoint, API routes, request orchestration, telemetry shaping, and response formatting.
+- `settings.py`: typed runtime configuration loader for env-backed backend settings.
 - `services/database.py`: Redis and Vector access layer for chat history, telemetry snapshots, and retrieval-backed prompt context.
 - `services/agent_registry.py`: agent registry reads/writes, cache invalidation, and cached agent listing/config lookup.
 - `services/turn_workflow.py`: shared turn preparation and turn finalization used by the generation endpoints.
@@ -15,6 +16,34 @@ This backend has three code surfaces:
 - Session history is stored in Upstash Redis.
 - Speaker context is retrieved from Upstash Vector.
 - The database service owns persistence and retrieval details so route handlers stay thin.
+
+## Configuration
+
+Runtime configuration is validated through `settings.py` before the FastAPI app is built.
+
+Core required settings:
+
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `UPSTASH_VECTOR_REST_URL`
+- `UPSTASH_VECTOR_REST_TOKEN`
+- `LLM_API_KEY`
+
+Useful optional settings:
+
+- `LLM_API_BASE_URL`
+- `LLM_MODEL_ID`
+- `LLM_429_MAX_RETRIES`
+- `LLM_REQUEST_THROTTLE_SECONDS`
+- `CORS_ALLOW_ORIGINS`
+- `CORS_ALLOW_ORIGIN_REGEX`
+- `BACKEND_STARTUP_READINESS_MODE`
+
+`BACKEND_STARTUP_READINESS_MODE` supports:
+
+- `strict`: fail startup when Redis, Vector, or inference is offline
+- `warn`: log degraded startup but keep the app alive
+- `off`: skip the startup readiness probe
 
 ## Service Layer
 
@@ -65,3 +94,24 @@ Focused backend tests currently live in `backend/tests/`.
 - `test_ingest_agent_knowledge.py` covers speaker-plan resolution, source-file resolution, extraction cleanup, and structured chunking.
 - `test_query_vector_stats.py` covers query-result aggregation and report formatting for the Vector stats script.
 - `test_turn_workflow_service.py` covers shared turn preparation and finalization behavior used by the generation endpoints.
+
+## Production Notes
+
+The backend is close to production-ready for the current single-service deployment shape.
+
+What is now in place:
+
+- typed startup configuration validation
+- shared outbound HTTP client reuse
+- request-scoped logging with `X-Request-ID`
+- startup readiness checks
+- backend test suite passing
+
+What still deserves attention before a broader production rollout:
+
+- focused streaming-path regression tests beyond smoke coverage
+- CI gates so deploys always run the backend suite automatically
+- observability and alerting in the target hosting environment
+- rate, latency, and failure monitoring for the configured inference provider
+
+The repository now includes a backend CI workflow at `.github/workflows/backend-ci.yml` that runs `python -m unittest discover -s backend/tests` on pushes and pull requests.

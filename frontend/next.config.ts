@@ -4,9 +4,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  experimental: {
-    devtoolSegmentExplorer: false,
-  },
   webpack: (config, { dev }) => {
     if (dev) {
       config.cache = false;

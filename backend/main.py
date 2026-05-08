@@ -8,19 +8,18 @@ Storage stack:
 """
 
 import asyncio
+import contextvars
 from contextlib import asynccontextmanager
 from functools import partial
 import json
 import logging
-import os
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Callable, Dict, List, Literal, Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
-from dotenv import load_dotenv
 import httpx
 from fastapi import FastAPI, HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -29,6 +28,8 @@ from upstash_redis import Redis
 from upstash_vector import Index
 
 try:
+    from backend.composition import build_runtime_services
+    from backend.settings import BackendSettings, load_settings
     from backend.api.agents import create_agent_router
     from backend.api.discussion import create_discussion_router
     from backend.api.exports import create_export_router
@@ -46,6 +47,8 @@ try:
     from backend.utils.pdf_export import export_session_pdf
     from backend.utils.text_metrics import calculate_jaccard_entropy
 except ModuleNotFoundError:
+    from composition import build_runtime_services
+    from settings import BackendSettings, load_settings
     from api.agents import create_agent_router
     from api.discussion import create_discussion_router
     from api.exports import create_export_router
@@ -64,81 +67,29 @@ except ModuleNotFoundError:
     from utils.text_metrics import calculate_jaccard_entropy
 
 # Initialize logging
+_request_id_context: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")
+
+
+def _record_factory_with_request_id(*args: Any, **kwargs: Any) -> logging.LogRecord:
+    record = _previous_log_record_factory(*args, **kwargs)
+    record.request_id = _request_id_context.get()
+    return record
+
+
+_previous_log_record_factory = logging.getLogRecordFactory()
+logging.setLogRecordFactory(_record_factory_with_request_id)
+
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
+    format="%(asctime)s - %(levelname)s - [request_id=%(request_id)s] %(message)s",
 )
 logger = logging.getLogger(__name__)
-
-AGENT_REGISTRY_CACHE_TTL_SECONDS = 60.0
-AGENT_CONFIG_CACHE_TTL_SECONDS = 300.0
-
-FILE_DIR = Path(__file__).resolve().parent
-REPO_ROOT_CANDIDATE = FILE_DIR.parent
-
-# Support two deployment layouts:
-# 1) repo-root deploy: /app/backend/main.py
-# 2) backend-only deploy: /app/main.py
-if (REPO_ROOT_CANDIDATE / "backend" / "main.py").exists():
-    BASE_DIR = REPO_ROOT_CANDIDATE
-else:
-    BASE_DIR = FILE_DIR
-
-STATIC_DIR = BASE_DIR / "static"
-
-# Load environment variables from the local .env file when present.
-load_dotenv(BASE_DIR / ".env")
-
-# Upstash and model config
-UPSTASH_REDIS_REST_URL = os.getenv("UPSTASH_REDIS_REST_URL")
-UPSTASH_REDIS_REST_TOKEN = os.getenv("UPSTASH_REDIS_REST_TOKEN")
-UPSTASH_VECTOR_REST_URL = os.getenv("UPSTASH_VECTOR_REST_URL")
-UPSTASH_VECTOR_REST_TOKEN = os.getenv("UPSTASH_VECTOR_REST_TOKEN")
-LLM_API_KEY = os.getenv("LLM_API_KEY")
-LLM_MODEL_ID = os.getenv("LLM_MODEL_ID", "llama-3.1-8b-instant")
-LLM_API_BASE_URL = os.getenv("LLM_API_BASE_URL", "https://api.groq.com/openai/v1")
-LLM_429_MAX_RETRIES = max(0, int(os.getenv("LLM_429_MAX_RETRIES", "3")))
-LLM_REQUEST_THROTTLE_SECONDS = max(0.0, float(os.getenv("LLM_REQUEST_THROTTLE_SECONDS", "0.0")))
-
-
-def _parse_cors_origins(raw_value: Optional[str]) -> List[str]:
-    if not raw_value:
-        return []
-    return [origin.strip().rstrip("/") for origin in raw_value.split(",") if origin.strip()]
+logging.getLogger("fontTools").setLevel(logging.WARNING)
 
 
 async def _run_blocking_io(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
     """Run synchronous storage clients off the event loop while keeping call semantics unchanged."""
     return await asyncio.to_thread(partial(func, *args, **kwargs))
-
-
-DEFAULT_CORS_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:3001",
-]
-CORS_ALLOW_ORIGINS = _parse_cors_origins(os.getenv("CORS_ALLOW_ORIGINS")) or DEFAULT_CORS_ORIGINS
-CORS_ALLOW_ORIGIN_REGEX = os.getenv(
-    "CORS_ALLOW_ORIGIN_REGEX",
-    r"https://.*\.vercel\.app|https?://(?:localhost|127\.0\.0\.1)(?::\d+)?",
-)
-
-missing_env: List[str] = []
-for env_name in (
-    "UPSTASH_REDIS_REST_URL",
-    "UPSTASH_REDIS_REST_TOKEN",
-    "UPSTASH_VECTOR_REST_URL",
-    "UPSTASH_VECTOR_REST_TOKEN",
-):
-    if not os.getenv(env_name):
-        missing_env.append(env_name)
-
-if not LLM_API_KEY:
-    missing_env.append("LLM_API_KEY")
-
-if missing_env:
-    raise ValueError(f"Missing required environment variables: {', '.join(missing_env)}")
 
 
 class AgentConfig(BaseModel):
@@ -313,92 +264,45 @@ def _assign_runtime_globals(*, services: Dict[str, Any]) -> None:
     discussion_service = services["discussion_service"]
 
 
-def _build_services() -> Dict[str, Any]:
-    redis_client = Redis(url=UPSTASH_REDIS_REST_URL, token=UPSTASH_REDIS_REST_TOKEN)
-    vector_client = Index(url=UPSTASH_VECTOR_REST_URL, token=UPSTASH_VECTOR_REST_TOKEN)
-    database = DatabaseService(
-        redis_client=redis_client,
-        vector_index=vector_client,
-        embedding_provider=SentenceTransformerEmbeddingProvider(),
-    )
-    agent_registry = AgentRegistryService(
-        redis_client=redis_client,
-        decode_value=_decode_redis_value,
+def _build_services(settings: BackendSettings) -> Dict[str, Any]:
+    return build_runtime_services(
+        upstash_redis_rest_url=settings.storage.redis_rest_url,
+        upstash_redis_rest_token=settings.storage.redis_rest_token,
+        upstash_vector_rest_url=settings.storage.vector_rest_url,
+        upstash_vector_rest_token=settings.storage.vector_rest_token,
+        llm_api_base_url=settings.llm.api_base_url,
+        llm_api_key=settings.llm.api_key,
+        llm_model_id=settings.llm.model_id,
+        llm_429_max_retries=max(0, settings.llm.max_retries),
+        llm_request_throttle_seconds=max(0.0, settings.llm.request_throttle_seconds),
+        agent_registry_cache_ttl_seconds=settings.storage.agent_registry_cache_ttl_seconds,
+        agent_config_cache_ttl_seconds=settings.storage.agent_config_cache_ttl_seconds,
+        decode_redis_value=_decode_redis_value,
         parse_agent_payload=_parse_agent_payload,
         run_blocking_io=_run_blocking_io,
-        registry_ttl_seconds=AGENT_REGISTRY_CACHE_TTL_SECONDS,
-        config_ttl_seconds=AGENT_CONFIG_CACHE_TTL_SECONDS,
-    )
-    observability = ObservabilityService(
-        redis_client=redis_client,
-        vector_index=vector_client,
-        decode_value=_decode_redis_value,
-        run_blocking_io=_run_blocking_io,
+        calculate_entropy=calculate_jaccard_entropy,
         execution_metrics_model=ExecutionMetrics,
-        llm_api_base_url=LLM_API_BASE_URL,
-        llm_api_key=LLM_API_KEY,
-        logger=logger,
-    )
-    session = SessionService(
-        redis_client=redis_client,
-        database_service=database,
-        run_blocking_io=_run_blocking_io,
-        decode_value=_decode_redis_value,
-        export_session_pdf=export_session_pdf,
-        logger=logger,
-    )
-    llm = LLMService(
-        api_base_url=LLM_API_BASE_URL,
-        api_key=LLM_API_KEY,
-        model_id=LLM_MODEL_ID,
-        max_retries=LLM_429_MAX_RETRIES,
-        throttle_seconds=LLM_REQUEST_THROTTLE_SECONDS,
-        execution_metrics_builder=ExecutionMetrics,
         extract_execution_metrics=extract_execution_metrics,
         build_stream_execution_metrics=build_stream_execution_metrics,
-        logger=logger,
-    )
-    turn_workflow = TurnWorkflowService(
-        fetch_agent_config=agent_registry.fetch_agent_config,
-        fetch_context_messages=session.fetch_context_messages,
-        get_agent_context_matches=session.get_agent_context_matches,
-        sanitize_generated_message=session.sanitize_generated_message,
-        save_latest_execution_metrics=observability.save_latest_execution_metrics_async,
-        persist_session_telemetry=session.persist_session_telemetry_async,
-        save_message_to_storage=session.save_message_to_storage,
-        calculate_entropy=calculate_jaccard_entropy,
-        build_telemetry=TelemetryData,
-    )
-    discussion = DiscussionService(
-        turn_workflow_service=turn_workflow,
-        session_service=session,
-        llm_service=llm,
-        fetch_agent_config=agent_registry.fetch_agent_config,
-        save_latest_execution_metrics=observability.save_latest_execution_metrics_async,
+        telemetry_model=TelemetryData,
+        vector_telemetry_model=VectorTelemetry,
         process_turn_response_model=ProcessTurnResponse,
         process_turn_stream_chunk_model=ProcessTurnStreamChunk,
         process_turn_stream_status_model=ProcessTurnStreamStatus,
         process_turn_stream_final_model=ProcessTurnStreamFinal,
         generate_response_model=GenerateResponse,
         streaming_response_factory=StreamingResponse,
-        vector_telemetry_model=VectorTelemetry,
+        export_session_pdf=export_session_pdf,
         logger=logger,
-        utcnow=lambda: datetime.now(timezone.utc),
     )
-    return {
-        "redis": redis_client,
-        "vector_index": vector_client,
-        "database_service": database,
-        "agent_registry_service": agent_registry,
-        "observability_service": observability,
-        "session_service": session,
-        "llm_service": llm,
-        "turn_workflow_service": turn_workflow,
-        "discussion_service": discussion,
-    }
 
 
-def _build_lifespan(*, llm_service: LLMService, observability_service: ObservabilityService):
+def _build_lifespan(
+    *,
+    llm_service: LLMService,
+    observability_service: ObservabilityService,
+    startup_readiness_mode: Literal["off", "warn", "strict"],
+):
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         shared_http_client = httpx.AsyncClient(timeout=httpx.Timeout(90.0, read=90.0))
@@ -406,6 +310,31 @@ def _build_lifespan(*, llm_service: LLMService, observability_service: Observabi
         observability_service.set_shared_http_client(shared_http_client)
         app.state.shared_http_client = shared_http_client
         try:
+            if startup_readiness_mode != "off":
+                readiness = await observability_service.check_services()
+                app.state.startup_readiness = readiness
+                offline_services = [
+                    service for service in readiness.get("services", []) if service.get("status") != "ONLINE"
+                ]
+                if offline_services:
+                    offline_summary = ", ".join(
+                        f"{service.get('name', 'unknown')}: {service.get('detail') or service.get('status', 'OFFLINE')}"
+                        for service in offline_services
+                    )
+                    message = f"Startup readiness failed: {offline_summary}"
+                    if startup_readiness_mode == "warn":
+                        logger.warning(message)
+                    else:
+                        logger.error(message)
+                        raise RuntimeError(message)
+                else:
+                    logger.info("Startup readiness passed")
+            else:
+                app.state.startup_readiness = {
+                    "status": "SKIPPED",
+                    "services": [],
+                    "checked_at": datetime.now(timezone.utc).isoformat(),
+                }
             yield
         finally:
             llm_service.set_shared_http_client(None)
@@ -416,8 +345,9 @@ def _build_lifespan(*, llm_service: LLMService, observability_service: Observabi
     return lifespan
 
 
-def create_app() -> FastAPI:
-    services = _build_services()
+def create_app(settings: Optional[BackendSettings] = None) -> FastAPI:
+    active_settings = settings or load_settings()
+    services = _build_services(active_settings)
     _assign_runtime_globals(services=services)
 
     app = FastAPI(
@@ -427,21 +357,55 @@ def create_app() -> FastAPI:
         lifespan=_build_lifespan(
             llm_service=services["llm_service"],
             observability_service=services["observability_service"],
+            startup_readiness_mode=active_settings.runtime.startup_readiness_mode,
         ),
     )
     app.state.services = services
+    app.state.settings = active_settings
+
+    @app.middleware("http")
+    async def attach_request_context(request, call_next):
+        request_id = request.headers.get("X-Request-ID", "").strip() or str(uuid4())
+        request.state.request_id = request_id
+        context_token = _request_id_context.set(request_id)
+        started_at = datetime.now(timezone.utc)
+        logger.info("Request started: method=%s path=%s", request.method, request.url.path)
+
+        try:
+            response = await call_next(request)
+        except Exception:
+            logger.exception("Request failed: method=%s path=%s", request.method, request.url.path)
+            raise
+        finally:
+            _request_id_context.reset(context_token)
+
+        elapsed_ms = int((datetime.now(timezone.utc) - started_at).total_seconds() * 1000)
+        response.headers["X-Request-ID"] = request_id
+        completion_token = _request_id_context.set(request_id)
+        try:
+            logger.info(
+                "Request completed: method=%s path=%s status=%s duration_ms=%s",
+                request.method,
+                request.url.path,
+                response.status_code,
+                elapsed_ms,
+            )
+        finally:
+            _request_id_context.reset(completion_token)
+        return response
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=CORS_ALLOW_ORIGINS,
-        allow_origin_regex=CORS_ALLOW_ORIGIN_REGEX,
+        allow_origins=active_settings.cors.allow_origins,
+        allow_origin_regex=active_settings.cors.allow_origin_regex,
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
     )
-    if STATIC_DIR.exists():
-        app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+    if active_settings.static_dir.exists():
+        app.mount("/static", StaticFiles(directory=str(active_settings.static_dir)), name="static")
     else:
-        logger.warning("Static directory not found at %s; /static route disabled", STATIC_DIR)
+        logger.warning("Static directory not found at %s; /static route disabled", active_settings.static_dir)
 
     app.include_router(create_root_router())
     app.include_router(create_telemetry_router(observability_service=services["observability_service"]))
@@ -471,11 +435,22 @@ def create_app() -> FastAPI:
     )
     app.include_router(create_export_router(session_service=services["session_service"], logger=logger))
     app.add_exception_handler(HTTPException, http_exception_handler)
+    app.add_exception_handler(RequestValidationError, request_validation_exception_handler)
     return app
 
 async def http_exception_handler(request, exc):
     logger.error("HTTP Exception: %s", exc.detail)
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+
+
+async def request_validation_exception_handler(request, exc: RequestValidationError):
+    logger.warning(
+        "Request validation failed: method=%s path=%s errors=%s",
+        request.method,
+        request.url.path,
+        exc.errors(),
+    )
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
 
 app = create_app()

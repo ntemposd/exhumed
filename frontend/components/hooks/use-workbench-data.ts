@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { backendUrl } from "@/lib/config";
+import { getRequestFailureMessage, getResponseErrorMessage } from "@/lib/http";
 import type { Agent, AgentsResponse, ServicesStatusResponse } from "@/lib/types";
 
 import { getDefaultCouncilAgentIds } from "../utils";
@@ -54,6 +55,9 @@ export function useAgentsCatalog({ councilStorageKey, cacheKey, cacheTtlMs }: Us
       setAgentsError("");
       const cachedValue = window.localStorage.getItem(cacheKey);
       let hasCachedAgents = false;
+      const abortController = new AbortController();
+
+      const cancelLoad = () => abortController.abort();
 
       if (cachedValue) {
         try {
@@ -91,10 +95,11 @@ export function useAgentsCatalog({ councilStorageKey, cacheKey, cacheTtlMs }: Us
         const response = await fetch(`${backendUrl}/agents`, {
           headers: { Accept: "application/json" },
           cache: "no-store",
+          signal: abortController.signal,
         });
 
         if (!response.ok) {
-          throw new Error(`Backend returned ${response.status}`);
+          throw new Error(await getResponseErrorMessage(response, "Could not load the agent catalog"));
         }
 
         const data = (await response.json()) as AgentsResponse;
@@ -118,7 +123,7 @@ export function useAgentsCatalog({ councilStorageKey, cacheKey, cacheTtlMs }: Us
           return;
         }
 
-        const message = loadError instanceof Error ? loadError.message : "Unknown backend error";
+        const message = getRequestFailureMessage(loadError, "Could not load the agent catalog");
         setAgentsError(message);
       } finally {
         if (!cancelled) {
@@ -127,12 +132,18 @@ export function useAgentsCatalog({ councilStorageKey, cacheKey, cacheTtlMs }: Us
           setHasHydratedCouncil(true);
         }
       }
+
+      return cancelLoad;
     }
 
-    void loadAgents();
+    let cleanupRequest: (() => void) | undefined;
+    void loadAgents().then((cleanup) => {
+      cleanupRequest = cleanup;
+    });
 
     return () => {
       cancelled = true;
+      cleanupRequest?.();
     };
   }, [cacheKey, cacheTtlMs, councilStorageKey]);
 
@@ -160,6 +171,9 @@ export function useServicesStatus({ cacheKey, cacheTtlMs }: UseServicesStatusOpt
     async function loadServices() {
       const cachedValue = window.localStorage.getItem(cacheKey);
       let hasCachedServices = false;
+      const abortController = new AbortController();
+
+      const cancelLoad = () => abortController.abort();
 
       if (cachedValue) {
         try {
@@ -195,10 +209,11 @@ export function useServicesStatus({ cacheKey, cacheTtlMs }: UseServicesStatusOpt
         const response = await fetch(`${backendUrl}/services-status`, {
           headers: { Accept: "application/json" },
           cache: "no-store",
+          signal: abortController.signal,
         });
 
         if (!response.ok) {
-          throw new Error(`Status probe failed with ${response.status}`);
+          throw new Error(await getResponseErrorMessage(response, "Could not load backend service status"));
         }
 
         const data = (await response.json()) as ServicesStatusResponse;
@@ -220,7 +235,7 @@ export function useServicesStatus({ cacheKey, cacheTtlMs }: UseServicesStatusOpt
           return;
         }
 
-        const message = loadError instanceof Error ? loadError.message : "Could not load service status";
+        const message = getRequestFailureMessage(loadError, "Could not load service status");
         setServicesError(message);
       } finally {
         if (!cancelled) {
@@ -228,12 +243,18 @@ export function useServicesStatus({ cacheKey, cacheTtlMs }: UseServicesStatusOpt
           setIsRefreshingServices(false);
         }
       }
+
+      return cancelLoad;
     }
 
-    void loadServices();
+    let cleanupRequest: (() => void) | undefined;
+    void loadServices().then((cleanup) => {
+      cleanupRequest = cleanup;
+    });
 
     return () => {
       cancelled = true;
+      cleanupRequest?.();
     };
   }, [cacheKey, cacheTtlMs]);
 

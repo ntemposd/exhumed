@@ -7,10 +7,12 @@ from fastapi.responses import FileResponse
 
 
 def create_export_router(*, session_service, logger) -> APIRouter:
+    """Build the router that exposes transcript export endpoints."""
     router = APIRouter()
 
     @router.get("/export-pdf/{session_id}")
     async def export_pdf(session_id: UUID) -> FileResponse:
+        """Generate and return a PDF transcript for the requested session."""
         logger.info("Exporting PDF for session: %s", session_id)
 
         try:

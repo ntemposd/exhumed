@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Optional
 
 from fpdf import FPDF
+from fpdf.enums import XPos, YPos
 
 
 PDF_FONT_SEARCH_PATHS = {
@@ -97,11 +98,30 @@ def export_session_pdf(
     topic = sanitize_pdf_text(normalized_messages[0].get("topic", "N/A"), unicode_font_active=unicode_font_active)
 
     pdf.set_font(font_family, "B" if unicode_font_active else "", 16)
-    pdf.cell(0, 10, sanitize_pdf_text("EXHUMED - Discussion Session", unicode_font_active=unicode_font_active), ln=True, align="C")
+    pdf.cell(
+        0,
+        10,
+        sanitize_pdf_text("EXHUMED - Discussion Session", unicode_font_active=unicode_font_active),
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+        align="C",
+    )
 
     pdf.set_font(font_family, "", 10)
-    pdf.cell(0, 5, sanitize_pdf_text(f"Session ID: {session_id}", unicode_font_active=unicode_font_active), ln=True)
-    pdf.cell(0, 5, sanitize_pdf_text(f"Topic: {topic}", unicode_font_active=unicode_font_active), ln=True)
+    pdf.cell(
+        0,
+        5,
+        sanitize_pdf_text(f"Session ID: {session_id}", unicode_font_active=unicode_font_active),
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
+    pdf.cell(
+        0,
+        5,
+        sanitize_pdf_text(f"Topic: {topic}", unicode_font_active=unicode_font_active),
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+    )
     pdf.ln(5)
 
     for message in normalized_messages:
@@ -115,11 +135,11 @@ def export_session_pdf(
 
         pdf.set_font(font_family, "B" if unicode_font_active else "", 10)
         pdf.set_text_color(33, 87, 171)
-        pdf.cell(0, 4, f"{agent_name} (Turn {turn_number})", ln=True)
+        pdf.cell(0, 4, f"{agent_name} (Turn {turn_number})", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
         pdf.set_font(font_family, "I" if unicode_font_active else "", 8)
         pdf.set_text_color(128, 128, 128)
-        pdf.cell(0, 3, created_at, ln=True)
+        pdf.cell(0, 3, created_at, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
 
         pdf.set_font(font_family, "", 9)
         pdf.set_text_color(0, 0, 0)

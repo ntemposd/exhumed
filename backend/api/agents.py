@@ -3,14 +3,21 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from fastapi import APIRouter, Body, HTTPException
+from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 
 
 def create_agent_router(*, agent_registry_service: Any, logger: Any, agent_register_request_model: Any) -> APIRouter:
+    """Build the router for agent registry mutations and list retrieval."""
     router = APIRouter()
 
     @router.post("/agents/register")
     async def register_agent(request_data: Dict[str, Any] = Body(...)) -> Dict[str, Any]:
-        request = agent_register_request_model.model_validate(request_data)
+        """Validate and register an agent definition in the backend registry."""
+        try:
+            request = agent_register_request_model.model_validate(request_data)
+        except ValidationError as exc:
+            raise RequestValidationError(exc.errors(), body=request_data) from exc
         payload = {
             "display_name": request.display_name,
             "system_prompt": request.system_prompt,
@@ -27,6 +34,7 @@ def create_agent_router(*, agent_registry_service: Any, logger: Any, agent_regis
 
     @router.get("/agents")
     async def list_agents() -> Dict[str, Any]:
+        """Return the currently registered agent catalog."""
         try:
             agents = await agent_registry_service.list_agents()
             return {"agents": agents}
