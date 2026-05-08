@@ -21,7 +21,9 @@ class IngestAgentKnowledgeTests(unittest.TestCase):
     def test_resolve_source_path_defaults_to_agent_specific_file(self):
         path = resolve_source_path("agt_013", None)
 
-        self.assertEqual(path, Path("c:/Users/ntemposd/Documents/GitHub/roundtablelegends/data/agt_013.txt"))
+        expected_path = Path(__file__).resolve().parents[2] / "data" / "agt_013.txt"
+
+        self.assertEqual(path, expected_path)
 
     def test_get_agent_ingest_plan_exposes_speaker_specific_descriptions(self):
         plan = get_agent_ingest_plan("agt_011")
