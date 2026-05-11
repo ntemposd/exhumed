@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Awaitable, Callable, Dict, Optional, TypeVar
 
 import httpx
@@ -25,6 +26,7 @@ class ObservabilityService:
         llm_api_base_url: str,
         llm_api_key: str,
         logger: Any,
+        prompt_capture_log_path: Optional[Any] = None,
         http_client_factory: Callable[..., Any] = httpx.AsyncClient,
         shared_http_client: Optional[httpx.AsyncClient] = None,
         perf_counter: Callable[[], float] = time.perf_counter,
@@ -38,6 +40,7 @@ class ObservabilityService:
         self._llm_api_base_url = llm_api_base_url
         self._llm_api_key = llm_api_key
         self._logger = logger
+        self._prompt_capture_log_path = Path(prompt_capture_log_path) if prompt_capture_log_path else None
         self._http_client_factory = http_client_factory
         self._shared_http_client = shared_http_client
         self._perf_counter = perf_counter
@@ -57,6 +60,24 @@ class ObservabilityService:
     async def save_latest_execution_metrics_async(self, metrics: Any) -> None:
         """Async wrapper around latest-metrics persistence."""
         await self._run_blocking_io(self.save_latest_execution_metrics, metrics)
+
+    def save_prompt_capture(self, capture: Dict[str, Any]) -> None:
+        """Append a local JSONL record of the exact provider request for offline prompt inspection."""
+        if self._prompt_capture_log_path is None:
+            return
+
+        try:
+            payload = dict(capture)
+            payload.setdefault("captured_at", self._utcnow().isoformat())
+            self._prompt_capture_log_path.parent.mkdir(parents=True, exist_ok=True)
+            with self._prompt_capture_log_path.open("a", encoding="utf-8") as handle:
+                handle.write(json.dumps(payload, ensure_ascii=True) + "\n")
+        except Exception as exc:
+            self._logger.warning("Unable to persist local prompt capture: %s", exc)
+
+    async def save_prompt_capture_async(self, capture: Dict[str, Any]) -> None:
+        """Async wrapper around local prompt capture persistence."""
+        await self._run_blocking_io(self.save_prompt_capture, capture)
 
     def fetch_latest_execution_metrics(self) -> Optional[ExecutionMetricsT]:
         """Load the latest execution metrics snapshot if one has been recorded."""

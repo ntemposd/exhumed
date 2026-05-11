@@ -12,7 +12,7 @@ class TurnWorkflowService:
         self,
         *,
         fetch_agent_config: Callable[[str], Awaitable[Any]],
-        fetch_context_messages: Callable[[UUID, int], Awaitable[List[Dict[str, Any]]]],
+        fetch_context_messages: Callable[[UUID, int, Optional[str]], Awaitable[List[Dict[str, Any]]]],
         get_agent_context_matches: Callable[[str, str], List[Dict[str, Any]]],
         sanitize_generated_message: Callable[[str, str], str],
         save_latest_execution_metrics: Callable[[Any], Awaitable[None]],
@@ -42,7 +42,7 @@ class TurnWorkflowService:
         """Load the agent config, recent discussion context, and speaker knowledge in parallel."""
         agent_config, context_messages, agent_context_matches = await asyncio.gather(
             self.fetch_agent_config(agent_id),
-            self.fetch_context_messages(session_id, context_limit),
+            self.fetch_context_messages(session_id, context_limit, topic),
             asyncio.to_thread(self.get_agent_context_matches, topic, agent_id),
         )
         previous_response = ""

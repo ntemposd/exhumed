@@ -293,6 +293,7 @@ def _build_services(settings: BackendSettings) -> Dict[str, Any]:
         generate_response_model=GenerateResponse,
         streaming_response_factory=StreamingResponse,
         export_session_pdf=export_session_pdf,
+        prompt_capture_log_path=settings.base_dir / "backend" / "logs" / "provider_prompt_captures.jsonl",
         logger=logger,
     )
 

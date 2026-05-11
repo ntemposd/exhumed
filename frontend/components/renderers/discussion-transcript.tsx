@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 
 import type { DebateMessage } from "../types";
 import { avatarUrlForAgent, getStyleIndex, sanitizeDebateMessageText } from "../utils";
+import styles from "./discussion-transcript.module.css";
 
 const MESSAGE_PREVIEW_LIMIT = 140;
 
@@ -89,8 +90,16 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
     }));
   }
 
+  const bubbleToneClasses = [
+    styles.bubbleTone0,
+    styles.bubbleTone1,
+    styles.bubbleTone2,
+    styles.bubbleTone3,
+    styles.bubbleTone4,
+  ];
+
   return (
-    <div className="transcript" ref={transcriptRef}>
+    <div className={styles.transcript} ref={transcriptRef}>
       {!messages.length ? (
         <p className="emptyState">
           {emptyStateMessage}
@@ -113,32 +122,38 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
         return (
           <article
             key={message.id}
-            className={`bubble bubbleAssistant bubbleTone${bubbleToneIndex} ${message.isThinking ? "bubbleThinking" : ""} ${message.failed ? "bubbleFailed" : ""}`.trim()}
+            className={[
+              styles.bubble,
+              styles.bubbleAssistant,
+              bubbleToneClasses[bubbleToneIndex] ?? styles.bubbleTone0,
+              message.isThinking ? styles.bubbleThinking : "",
+              message.failed ? styles.bubbleFailed : "",
+            ].filter(Boolean).join(" ")}
           >
-            <div className="bubbleHeader">
+            <div className={styles.bubbleHeader}>
               <img
-                className="avatar"
+                className={styles.avatar}
                 src={avatarUrlForAgent(message.agent_id)}
                 alt={`${message.display_name} portrait`}
               />
-              <div className="bubbleIdentity">
-                <p className="bubbleName">{message.display_name}</p>
-                <p className="bubbleMeta">
+              <div className={styles.bubbleIdentity}>
+                <p className={styles.bubbleName}>{message.display_name}</p>
+                <p className={styles.bubbleMeta}>
                   Turn {message.turn_number}
                   {thinkingStatus ? ` · ${thinkingStatus.toUpperCase()}` : ""}
                 </p>
               </div>
             </div>
-            {visibleMessage ? <p className="bubbleText">{visibleMessage}</p> : null}
+            {visibleMessage ? <p className={styles.bubbleText}>{visibleMessage}</p> : null}
             {showRetrySkull ? (
-              <div className="bubbleThinkingState" aria-hidden="true">
-                <img className="bubbleThinkingIcon" src="/waiting-skull.svg" alt="" />
+              <div className={styles.bubbleThinkingState} aria-hidden="true">
+                <img className={styles.bubbleThinkingIcon} src="/waiting-skull.svg" alt="" />
               </div>
             ) : null}
             {shouldTruncate ? (
               <button
                 type="button"
-                className="bubbleReadMore"
+                className={styles.bubbleReadMore}
                 onClick={() => toggleExpandedMessage(message.id)}
               >
                 {isExpanded ? "Read less" : "Read more"}

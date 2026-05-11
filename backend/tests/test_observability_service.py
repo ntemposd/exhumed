@@ -1,5 +1,7 @@
 import unittest
 from datetime import datetime, timezone
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from backend.services.observability import ObservabilityService
 
@@ -87,6 +89,31 @@ class ObservabilityServiceTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(payload["provider"], "llm")
         self.assertEqual(payload["network_rtt_ms"], 40)
+
+    async def test_save_prompt_capture_writes_local_jsonl(self):
+        with TemporaryDirectory() as tmp_dir:
+            capture_path = Path(tmp_dir) / "prompt-captures.jsonl"
+            service = ObservabilityService(
+                redis_client=self.redis,
+                vector_index=self.vector_index,
+                decode_value=str,
+                run_blocking_io=run_blocking_io,
+                execution_metrics_model=FakeExecutionMetricsModel,
+                llm_api_base_url="https://example-llm.test",
+                llm_api_key="test-key",
+                logger=self.logger,
+                prompt_capture_log_path=capture_path,
+                http_client_factory=lambda **kwargs: FakeHttpClient(),
+                perf_counter=lambda: 10.0,
+                utcnow=lambda: datetime(2026, 5, 7, tzinfo=timezone.utc),
+            )
+
+            service.save_prompt_capture({"agent_id": "agt_001", "prompt": "prompt text"})
+
+            payload = capture_path.read_text(encoding="utf-8")
+            self.assertIn('"agent_id": "agt_001"', payload)
+            self.assertIn('"prompt": "prompt text"', payload)
+            self.assertIn('"captured_at": "2026-05-07T00:00:00+00:00"', payload)
 
 
 if __name__ == "__main__":

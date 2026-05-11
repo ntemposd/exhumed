@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Callable, Dict
 
 from upstash_redis import Redis
@@ -53,6 +54,7 @@ def build_runtime_services(
     generate_response_model: Callable[..., Any],
     streaming_response_factory: Callable[..., Any],
     export_session_pdf: Callable[..., Any],
+    prompt_capture_log_path: Path,
     logger: Any,
 ) -> Dict[str, Any]:
     redis_client = Redis(url=upstash_redis_rest_url, token=upstash_redis_rest_token)
@@ -78,6 +80,7 @@ def build_runtime_services(
         execution_metrics_model=execution_metrics_model,
         llm_api_base_url=llm_api_base_url,
         llm_api_key=llm_api_key,
+        prompt_capture_log_path=prompt_capture_log_path,
         logger=logger,
     )
     session = SessionService(
@@ -116,6 +119,7 @@ def build_runtime_services(
         llm_service=llm,
         fetch_agent_config=agent_registry.fetch_agent_config,
         save_latest_execution_metrics=observability.save_latest_execution_metrics_async,
+        save_prompt_capture=observability.save_prompt_capture_async,
         process_turn_response_model=process_turn_response_model,
         process_turn_stream_chunk_model=process_turn_stream_chunk_model,
         process_turn_stream_status_model=process_turn_stream_status_model,

@@ -29,9 +29,22 @@ class SessionService:
         self._export_session_pdf = export_session_pdf
         self._logger = logger
 
-    async def fetch_context_messages(self, session_id: UUID, limit: int = 5) -> List[Dict[str, Any]]:
+    async def fetch_context_messages(
+        self,
+        session_id: UUID,
+        limit: int = 5,
+        topic: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
         """Load the recent discussion turns needed to frame the next response."""
-        raw_entries = await self._run_blocking_io(self._database_service.get_recent_chat_history, str(session_id), limit)
+        if topic and str(topic).strip():
+            raw_entries = await self._run_blocking_io(
+                self._database_service.get_recent_chat_history_for_topic,
+                str(session_id),
+                topic,
+                limit,
+            )
+        else:
+            raw_entries = await self._run_blocking_io(self._database_service.get_recent_chat_history, str(session_id), limit)
         messages: List[Dict[str, Any]] = []
 
         for index, item in enumerate(raw_entries, start=1):

@@ -86,6 +86,25 @@ class DatabaseService:
     def _escape_filter_value(value: str) -> str:
         return value.replace("\\", "\\\\").replace("'", "\\'")
 
+    @staticmethod
+    def _normalize_topic(value: Any) -> str:
+        return str(value or "").strip().casefold()
+
+    def _parse_history_entries(self, entries: Sequence[Any]) -> List[Dict[str, Any]]:
+        history: List[Dict[str, Any]] = []
+
+        for raw_entry in entries:
+            try:
+                item = json.loads(self._decode_redis_value(raw_entry))
+            except json.JSONDecodeError:
+                continue
+
+            if isinstance(item, dict):
+                history.append(dict(item))
+
+        history.sort(key=lambda item: int(item.get("turn_number", 0)))
+        return history
+
     def set_chat_history(self, session_id: str, history: Sequence[Dict[str, Any]]) -> None:
         """Replace the full stored message history for a session."""
         key = self._history_key(session_id)
@@ -108,19 +127,7 @@ class DatabaseService:
     def get_chat_history(self, session_id: str) -> List[Dict[str, Any]]:
         """Load and normalize all persisted messages for a session."""
         entries = self.redis.lrange(self._history_key(session_id), 0, -1) or []
-        history: List[Dict[str, Any]] = []
-
-        for raw_entry in entries:
-            try:
-                item = json.loads(self._decode_redis_value(raw_entry))
-            except json.JSONDecodeError:
-                continue
-
-            if isinstance(item, dict):
-                history.append(dict(item))
-
-        history.sort(key=lambda item: int(item.get("turn_number", 0)))
-        return history
+        return self._parse_history_entries(entries)
 
     def get_recent_chat_history(self, session_id: str, limit: int) -> List[Dict[str, Any]]:
         """Read only the trailing window needed for prompt context or turn-local telemetry."""
@@ -128,19 +135,24 @@ class DatabaseService:
             return []
 
         entries = self.redis.lrange(self._history_key(session_id), -limit, -1) or []
-        history: List[Dict[str, Any]] = []
+        return self._parse_history_entries(entries)
 
-        for raw_entry in entries:
-            try:
-                item = json.loads(self._decode_redis_value(raw_entry))
-            except json.JSONDecodeError:
-                continue
+    def get_recent_chat_history_for_topic(self, session_id: str, topic: str, limit: int) -> List[Dict[str, Any]]:
+        """Return the most recent turns for the active topic only."""
+        if limit <= 0:
+            return []
 
-            if isinstance(item, dict):
-                history.append(dict(item))
+        normalized_topic = self._normalize_topic(topic)
+        if not normalized_topic:
+            return self.get_recent_chat_history(session_id, limit)
 
-        history.sort(key=lambda item: int(item.get("turn_number", 0)))
-        return history
+        history = self.get_chat_history(session_id)
+        filtered_history = [
+            item
+            for item in history
+            if self._normalize_topic(item.get("topic")) == normalized_topic
+        ]
+        return filtered_history[-limit:]
 
     def append_chat_message(self, session_id: str, message: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Append one message and return the normalized session history."""

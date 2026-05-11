@@ -72,6 +72,37 @@ class LLMService:
             llm_messages.append({"role": message.role, "content": message.content.strip()})
         return llm_messages
 
+    def _resolve_temperature(self, agent_config: Any, temperature_override: Optional[float] = None) -> float:
+        return (
+            float(temperature_override)
+            if isinstance(temperature_override, (int, float))
+            else float(agent_config.temperature)
+        )
+
+    def build_provider_request(
+        self,
+        *,
+        messages: List[Dict[str, str]],
+        agent_config: Any,
+        temperature_override: Optional[float] = None,
+        stream: bool,
+    ) -> Dict[str, Any]:
+        body: Dict[str, Any] = {
+            "model": self._model_id,
+            "messages": messages,
+            "temperature": self._resolve_temperature(agent_config, temperature_override),
+            "max_tokens": agent_config.max_tokens,
+            "top_p": 0.95,
+            "stream": stream,
+        }
+        if stream:
+            body["stream_options"] = {"include_usage": True}
+
+        return {
+            "request_url": f"{self._api_base_url}/chat/completions",
+            "body": body,
+        }
+
     async def call_llm_api(
         self,
         prompt: str,
@@ -79,21 +110,15 @@ class LLMService:
         temperature_override: Optional[float] = None,
     ) -> tuple[str, Any]:
         """Execute a non-streaming completion request with shared retry semantics."""
-        api_url = f"{self._api_base_url}/chat/completions"
         headers = {"Authorization": f"Bearer {self._api_key}"}
-        effective_temperature = (
-            float(temperature_override)
-            if isinstance(temperature_override, (int, float))
-            else float(agent_config.temperature)
+        provider_request = self.build_provider_request(
+            messages=[{"role": "user", "content": prompt}],
+            agent_config=agent_config,
+            temperature_override=temperature_override,
+            stream=False,
         )
-        payload = {
-            "model": self._model_id,
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": effective_temperature,
-            "max_tokens": agent_config.max_tokens,
-            "top_p": 0.95,
-            "stream": False,
-        }
+        api_url = provider_request["request_url"]
+        payload = provider_request["body"]
 
         for attempt in range(self._max_retries + 1):
             try:
@@ -158,22 +183,15 @@ class LLMService:
         on_retry: Optional[Callable[[float, int], Awaitable[None]]] = None,
     ) -> AsyncIterator[str]:
         """Stream completion chunks from the provider with shared retry semantics."""
-        api_url = f"{self._api_base_url}/chat/completions"
         headers = {"Authorization": f"Bearer {self._api_key}"}
-        effective_temperature = (
-            float(temperature_override)
-            if isinstance(temperature_override, (int, float))
-            else float(agent_config.temperature)
+        provider_request = self.build_provider_request(
+            messages=messages,
+            agent_config=agent_config,
+            temperature_override=temperature_override,
+            stream=True,
         )
-        payload = {
-            "model": self._model_id,
-            "messages": messages,
-            "temperature": effective_temperature,
-            "max_tokens": agent_config.max_tokens,
-            "top_p": 0.95,
-            "stream": True,
-            "stream_options": {"include_usage": True},
-        }
+        api_url = provider_request["request_url"]
+        payload = provider_request["body"]
 
         for attempt in range(self._max_retries + 1):
             try:

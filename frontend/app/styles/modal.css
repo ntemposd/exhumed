@@ -1,0 +1,70 @@
+.speakerModalRoot {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.speakerModalOpen {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.speakerModalScrim {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(20, 17, 15, 0.42);
+}
+
+.speakerModalPanel {
+  position: relative;
+  z-index: 1;
+  width: min(1120px, calc(100vw - 32px));
+  max-height: min(86vh, 920px);
+  overflow: auto;
+  padding: 22px;
+  border: 2px solid var(--line);
+  background:
+    radial-gradient(circle at top right, rgba(227, 177, 0, 0.16), transparent 28%),
+    linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(242, 228, 203, 0.96));
+  box-shadow: none;
+  transform: translateY(14px) scale(0.98);
+  transition: transform 180ms ease;
+}
+
+.speakerModalOpen .speakerModalPanel {
+  transform: translateY(0) scale(1);
+}
+
+.speakerModalHeader,
+.speakerModalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+.speakerModalHeader {
+  margin-bottom: var(--space-7);
+}
+
+.speakerModalFooter {
+  margin-top: var(--space-7);
+}
+
+.speakerModalClose {
+  min-width: 48px;
+  padding: 0 var(--space-4);
+}
+
+.speakerModalGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-8) 20px;
+}

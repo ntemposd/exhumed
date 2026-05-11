@@ -1,0 +1,202 @@
+.transcript {
+  display: grid;
+  gap: 14px;
+  padding: 22px 22px 64px;
+}
+
+.bubble {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  padding: 16px;
+  border: 3px solid var(--line);
+  box-shadow: 6px 6px 0 var(--line);
+}
+
+.bubbleAssistant,
+.bubbleTone0 {
+  justify-self: stretch;
+  background: linear-gradient(180deg, #effcf8, #d9f6ee);
+}
+
+.bubbleThinking {
+  position: relative;
+}
+
+.bubbleThinking::after {
+  display: none;
+}
+
+.bubbleFailed {
+  background: linear-gradient(180deg, #fde8e6, #f9c6bf);
+}
+
+.bubbleTone0 .bubbleName {
+  color: #0f766e;
+}
+
+.bubbleTone1 {
+  background: linear-gradient(180deg, #fff7ed, #fed7aa);
+}
+
+.bubbleTone1 .bubbleName {
+  color: #c2410c;
+}
+
+.bubbleTone2 {
+  background: linear-gradient(180deg, #eef2ff, #c7d2fe);
+}
+
+.bubbleTone2 .bubbleName {
+  color: #4338ca;
+}
+
+.bubbleTone3 {
+  background: linear-gradient(180deg, #fdf2f8, #fbcfe8);
+}
+
+.bubbleTone3 .bubbleName {
+  color: #be185d;
+}
+
+.bubbleTone4 {
+  background: linear-gradient(180deg, #f0fdf4, #bbf7d0);
+}
+
+.bubbleTone4 .bubbleName {
+  color: #15803d;
+}
+
+.bubbleHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  overflow: hidden;
+  border: 2px solid var(--line);
+  background: #fff;
+  font-weight: 700;
+  object-fit: cover;
+}
+
+.bubbleIdentity {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding-top: 1px;
+  min-width: 0;
+}
+
+.bubbleName {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.bubbleMeta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bubbleText {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.bubbleThinkingState {
+  position: relative;
+  width: 100%;
+  min-height: 36px;
+  overflow: hidden;
+}
+
+.bubbleThinkingIcon {
+  position: absolute;
+  top: 50%;
+  left: -40px;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: crisp-edges;
+  transform: translateY(-50%);
+  animation: bubbleSkullTraverse 2.6s linear infinite;
+}
+
+@keyframes bubbleSkullTraverse {
+  0% {
+    left: -40px;
+    transform: translateY(-50%) rotate(0deg);
+  }
+
+  100% {
+    left: calc(100% + 12px);
+    transform: translateY(-50%) rotate(1080deg);
+  }
+}
+
+.bubbleReadMore {
+  justify-self: end;
+  border: none;
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-underline-offset: 0.16em;
+  cursor: pointer;
+}
+
+@media (min-width: 1181px) {
+  .bubbleName {
+    font-size: 0.92rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .transcript {
+    padding: 16px;
+  }
+
+  .bubble {
+    max-width: 100%;
+    box-shadow: 4px 4px 0 var(--line);
+  }
+
+  .avatar {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .bubbleThinkingState {
+    min-height: 34px;
+  }
+
+  .bubbleThinkingIcon {
+    left: -36px;
+    width: 26px;
+    height: 26px;
+  }
+}

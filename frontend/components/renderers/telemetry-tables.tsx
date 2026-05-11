@@ -1,5 +1,8 @@
 // Shared table primitives keep the telemetry column visually consistent while
 // letting each section supply its own prepared row data.
+import primitives from "./telemetry-primitives.module.css";
+import styles from "./telemetry-tables.module.css";
+
 type TelemetryTableVariant = "plain" | "bordered" | "shadowed";
 
 export type TelemetryTableRow = Record<string, string>;
@@ -19,8 +22,14 @@ type TelemetryTableShellProps = {
 };
 
 function TelemetryTableShell({ children, className = "", variant = "plain" }: TelemetryTableShellProps) {
+  const variantClassName = variant === "bordered"
+    ? primitives.tableShellBordered
+    : variant === "shadowed"
+      ? primitives.tableShellShadowed
+      : "";
+
   return (
-    <div className={`telemetryTableShell ${className}`.trim()} data-variant={variant}>
+    <div className={[primitives.tableShell, variantClassName, className].filter(Boolean).join(" ")}>
       {children}
     </div>
   );
@@ -32,9 +41,9 @@ export function VectorUsageTable({ rows }: { rows: VectorUsageRow[] }) {
   }
 
   return (
-    <TelemetryTableShell className="vectorUsageTableShell" variant="bordered">
-      <div className="vectorUsageTableInner">
-        <table className="telemetryTable vectorUsageTable">
+    <TelemetryTableShell className={styles.vectorUsageTableShell} variant="bordered">
+      <div className={styles.vectorUsageTableInner}>
+        <table className={[primitives.table, styles.vectorUsageTable].join(" ")}>
           <thead>
             <tr>
               <th>Turn</th>
@@ -70,7 +79,7 @@ export function TelemetryTable({ rows, variant = "plain" }: { rows: TelemetryTab
 
   return (
     <TelemetryTableShell variant={variant}>
-      <table className="telemetryTable">
+      <table className={primitives.table}>
         <thead>
           <tr>
             {columns.map((column) => (

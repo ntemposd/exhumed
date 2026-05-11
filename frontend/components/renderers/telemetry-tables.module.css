@@ -1,0 +1,23 @@
+.vectorUsageTableShell {
+  width: 100%;
+  margin-top: 0.85rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.vectorUsageTableInner {
+  display: inline-block;
+  width: max-content;
+  min-width: 100%;
+}
+
+.vectorUsageTable {
+  width: max-content;
+  min-width: 100%;
+}
+
+.vectorUsageTable th,
+.vectorUsageTable td {
+  vertical-align: top;
+}

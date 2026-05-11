@@ -7,9 +7,15 @@ from backend.services.turn_workflow import TurnWorkflowService
 
 class TurnWorkflowServiceTests(unittest.IsolatedAsyncioTestCase):
     async def test_prepare_turn_inputs_extracts_previous_response(self):
+        captured_topics = []
+
+        async def fetch_context_messages(session_id, limit, topic):
+            captured_topics.append(topic)
+            return [{"message": "Previous turn", "display_name": "Socrates", "agent_id": "agt_001"}]
+
         service = TurnWorkflowService(
             fetch_agent_config=self._fetch_agent_config,
-            fetch_context_messages=self._fetch_context_messages,
+            fetch_context_messages=fetch_context_messages,
             get_agent_context_matches=lambda topic, agent_id: [{"data": topic, "agent_id": agent_id}],
             sanitize_generated_message=lambda message, display_name: message,
             save_latest_execution_metrics=self._noop_async,
@@ -29,6 +35,7 @@ class TurnWorkflowServiceTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(context_messages), 1)
         self.assertEqual(matches[0]["data"], "virtue")
         self.assertEqual(previous_response, "Previous turn")
+        self.assertEqual(captured_topics, ["virtue"])
 
     async def test_finalize_generated_turn_sanitizes_and_persists(self):
         stored_messages = []
@@ -71,7 +78,7 @@ class TurnWorkflowServiceTests(unittest.IsolatedAsyncioTestCase):
     async def _fetch_agent_config(self, agent_id):
         return SimpleNamespace(agent_id=agent_id, display_name="Socrates")
 
-    async def _fetch_context_messages(self, session_id, limit):
+    async def _fetch_context_messages(self, session_id, limit, topic=None):
         return [{"message": "Previous turn", "display_name": "Socrates", "agent_id": "agt_001"}]
 
     async def _save_message_to_storage(self, **kwargs):

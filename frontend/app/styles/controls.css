@@ -1,0 +1,423 @@
+.panel {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.sidebarSectionGroup {
+  display: grid;
+  gap: 4px;
+}
+
+.sidebarSectionBody {
+  min-width: 0;
+}
+
+.sidebarSectionHeading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  margin-top: 1.33rem;
+  color: var(--ink);
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.columnTitle.sidebarSectionHeading {
+  margin-bottom: 0;
+  font-size: 1.12rem;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.metricStrip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.miniMetric,
+.statCard {
+  border: 2px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 250, 242, 0.98), rgba(247, 232, 208, 0.96));
+  box-shadow: 4px 4px 0 var(--line);
+  padding: 10px 12px;
+}
+
+.miniMetricLabel,
+.statLabel,
+.topicBannerLabel,
+.ledgerLabel {
+  display: block;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.miniMetricValue,
+.statValue,
+.progressValue,
+.ledgerValue {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.field,
+.textarea,
+.select {
+  width: 100%;
+  border: 2px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(247, 235, 214, 0.96));
+  color: var(--ink);
+  padding: 12px 14px;
+  box-shadow: 4px 4px 0 var(--line);
+}
+
+.textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.agentList {
+  display: grid;
+  gap: 10px;
+  max-height: 44vh;
+  overflow-y: auto;
+}
+
+.helper,
+.emptyState,
+.statusNote {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.draftedCouncil {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.draftedChip {
+  display: inline-grid;
+  grid-template-columns: minmax(0, 1fr) 18px;
+  align-items: start;
+  gap: var(--space-2);
+  width: auto;
+  max-width: 100%;
+  flex: 0 1 auto;
+  padding: var(--space-2) var(--space-3);
+  border: 2px solid var(--line);
+  background: linear-gradient(180deg, #fffdf8, #f3ddbc);
+  box-shadow: 3px 3px 0 var(--line);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.draftedChipLabel {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+  text-align: left;
+  font-size: 0.77rem;
+  font-weight: 500;
+}
+
+.draftedChipRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.draftedChip:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0 var(--line);
+  background: linear-gradient(180deg, #fff7dd, #edd0a1);
+}
+
+.draftedChip:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
+.entropyPanel {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.entropyHeader {
+  display: block;
+}
+
+.entropySlider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  margin: 0;
+  height: 22px;
+  border: none;
+  background: transparent;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.entropySlider::-webkit-slider-runnable-track {
+  height: 12px;
+  border: 2px solid var(--line);
+  background: linear-gradient(to right, #facc15 0, #facc15 var(--slider-fill), transparent var(--slider-fill), transparent 100%), linear-gradient(180deg, #fffdf8, #fffdf8);
+  box-shadow: 3px 3px 0 var(--line);
+}
+
+.entropySlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border: 2px solid var(--line);
+  border-radius: 0;
+  background: #2e3a4d;
+  box-shadow: 2px 3px 0 #14110f;
+  clip-path: none;
+  filter: none;
+}
+
+.entropySlider::-moz-range-track {
+  height: 12px;
+  border: 2px solid var(--line);
+  background: linear-gradient(180deg, #fffdf8, #fffdf8);
+  box-shadow: 3px 3px 0 var(--line);
+}
+
+.entropySlider::-moz-range-progress {
+  height: 10px;
+  border: 2px solid var(--line);
+  background: linear-gradient(180deg, #ffd84a, #facc15);
+  box-shadow: 3px 3px 0 var(--line);
+}
+
+.entropySlider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--line);
+  border-radius: 0;
+  background: #2e3a4d;
+  box-shadow: 2px 3px 0 #14110f;
+  clip-path: none;
+  filter: none;
+}
+
+.entropySlider:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.entropySliderTelemetry {
+  opacity: 0.82;
+}
+
+.sliderLabels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: -2px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.commandPanel .actionsCompact {
+  display: grid;
+  gap: 10px;
+}
+
+.commandPanel .actionsCompact > * {
+  width: 100%;
+  flex: 0 0 auto;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.actionsCompact {
+  justify-content: stretch;
+}
+
+.actionsCompact > * {
+  flex: 1 1 auto;
+}
+
+.button,
+.buttonGhost,
+.buttonDanger {
+  border: 3px solid var(--line);
+  border-radius: 0;
+  padding: 11px var(--space-5);
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0 var(--line);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.button {
+  min-height: 48px;
+  background: linear-gradient(180deg, #ffe16a, #facc15);
+  color: #111111;
+}
+
+.buttonGhost,
+.buttonDanger {
+  background: linear-gradient(180deg, #2e3a4d, #1f2937);
+  color: #f8fafc;
+}
+
+.buttonBlock {
+  width: 100%;
+  min-height: 48px;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.button:hover,
+.buttonGhost:hover,
+.buttonDanger:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--line);
+  border-color: var(--line);
+}
+
+.button:hover {
+  background: linear-gradient(180deg, #ffd84a, #eab308);
+  color: #111111;
+}
+
+.buttonGhost:hover,
+.buttonDanger:hover {
+  background: linear-gradient(180deg, #44526a, #374151);
+  color: #f8fafc;
+}
+
+.button:disabled,
+.buttonGhost:disabled,
+.buttonDanger:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: 4px 4px 0 var(--line);
+}
+
+.sessionPanel {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.sessionInline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.sessionInlineLabel {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sessionInlineValue {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.85rem;
+  font-weight: 400;
+}
+
+.sessionActions {
+  width: 100%;
+}
+
+.statsGrid,
+.statsGridCompact {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.progressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.progressTrack {
+  width: 100%;
+  height: 16px;
+  border: 2px solid var(--line);
+  background: linear-gradient(180deg, #fffdf8, #f9ecd9);
+  box-shadow: 3px 3px 0 var(--line);
+  overflow: hidden;
+}
+
+.progressTrackSlim {
+  height: 12px;
+  box-shadow: 2px 2px 0 var(--line);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #ffb36b);
+}
+
+.progressFillSignal {
+  background: linear-gradient(90deg, var(--signal), #74d6cb);
+}

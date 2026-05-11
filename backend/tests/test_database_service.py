@@ -139,6 +139,29 @@ class DatabaseServiceHistoryTests(unittest.TestCase):
 
         self.assertEqual(service.get_recent_chat_history("session-4", 0), [])
 
+    def test_get_recent_chat_history_for_topic_filters_cross_topic_entries(self):
+        service = self.create_service()
+        messages = [
+            {"turn_number": 1, "topic": "Democracy", "message": "first democracy"},
+            {"turn_number": 2, "topic": "Tyrany", "message": "first tyranny"},
+            {"turn_number": 3, "topic": "Democracy", "message": "second democracy"},
+            {"turn_number": 4, "topic": "Tyrany", "message": "second tyranny"},
+            {"turn_number": 5, "topic": "Democracy", "message": "third democracy"},
+        ]
+
+        for message in messages:
+            service.store_chat_message("session-5", message)
+
+        recent_history = service.get_recent_chat_history_for_topic("session-5", "Tyrany", 2)
+
+        self.assertEqual(
+            recent_history,
+            [
+                {"turn_number": 2, "topic": "Tyrany", "message": "first tyranny"},
+                {"turn_number": 4, "topic": "Tyrany", "message": "second tyranny"},
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

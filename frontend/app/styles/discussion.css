@@ -1,0 +1,77 @@
+.discussionPane {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
+.discussionTitleRow {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.topicSection {
+  display: grid;
+  gap: 8px;
+  padding: 0 22px 10px;
+}
+
+.topicSectionHeading {
+  margin-bottom: 0;
+}
+
+.topicEditor {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  height: auto;
+  box-sizing: border-box;
+  border: 2px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(247, 235, 214, 0.96));
+  color: var(--ink);
+  padding: 10px 14px;
+  box-shadow: 4px 4px 0 var(--line);
+  overflow: hidden;
+  overflow-y: hidden;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  resize: none;
+}
+
+.topicEditorLoading {
+  display: flex;
+  align-items: center;
+  color: #57534e;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.topicEditor:disabled {
+  opacity: 0.78;
+}
+
+.chatHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 16px;
+  padding: 0 22px;
+  border-bottom: none;
+  background: transparent;
+  margin-top: 1rem;
+}
+
+.discussionStatus {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

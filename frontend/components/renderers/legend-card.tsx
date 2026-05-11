@@ -3,6 +3,7 @@ import type { Agent } from "@/lib/types";
 
 import type { LegendDetails } from "../types";
 import { avatarUrlForAgent } from "../utils";
+import styles from "./legend-card.module.css";
 
 type LegendCardProps = {
   legend: LegendDetails;
@@ -15,28 +16,33 @@ type LegendCardProps = {
 
 export function LegendCard({ legend, agent, badge, active = false, onClick, disabled = false }: LegendCardProps) {
   const isUnavailable = !agent;
-  const className = `agentCard ${active ? "agentCardActive" : ""} ${isUnavailable ? "agentCardUnavailable" : ""} ${onClick ? "agentCardInteractive" : ""}`.trim();
+  const className = [
+    styles.agentCard,
+    active ? styles.agentCardActive : "",
+    isUnavailable ? styles.agentCardUnavailable : "",
+    onClick ? styles.agentCardInteractive : "",
+  ].filter(Boolean).join(" ");
 
   const content = (
     <>
-      <div className="agentCardHeader">
-        <div className="agentPortraitFrame">
+      <div className={styles.agentCardHeader}>
+        <div className={styles.agentPortraitFrame}>
           <img
-            className="agentPortrait"
+            className={styles.agentPortrait}
             src={avatarUrlForAgent(legend.agent_id)}
             alt={`${legend.display_name} portrait`}
             loading="lazy"
           />
         </div>
-        <div className="agentCardBody">
-          <div className="agentIdentity">
-            <p className="agentName">{legend.display_name}</p>
-            <p className="agentDescription">{legend.archetype}</p>
+        <div className={styles.agentCardBody}>
+          <div className={styles.agentIdentity}>
+            <p className={styles.agentName}>{legend.display_name}</p>
+            <p className={styles.agentDescription}>{legend.archetype}</p>
           </div>
-          <div className="agentCardFooter">
-            <div className="agentCardTopRow">
-              <span className="agentDraftState">
-                <span className="agentDraftStateText">{badge}</span>
+          <div className={styles.agentCardFooter}>
+            <div className={styles.agentCardTopRow}>
+              <span className={styles.agentDraftState}>
+                <span>{badge}</span>
               </span>
             </div>
           </div>

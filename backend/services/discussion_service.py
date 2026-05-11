@@ -20,6 +20,7 @@ class DiscussionService:
         llm_service: Any,
         fetch_agent_config: Callable[[str], Awaitable[Any]],
         save_latest_execution_metrics: Callable[[Any], Awaitable[None]],
+        save_prompt_capture: Optional[Callable[[Dict[str, Any]], Awaitable[None]]],
         process_turn_response_model: Callable[..., Any],
         process_turn_stream_chunk_model: Callable[..., Any],
         process_turn_stream_status_model: Callable[..., Any],
@@ -35,6 +36,7 @@ class DiscussionService:
         self._llm_service = llm_service
         self._fetch_agent_config = fetch_agent_config
         self._save_latest_execution_metrics = save_latest_execution_metrics
+        self._save_prompt_capture = save_prompt_capture
         self._process_turn_response_model = process_turn_response_model
         self._process_turn_stream_chunk_model = process_turn_stream_chunk_model
         self._process_turn_stream_status_model = process_turn_stream_status_model
@@ -44,6 +46,61 @@ class DiscussionService:
         self._vector_telemetry_model = vector_telemetry_model
         self._logger = logger
         self._utcnow = utcnow
+
+    async def _capture_provider_request(
+        self,
+        *,
+        route: str,
+        session_id: Any,
+        topic: str,
+        turn_number: int,
+        agent_config: Any,
+        prompt: str,
+        context_messages: list[dict[str, Any]],
+        agent_context_matches: list[dict[str, Any]],
+        temperature_override: Optional[float],
+        stream: bool,
+    ) -> None:
+        """Persist a local JSONL record of the exact provider request built for this turn."""
+        if self._save_prompt_capture is None:
+            return
+
+        provider_request = self._llm_service.build_provider_request(
+            messages=[{"role": "user", "content": prompt}],
+            agent_config=agent_config,
+            temperature_override=temperature_override,
+            stream=stream,
+        )
+        vector_context = [
+            {
+                "id": match.get("id"),
+                "score": match.get("score"),
+                "source_title": (match.get("metadata") or {}).get("source_title"),
+                "data": match.get("data") or "",
+            }
+            for match in agent_context_matches
+        ]
+        await self._save_prompt_capture(
+            {
+                "route": route,
+                "provider_mode": "stream" if stream else "non-stream",
+                "session_id": str(session_id),
+                "agent_id": getattr(agent_config, "agent_id", None),
+                "display_name": getattr(agent_config, "display_name", ""),
+                "topic": topic,
+                "turn_number": turn_number,
+                "context_turns": len(context_messages),
+                "vector_matches": len(agent_context_matches),
+                "context_messages": [dict(message) for message in context_messages],
+                "vector_context": vector_context,
+                "prompt": prompt,
+                "provider_request": provider_request,
+                "provider_url": provider_request["request_url"].rsplit("/chat/completions", 1)[0],
+                "model_id": provider_request["body"].get("model"),
+                "temperature": provider_request["body"].get("temperature"),
+                "max_tokens": provider_request["body"].get("max_tokens"),
+            }
+        )
 
     async def process_turn(self, request: Any) -> Any:
         """Generate and persist a complete non-streaming debate turn."""
@@ -66,6 +123,18 @@ class DiscussionService:
             build_vector_telemetry=self._vector_telemetry_model,
         )
         prompt = self._session_service.build_context_prompt(request.topic, context_messages, agent_config, agent_context_matches)
+        await self._capture_provider_request(
+            route="process-turn",
+            session_id=request.session_id,
+            topic=request.topic,
+            turn_number=turn_number,
+            agent_config=agent_config,
+            prompt=prompt,
+            context_messages=context_messages,
+            agent_context_matches=agent_context_matches,
+            temperature_override=request.temperature,
+            stream=False,
+        )
         generated_message, execution_metrics = await self._llm_service.call_llm_api(
             prompt,
             agent_config,
@@ -115,6 +184,18 @@ class DiscussionService:
             build_vector_telemetry=self._vector_telemetry_model,
         )
         prompt = self._session_service.build_context_prompt(request.topic, context_messages, agent_config, agent_context_matches)
+        await self._capture_provider_request(
+            route="process-turn/stream",
+            session_id=request.session_id,
+            topic=request.topic,
+            turn_number=turn_number,
+            agent_config=agent_config,
+            prompt=prompt,
+            context_messages=context_messages,
+            agent_context_matches=agent_context_matches,
+            temperature_override=request.temperature,
+            stream=True,
+        )
         final_payload: Optional[Any] = None
         event_queue: asyncio.Queue[Optional[bytes]] = asyncio.Queue()
 
@@ -215,6 +296,18 @@ class DiscussionService:
             build_vector_telemetry=self._vector_telemetry_model,
         )
         prompt = self._session_service.build_context_prompt(request.topic, context_messages, agent_config, agent_context_matches)
+        await self._capture_provider_request(
+            route="generate",
+            session_id=request.session_id,
+            topic=request.topic,
+            turn_number=turn_number,
+            agent_config=agent_config,
+            prompt=prompt,
+            context_messages=context_messages,
+            agent_context_matches=agent_context_matches,
+            temperature_override=None,
+            stream=False,
+        )
         generated_message, execution_metrics = await self._llm_service.call_llm_api(prompt, agent_config)
         generated_message, telemetry, stored_message = await self._turn_workflow_service.finalize_generated_turn(
             session_id=request.session_id,

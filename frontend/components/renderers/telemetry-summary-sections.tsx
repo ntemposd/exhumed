@@ -1,5 +1,7 @@
 // These sections render the derived telemetry summary once the parent has
 // already converted raw metrics into display-ready rows and labels.
+import primitives from "./telemetry-primitives.module.css";
+
 import { SidebarSection } from "./sidebar-section";
 import { TelemetryTable, VectorUsageTable, type TelemetryTableRow, type VectorUsageRow } from "./telemetry-tables";
 
@@ -46,22 +48,22 @@ export function TelemetrySummarySections({
       </SidebarSection>
 
       <SidebarSection title="VECTOR USAGE">
-        <div className="telemetryCard telemetryMetricCard">
-          <div className="telemetryTokenHeader">
-            <div className="telemetryTokenTopline">
-              <div className="telemetryTokenValue">{totalVectorHits} {totalVectorHits === 1 ? "Hit" : "Hits"}</div>
-              <span className="telemetryTokenBadge">{vectorTurnCount} {vectorTurnCount === 1 ? "Turn" : "Turns"}</span>
+        <div className={[primitives.card, primitives.metricCard].join(" ")}>
+          <div className={primitives.tokenHeader}>
+            <div className={primitives.topline}>
+              <div className={primitives.value}>{totalVectorHits} {totalVectorHits === 1 ? "Hit" : "Hits"}</div>
+              <span className={primitives.badge}>{vectorTurnCount} {vectorTurnCount === 1 ? "Turn" : "Turns"}</span>
             </div>
           </div>
-          <div className="telemetryCaption">
+          <div className={primitives.caption}>
             {vectorTurnCount > 0
               ? `${uniqueVectorSources} unique ${uniqueVectorSources === 1 ? "source" : "sources"} contributed retrieval context.`
               : "No retrieval activity yet."}
           </div>
           {uniqueVectorSourceLabels.length > 0 ? (
-            <div className="vectorUsageSourceChipRow">
+            <div className={primitives.sourceChipRow}>
               {uniqueVectorSourceLabels.map((source) => (
-                <span key={source} className="vectorSourceChip">{source}</span>
+                <span key={source} className={primitives.sourceChip}>{source}</span>
               ))}
             </div>
           ) : null}
@@ -70,39 +72,39 @@ export function TelemetrySummarySections({
       </SidebarSection>
 
       <SidebarSection title="TOKEN USAGE">
-        <div className="telemetryCard telemetryMetricCard">
-          <div className="telemetryTokenHeader">
-            <div className="telemetryTokenTopline">
-              <div className="telemetryTokenValue">{displayedTotalTokens} Tokens</div>
-              <span className="telemetryTokenBadge">{requestCount} {requestCount === 1 ? "Request" : "Requests"}</span>
+        <div className={[primitives.card, primitives.metricCard].join(" ")}>
+          <div className={primitives.tokenHeader}>
+            <div className={primitives.topline}>
+              <div className={primitives.value}>{displayedTotalTokens} Tokens</div>
+              <span className={primitives.badge}>{requestCount} {requestCount === 1 ? "Request" : "Requests"}</span>
             </div>
           </div>
-          {tokenTableRows.length > 0 ? <TelemetryTable rows={tokenTableRows} variant="bordered" /> : <div className="telemetryCaption">No request metrics yet. Each turn will be one model request.</div>}
+          {tokenTableRows.length > 0 ? <TelemetryTable rows={tokenTableRows} variant="bordered" /> : <div className={primitives.caption}>No request metrics yet. Each turn will be one model request.</div>}
         </div>
       </SidebarSection>
 
       <SidebarSection title="SESSION COST">
-        <div className="telemetryCard">
-          <div className="telemetryCostValue">${sessionBurnUsd.toFixed(6)}</div>
-          <div className="telemetryCaption">{SESSION_COST_HELPER_TEXT}</div>
+        <div className={primitives.card}>
+          <div className={primitives.costValue}>${sessionBurnUsd.toFixed(6)}</div>
+          <div className={primitives.caption}>{SESSION_COST_HELPER_TEXT}</div>
         </div>
       </SidebarSection>
 
       <SidebarSection title="DEBATE DIVERSITY">
-        <div className="telemetryCard">
-          <div className="telemetryEntropyTopline">
-            <span className="telemetryEntropyValue">{diversityValue}</span>
-            <span className="telemetryEntropyStatus">{diversityLabel}</span>
+        <div className={primitives.card}>
+          <div className={primitives.entropyTopline}>
+            <span className={primitives.entropyValue}>{diversityValue}</span>
+            <span className={primitives.entropyStatus}>{diversityLabel}</span>
           </div>
-          <div className="telemetryEntropyTrack">
-            <div className="telemetryEntropyFill" style={{ width: `${observedRatio * 100}%` }} />
+          <div className={primitives.track}>
+            <div className={primitives.fill} style={{ width: `${observedRatio * 100}%` }} />
           </div>
-          <div className="telemetryCaption">{DIVERSITY_HELPER_TEXT}</div>
+          <div className={primitives.caption}>{DIVERSITY_HELPER_TEXT}</div>
         </div>
       </SidebarSection>
 
       <SidebarSection title="VOCAL SHARE">
-        {vocalShareRows.length > 0 ? <TelemetryTable rows={vocalShareRows} variant="shadowed" /> : <div className="telemetryCaption">No air-time data yet.</div>}
+        {vocalShareRows.length > 0 ? <TelemetryTable rows={vocalShareRows} variant="shadowed" /> : <div className={primitives.caption}>No air-time data yet.</div>}
       </SidebarSection>
     </>
   );
