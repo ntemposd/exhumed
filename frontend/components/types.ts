@@ -42,37 +42,6 @@ export type TelemetryPanelViewModel = {
   vocalShareRows: TelemetryTableRow[];
 };
 
-export type ControlSidebarViewModel = {
-  chrome: {
-    isSidebarOpen: boolean;
-    isMobileViewport: boolean;
-    showSidebarToggle: boolean;
-  };
-  session: {
-    discussionActive: boolean;
-    sessionId: string;
-    selectedCouncil: LegendDetails[];
-    targetEntropy: number;
-    controlError: string;
-    legendCatalogState: AsyncViewState;
-    isWipingSession: boolean;
-    isDownloadingTranscript: boolean;
-    startButtonLabel: string;
-  };
-};
-
-export type ControlSidebarActions = {
-  onToggleSidebar: () => void;
-  onOpenSpeakerModal: () => void;
-  onToggleCouncilMember: (agentId: string) => void;
-  onTargetEntropyChange: (value: number) => void;
-  onStartDebate: () => void;
-  onHaltDebate: () => void;
-  onWipeDebate: () => void | Promise<void>;
-  onDownloadTranscript: () => void | Promise<void>;
-  onRenewSession: () => void;
-};
-
 export type DebateMessage = {
   id: string;
   agent_id: string;

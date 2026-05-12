@@ -124,7 +124,7 @@
 
 .tableShellBordered {
   border: 2px solid var(--line);
-  box-shadow: none;
+  box-shadow: 6px 6px 0 var(--line);
 }
 
 .tableShellShadowed {

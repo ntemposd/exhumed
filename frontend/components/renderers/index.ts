@@ -1,5 +1,5 @@
 // Renderer exports group the presentational workbench surfaces and primitives.
-export { ControlSidebar } from "./control-sidebar";
+export { AppNavbar } from "./app-navbar";
 export { DiscussionPanel } from "./discussion-panel";
 export { DiscussionTranscript } from "./discussion-transcript";
 export { LegendCard } from "./legend-card";

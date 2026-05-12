@@ -56,7 +56,7 @@ export function useDebateController({
   const streamRevealFrameRef = useRef<number | null>(null);
 
   const hasMessages = messages.some((message) => !message.isThinking);
-  const startButtonLabel = isDebatePaused ? "⏵ Resume Debate" : hasMessages ? "🏁 Advance Debate" : "🏁 Start Debate";
+  const startButtonLabel = isDebatePaused ? "⏵ Resume Debate" : hasMessages ? "🏁 Advance" : "🏁 Start";
 
   function clearStreamRevealQueue(messageId?: string) {
     // The streaming renderer buffers partial chunks and reveals them on the

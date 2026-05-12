@@ -86,7 +86,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
   function toggleExpandedMessage(messageId: string) {
     setExpandedMessageIds((currentValue) => ({
       ...currentValue,
-      [messageId]: !(currentValue[messageId] ?? true),
+      [messageId]: !(currentValue[messageId] ?? false),
     }));
   }
 
@@ -100,14 +100,8 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
 
   return (
     <div className={styles.transcript} ref={transcriptRef}>
-      {!messages.length ? (
-        <p className="emptyState">
-          {emptyStateMessage}
-        </p>
-      ) : null}
-
       {messages.map((message) => {
-        const isExpanded = expandedMessageIds[message.id] ?? true;
+        const isExpanded = expandedMessageIds[message.id] ?? false;
         const sanitizedMessage = sanitizeDebateMessageText(message.message, message.display_name);
         const shouldTruncate = sanitizedMessage.length > MESSAGE_PREVIEW_LIMIT;
         const bubbleToneIndex = getStyleIndex(message.agent_id);

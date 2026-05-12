@@ -3,4 +3,3 @@
 export { useDebateController } from "./use-debate-controller";
 export { useTopicEditorState } from "./use-topic-editor-state";
 export { useAgentsCatalog, useServicesStatus } from "./use-workbench-data";
-export { useWorkbenchLayout } from "./use-workbench-layout";

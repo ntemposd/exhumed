@@ -1,7 +1,7 @@
 .transcript {
   display: grid;
   gap: 14px;
-  padding: 22px 22px 64px;
+  padding: 0;
 }
 
 .bubble {
@@ -176,7 +176,7 @@
 
 @media (max-width: 767px) {
   .transcript {
-    padding: 16px;
+    padding: 0;
   }
 
   .bubble {
