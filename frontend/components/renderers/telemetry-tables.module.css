@@ -21,3 +21,13 @@
 .vectorUsageTable td {
   vertical-align: top;
 }
+
+.summaryTable th:first-child,
+.summaryTable td:first-child {
+  white-space: nowrap;
+}
+
+.summaryTable th:not(:first-child),
+.summaryTable td:not(:first-child) {
+  text-align: right;
+}

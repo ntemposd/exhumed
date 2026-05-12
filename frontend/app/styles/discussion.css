@@ -4,41 +4,38 @@
   min-width: 0;
 }
 
-.discussionTitleRow {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.topicSection {
-  display: grid;
-  gap: 8px;
-  padding: 0 22px 10px;
-}
-
-.topicSectionHeading {
-  margin-bottom: 0;
-}
-
 .topicEditor {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  min-height: 44px;
+  min-height: 56px;
   height: auto;
   box-sizing: border-box;
   border: 2px solid var(--line);
-  background: linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(247, 235, 214, 0.96));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 252, 0.98), rgba(248, 239, 220, 0.96)),
+    linear-gradient(90deg, rgba(227, 177, 0, 0.08), rgba(15, 118, 110, 0.06));
   color: var(--ink);
-  padding: 10px 14px;
-  box-shadow: 4px 4px 0 var(--line);
+  padding: 14px 16px;
+  box-shadow: 6px 6px 0 var(--line);
   overflow: hidden;
   overflow-y: hidden;
   overflow-wrap: anywhere;
-  line-height: 1.5;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.55;
   resize: none;
+  outline: none;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.topicEditor:focus {
+  transform: translate(-1px, -1px);
+  box-shadow: 7px 7px 0 var(--line);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 252, 1), rgba(249, 241, 225, 0.98)),
+    linear-gradient(90deg, rgba(227, 177, 0, 0.1), rgba(15, 118, 110, 0.08));
 }
 
 .topicEditorLoading {
@@ -51,27 +48,4 @@
 
 .topicEditor:disabled {
   opacity: 0.78;
-}
-
-.chatHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 16px;
-  padding: 0 22px;
-  border-bottom: none;
-  background: transparent;
-  margin-top: 1rem;
-}
-
-.discussionStatus {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.74rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  text-align: left;
-  white-space: normal;
-  overflow-wrap: anywhere;
 }

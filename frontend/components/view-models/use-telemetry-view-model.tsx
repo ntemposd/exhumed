@@ -37,6 +37,10 @@ function getSpeakerLastName(displayName: string): string {
   return parts[parts.length - 1];
 }
 
+function formatSpeakerTurnLabel(displayName: string, turnNumber: number): string {
+  return `${getSpeakerLastName(displayName)} [T${String(turnNumber).padStart(2, "0")}]`;
+}
+
 export function useTelemetryViewModel({
   servicesState,
   sessionBurnUsd,
@@ -66,8 +70,7 @@ export function useTelemetryViewModel({
       const total = Number(message.execution_metrics.total_tokens ?? prompt + completion);
 
       return {
-        Turn: `T${String(message.turn_number).padStart(2, "0")}`,
-        Speaker: getSpeakerLastName(message.display_name),
+        Speaker: formatSpeakerTurnLabel(message.display_name, message.turn_number),
         Prompt: String(prompt),
         Comp: String(completion),
         Total: String(total),
@@ -85,8 +88,7 @@ export function useTelemetryViewModel({
 
   if (requestRows.length > 0) {
     requestRows.push({
-      Turn: "Total",
-      Speaker: "--",
+      Speaker: "Total",
       Prompt: String(promptTokens),
       Comp: String(completionTokens),
       Total: String(displayedTotalTokens),
@@ -161,8 +163,7 @@ export function useTelemetryViewModel({
   ));
   const vectorRows: VectorUsageRow[] = vectorTurns.map(({ turn_number, display_name, vector }) => {
     return {
-      turn: `T${String(turn_number).padStart(2, "0")}`,
-      speaker: getSpeakerLastName(display_name),
+      speaker: formatSpeakerTurnLabel(display_name, turn_number),
       hits: String(vector.match_count),
       top: typeof vector.top_score === "number" ? vector.top_score.toFixed(3) : "--",
       context: String(vector.context_chars),

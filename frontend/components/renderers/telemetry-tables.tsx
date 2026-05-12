@@ -8,7 +8,6 @@ type TelemetryTableVariant = "plain" | "bordered" | "shadowed";
 export type TelemetryTableRow = Record<string, string>;
 
 export type VectorUsageRow = {
-  turn: string;
   speaker: string;
   hits: string;
   top: string;
@@ -43,10 +42,9 @@ export function VectorUsageTable({ rows }: { rows: VectorUsageRow[] }) {
   return (
     <TelemetryTableShell className={styles.vectorUsageTableShell} variant="bordered">
       <div className={styles.vectorUsageTableInner}>
-        <table className={[primitives.table, styles.vectorUsageTable].join(" ")}>
+        <table className={[primitives.table, styles.vectorUsageTable, styles.summaryTable].join(" ")}>
           <thead>
             <tr>
-              <th>Turn</th>
               <th>Speaker</th>
               <th>Hits</th>
               <th>Chars</th>
@@ -55,8 +53,7 @@ export function VectorUsageTable({ rows }: { rows: VectorUsageRow[] }) {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={`${row.turn}-${row.speaker}`}>
-                <td>{row.turn}</td>
+              <tr key={row.speaker}>
                 <td>{row.speaker}</td>
                 <td>{row.hits}</td>
                 <td>{row.context}</td>
@@ -70,7 +67,7 @@ export function VectorUsageTable({ rows }: { rows: VectorUsageRow[] }) {
   );
 }
 
-export function TelemetryTable({ rows, variant = "plain" }: { rows: TelemetryTableRow[]; variant?: TelemetryTableVariant }) {
+export function TelemetryTable({ rows, variant = "plain", tableClassName = "" }: { rows: TelemetryTableRow[]; variant?: TelemetryTableVariant; tableClassName?: string }) {
   if (rows.length === 0) {
     return null;
   }
@@ -79,7 +76,7 @@ export function TelemetryTable({ rows, variant = "plain" }: { rows: TelemetryTab
 
   return (
     <TelemetryTableShell variant={variant}>
-      <table className={primitives.table}>
+      <table className={[primitives.table, tableClassName ? styles[tableClassName as keyof typeof styles] ?? tableClassName : ""].filter(Boolean).join(" ")}>
         <thead>
           <tr>
             {columns.map((column) => (

@@ -4,7 +4,9 @@
   }
 
   .workspace {
-    padding: 78px 16px 20px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    padding: 0 16px 20px;
   }
 
   .siteFooter {
@@ -14,61 +16,16 @@
   }
 
   .telemetryColumn {
-    grid-column: 1 / -1;
-    order: 3;
-    padding-left: 16px;
-    padding-right: 16px;
+    grid-column: auto;
+    order: 2;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
   }
 
-  .sidebarToggleFloating {
-    top: 12px;
-    left: var(--space-6);
-    min-height: 44px;
-    padding: 0 var(--space-4);
-    box-shadow: 4px 4px 0 var(--line);
-  }
-
-  .sidebarMobile {
-    padding: 18px 14px 16px;
-    border-right: 2px solid var(--line);
-    box-shadow: 4px 0 14px rgba(20, 17, 15, 0.12);
-  }
-
-  .workspaceStackedCollapsed {
-    padding-top: 78px;
-  }
-
-  .sidebarStacked {
-    padding: 14px 16px 18px;
-  }
-
-  .workspaceStackedCollapsed .chatColumn,
-  .workspaceStackedCollapsed .telemetryColumn {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
-  .sidebarRailHeader {
-    margin-bottom: 4px;
-  }
-
-  .topicSection,
-  .chatHeader {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
-  .workspaceMobile,
-  .workspaceViewportPending {
-    grid-template-columns: 1fr;
-  }
-
-  .workspaceViewportPending {
-    padding: 0;
-  }
-
-  .sidebarViewportPending {
-    visibility: hidden;
+  .chatColumn {
+    padding-left: 0;
+    padding-top: 0;
   }
 
   .speakerModalGrid {
@@ -82,47 +39,17 @@
     width: 100%;
   }
 
-  .workspace {
-    padding: 78px 10px 20px;
-  }
-
   .siteFooter {
     width: 100%;
     margin: 18px 0 0;
     padding: 18px 8px 18px;
   }
 
-  .sidebarToggleFloating {
-    top: 12px;
-    left: 12px;
-    min-height: 44px;
-    padding: 0 12px;
-    box-shadow: 4px 4px 0 var(--line);
-  }
-
-  .sidebarBrandCopy {
-    display: grid;
-  }
-
-  .sidebarBrandSubtitle {
-    display: block;
-  }
-
   .sidebarSectionHeading {
-    font-size: 0.92rem;
-  }
-
-  .telemetryColumn {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-
-  .sidebarResizeHandle {
-    display: none;
+    font-size: 0.88rem;
   }
 
   .sidebarToggle,
-  .sidebarToggleIntegrated,
   .button,
   .buttonGhost,
   .buttonDanger,
@@ -147,28 +74,8 @@
     grid-template-columns: 1fr;
   }
 
-  .chatHeader,
-  .panel {
-    padding: 16px;
-  }
-
-  .chatHeader {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .discussionTitleRow {
-    gap: 8px;
-  }
-
   .sectionTitle {
     font-size: 1.35rem;
-  }
-
-  .discussionStatus {
-    text-align: left;
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
   }
 
   .speakerModalPanel {
@@ -186,10 +93,6 @@
   .speakerModalGrid {
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
-  }
-
-  .topicSection {
-    padding: 14px 16px;
   }
 
   .speakerModalRoot {

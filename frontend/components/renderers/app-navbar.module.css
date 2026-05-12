@@ -1,0 +1,67 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 20px 28px 18px;
+  border-bottom: 2px solid rgba(20, 17, 15, 0.12);
+  background:
+    radial-gradient(circle at top left, rgba(227, 177, 0, 0.15), transparent 28%),
+    linear-gradient(180deg, rgba(255, 249, 240, 0.98), rgba(246, 235, 214, 0.94));
+}
+
+.brandMark {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  object-fit: contain;
+}
+
+.brandCopy {
+  display: grid;
+  min-width: 0;
+}
+
+.brandTitle {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.brandSubtitle {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 767px) {
+  .navbar {
+    padding: 12px 12px 10px;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+  }
+
+  .brandTitle {
+    font-size: 1rem;
+  }
+
+  .brandSubtitle {
+    font-size: 0.66rem;
+  }
+}

@@ -43,22 +43,16 @@ export function TelemetrySummarySections({
 }: TelemetrySummarySectionsProps) {
   return (
     <>
-      <SidebarSection title="MODEL PERFORMANCE">
-        <TelemetryTable rows={performanceRows} variant="shadowed" />
-      </SidebarSection>
-
-      <SidebarSection title="VECTOR USAGE">
-        <div className={[primitives.card, primitives.metricCard].join(" ")}>
+      <SidebarSection>
+        <div className={primitives.metricCardBare}>
           <div className={primitives.tokenHeader}>
             <div className={primitives.topline}>
-              <div className={primitives.value}>{totalVectorHits} {totalVectorHits === 1 ? "Hit" : "Hits"}</div>
-              <span className={primitives.badge}>{vectorTurnCount} {vectorTurnCount === 1 ? "Turn" : "Turns"}</span>
+              <div className={primitives.value}>
+                <span className={primitives.metricValueNumber}>{totalVectorHits.toLocaleString()}</span>
+                <span className={primitives.metricInlineTitle}>Vector {totalVectorHits === 1 ? "Call" : "Calls"}</span>
+              </div>
+              <span className={primitives.badge}>{uniqueVectorSources} {uniqueVectorSources === 1 ? "Source" : "Sources"}</span>
             </div>
-          </div>
-          <div className={primitives.caption}>
-            {vectorTurnCount > 0
-              ? `${uniqueVectorSources} unique ${uniqueVectorSources === 1 ? "source" : "sources"} contributed retrieval context.`
-              : "No retrieval activity yet."}
           </div>
           {uniqueVectorSourceLabels.length > 0 ? (
             <div className={primitives.sourceChipRow}>
@@ -66,27 +60,8 @@ export function TelemetrySummarySections({
                 <span key={source} className={primitives.sourceChip}>{source}</span>
               ))}
             </div>
-          ) : null}
+          ) : <div className={primitives.caption}>Sources will appear here.</div>}
           {vectorRows.length > 0 ? <VectorUsageTable rows={vectorRows} /> : null}
-        </div>
-      </SidebarSection>
-
-      <SidebarSection title="TOKEN USAGE">
-        <div className={[primitives.card, primitives.metricCard].join(" ")}>
-          <div className={primitives.tokenHeader}>
-            <div className={primitives.topline}>
-              <div className={primitives.value}>{displayedTotalTokens} Tokens</div>
-              <span className={primitives.badge}>{requestCount} {requestCount === 1 ? "Request" : "Requests"}</span>
-            </div>
-          </div>
-          {tokenTableRows.length > 0 ? <TelemetryTable rows={tokenTableRows} variant="bordered" /> : <div className={primitives.caption}>No request metrics yet. Each turn will be one model request.</div>}
-        </div>
-      </SidebarSection>
-
-      <SidebarSection title="SESSION COST">
-        <div className={primitives.card}>
-          <div className={primitives.costValue}>${sessionBurnUsd.toFixed(6)}</div>
-          <div className={primitives.caption}>{SESSION_COST_HELPER_TEXT}</div>
         </div>
       </SidebarSection>
 
@@ -100,6 +75,32 @@ export function TelemetrySummarySections({
             <div className={primitives.fill} style={{ width: `${observedRatio * 100}%` }} />
           </div>
           <div className={primitives.caption}>{DIVERSITY_HELPER_TEXT}</div>
+        </div>
+      </SidebarSection>
+
+      <SidebarSection title="MODEL PERFORMANCE">
+        <TelemetryTable rows={performanceRows} variant="shadowed" />
+      </SidebarSection>
+
+      <SidebarSection>
+        <div className={primitives.metricCardBare}>
+          <div className={primitives.tokenHeader}>
+            <div className={primitives.topline}>
+              <div className={primitives.value}>
+                <span className={primitives.metricValueNumber}>{displayedTotalTokens.toLocaleString()}</span>
+                <span className={primitives.metricInlineTitle}>Tokens Used</span>
+              </div>
+              <span className={primitives.badge}>{requestCount} {requestCount === 1 ? "Request" : "Requests"}</span>
+            </div>
+          </div>
+          {tokenTableRows.length > 0 ? <TelemetryTable rows={tokenTableRows} variant="bordered" tableClassName="summaryTable" /> : <div className={primitives.caption}>No request metrics yet. Each turn will be one model request.</div>}
+        </div>
+      </SidebarSection>
+
+      <SidebarSection title="SESSION COST">
+        <div className={primitives.card}>
+          <div className={primitives.costValue}>${sessionBurnUsd.toFixed(6)}</div>
+          <div className={primitives.caption}>{SESSION_COST_HELPER_TEXT}</div>
         </div>
       </SidebarSection>
 

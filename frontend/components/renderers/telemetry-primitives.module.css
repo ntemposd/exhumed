@@ -10,8 +10,14 @@
   overflow: hidden;
 }
 
+.metricCardBare {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
 .tokenHeader {
-  margin-bottom: 1rem;
+  margin-bottom: 0.55rem;
   padding-bottom: 0.45rem;
   border-bottom: 2px solid var(--line);
 }
@@ -31,6 +37,26 @@
   line-height: 1.05;
 }
 
+.value {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+
+.metricValueNumber {
+  font-size: 1.28rem;
+  line-height: 1;
+}
+
+.metricInlineTitle {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
 .costValue {
   padding-bottom: 0.45rem;
   border-bottom: 2px solid var(--line);
@@ -40,12 +66,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 22px;
-  padding: 0.08rem 0.45rem;
+  min-height: 20px;
+  padding: 0.04rem 0.4rem;
   border: 2px solid var(--line);
   background: var(--box-surface-soft);
   box-shadow: 2px 2px 0 var(--line);
-  font-size: 0.66rem;
+  font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   white-space: nowrap;
@@ -62,8 +88,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
-  margin-top: 0.75rem;
-  margin-bottom: 0.95rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.55rem;
 }
 
 .sourceChip {
@@ -124,7 +150,7 @@
 
 .tableShellBordered {
   border: 2px solid var(--line);
-  box-shadow: none;
+  box-shadow: 6px 6px 0 var(--line);
 }
 
 .tableShellShadowed {
