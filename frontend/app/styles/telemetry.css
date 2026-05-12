@@ -2,20 +2,29 @@
   display: grid;
   gap: 0;
   min-width: 0;
+  width: 100%;
+  padding-top: 18px;
+}
+
+@media (min-width: 1181px) {
+  .telemetryPanel {
+    position: sticky;
+    top: 18px;
+  }
 }
 
 .telemetryPanel .sidebarSectionGroup {
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
 }
 
 .telemetryPanel .sidebarSectionBody {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .telemetryPanel .sidebarSectionGroup + .sidebarSectionGroup {
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .telemetryPanel .sidebarSectionGroup:last-child {
@@ -28,18 +37,23 @@
   justify-content: space-between;
   gap: 16px;
   margin: 0;
-  padding: 0;
-  margin-top: 1rem;
+  padding: 0 2px 6px;
 }
 
 .telemetryHeroTitle {
   margin: 0;
   font-family: var(--font-display), sans-serif;
-  font-size: 1.8rem;
+  font-size: 1.55rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 0.95;
+}
+
+.telemetryPanel .sidebarSectionHeading {
+  margin-top: 0;
+  font-size: 0.96rem;
+  letter-spacing: 0.1em;
 }
 
 .telemetryStatusHeading {

@@ -21,6 +21,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
   useEffect(() => {
     // Keep the newest speech bubble visible for new turns and throttled waits, without nudging the page on every streamed token.
     const lastMessage = messages.at(-1);
+    const previousMessage = messages.at(-2);
     const lastBubble = transcriptRef.current?.querySelector("article:last-of-type") as HTMLElement | null;
     if (!lastBubble || !lastMessage) {
       return;
@@ -36,6 +37,11 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
       const enteredThrottledWait = previousAutoScroll?.messageId === lastMessage.id
         && !previousAutoScroll.isThrottledWait
         && isThrottledWait;
+      const isFirstAnswerOfRound = Boolean(
+        !lastMessage.isThinking
+        && previousMessage?.isThinking
+        && previousMessage.turn_number === lastMessage.turn_number,
+      );
       const grewMeaningfullyWhileThrottled = previousAutoScroll?.messageId === lastMessage.id
         && isThrottledWait
         && bubbleBounds.height - previousAutoScroll.bubbleHeight > 24;
@@ -43,7 +49,9 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
       const bubbleOverflow = bubbleBounds.bottom - viewportBottom;
       const shouldKeepThrottledWaitVisible = (enteredThrottledWait || grewMeaningfullyWhileThrottled) && bubbleOverflow > 8;
 
-      if ((isNewBubble && bubbleOverflow > 0) || shouldKeepThrottledWaitVisible) {
+      if (isFirstAnswerOfRound) {
+        lastBubble.scrollIntoView({ block: "end", behavior: "smooth" });
+      } else if ((isNewBubble && bubbleOverflow > 0) || shouldKeepThrottledWaitVisible) {
         const scrollBuffer = isThrottledWait ? 36 : 20;
         window.scrollBy({
           top: Math.ceil(Math.max(bubbleOverflow, 0) + scrollBuffer),

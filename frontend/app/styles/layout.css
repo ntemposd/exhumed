@@ -40,7 +40,7 @@
   align-items: stretch;
   flex: 1 1 auto;
   min-height: 0;
-  padding: 0 0 28px 28px;
+  padding: 0;
   transition: grid-template-columns 180ms ease;
 }
 
@@ -52,24 +52,41 @@
 .chatColumn,
 .telemetryColumn {
   width: 100%;
-  padding-top: 18px;
+}
+
+.chatColumn {
+  padding: 18px 0 0 18px;
+}
+
+.telemetryColumn {
+  position: relative;
+  min-height: 100%;
+  padding: 0 14px 0 16px;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(180deg, rgba(244, 236, 219, 0.96), rgba(232, 219, 192, 0.96));
+}
+
+.telemetryColumn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background:
+    repeating-linear-gradient(45deg, transparent 0 15px, rgba(20, 17, 15, 0.05) 15px 16px),
+    repeating-linear-gradient(-45deg, transparent 0 15px, rgba(20, 17, 15, 0.05) 15px 16px);
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.telemetryColumn > * {
+  position: relative;
+  z-index: 1;
 }
 
 @media (min-width: 1181px) {
   .telemetryColumn {
-    position: sticky;
-    top: 18px;
-    align-self: start;
-    max-height: 100vh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    overflow-anchor: none;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .telemetryColumn::-webkit-scrollbar {
-    display: none;
+    align-self: stretch;
   }
 }
 

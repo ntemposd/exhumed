@@ -23,6 +23,11 @@
     padding-top: 0;
   }
 
+  .chatColumn {
+    padding-left: 0;
+    padding-top: 0;
+  }
+
   .speakerModalGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;

@@ -27,6 +27,7 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .controlsDeck {
@@ -53,7 +54,7 @@
 
 .entropyHeadingRow {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: flex-start;
   width: fit-content;
   gap: 8px;
@@ -158,6 +159,9 @@
 
 .tooltipDetails {
   position: relative;
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 2px;
 }
 
 .tooltipDetails[open] {
@@ -315,8 +319,8 @@
 }
 
 .transcriptHeadingRow {
-  justify-content: space-between;
-  width: 100%;
+  justify-content: flex-start;
+  width: fit-content;
   gap: 12px;
 }
 
@@ -402,8 +406,13 @@
   }
 
   .councilHeading {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .transcriptHeadingRow {
+    width: fit-content;
     gap: 8px;
   }
 
