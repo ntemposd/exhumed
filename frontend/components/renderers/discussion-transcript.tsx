@@ -11,58 +11,135 @@ const MESSAGE_PREVIEW_LIMIT = 140;
 type DiscussionTranscriptProps = {
   emptyStateMessage: string;
   messages: DebateMessage[];
+  roundStartAgentId?: string;
+  roundScrollKey: number;
   transcriptRef: RefObject<HTMLDivElement | null>;
 };
 
-export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRef }: DiscussionTranscriptProps) {
+export function DiscussionTranscript({ emptyStateMessage, messages, roundStartAgentId, roundScrollKey, transcriptRef }: DiscussionTranscriptProps) {
   const [expandedMessageIds, setExpandedMessageIds] = useState<Record<string, boolean>>({});
-  const lastAutoScrollRef = useRef<{ messageId: string; bubbleHeight: number; isThrottledWait: boolean } | null>(null);
+  const [retryCountdownTick, setRetryCountdownTick] = useState(0);
+  const lastMessageStateRef = useRef<{ agentId: string; turnNumber: number; isThinking: boolean } | null>(null);
+  const lastScrolledRoundKeyRef = useRef(0);
+  const retryCountdownsRef = useRef<Record<string, { initialSeconds: number; startedAtMs: number; status: string }>>({});
+
+  function scrollBubbleToViewportTop(targetBubble: HTMLElement) {
+    const targetTop = Math.max(window.scrollY + targetBubble.getBoundingClientRect().top, 0);
+    const startTop = window.scrollY;
+    const travel = targetTop - startTop;
+
+    if (Math.abs(travel) < 2) {
+      window.scrollTo({ top: targetTop, behavior: "auto" });
+      return;
+    }
+
+    const durationMs = 440;
+    const startTime = window.performance.now();
+
+    const step = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / durationMs, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+      window.scrollTo({
+        top: startTop + travel * easedProgress,
+        behavior: "auto",
+      });
+
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+        return;
+      }
+
+      window.scrollTo({ top: targetTop, behavior: "auto" });
+    };
+
+    window.requestAnimationFrame(step);
+  }
 
   useEffect(() => {
-    // Keep the newest speech bubble visible for new turns and throttled waits, without nudging the page on every streamed token.
+    const activeRetryIds = new Set<string>();
+
+    for (const message of messages) {
+      if (!message.isThinking || !message.thinkingStatus) {
+        continue;
+      }
+
+      const retryMatch = message.thinkingStatus.match(/retrying in\s+([\d.]+)s?/i);
+      if (!retryMatch) {
+        continue;
+      }
+
+      activeRetryIds.add(message.id);
+      const initialSeconds = Number.parseFloat(retryMatch[1]);
+      const currentEntry = retryCountdownsRef.current[message.id];
+
+      if (!currentEntry || currentEntry.status !== message.thinkingStatus) {
+        retryCountdownsRef.current[message.id] = {
+          initialSeconds,
+          startedAtMs: window.performance.now(),
+          status: message.thinkingStatus,
+        };
+      }
+    }
+
+    for (const messageId of Object.keys(retryCountdownsRef.current)) {
+      if (!activeRetryIds.has(messageId)) {
+        delete retryCountdownsRef.current[messageId];
+      }
+    }
+  }, [messages]);
+
+  const hasActiveRetryCountdown = messages.some((message) =>
+    Boolean(message.isThinking && message.thinkingStatus && /retrying in\s+[\d.]+s?/i.test(message.thinkingStatus)),
+  );
+
+  useEffect(() => {
+    if (!hasActiveRetryCountdown) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setRetryCountdownTick(window.performance.now());
+    }, 100);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [hasActiveRetryCountdown]);
+
+  useEffect(() => {
+    // Scroll only when the round-opening speaker finishes after an explicit Start/Advance intent.
     const lastMessage = messages.at(-1);
-    const previousMessage = messages.at(-2);
-    const lastBubble = transcriptRef.current?.querySelector("article:last-of-type") as HTMLElement | null;
-    if (!lastBubble || !lastMessage) {
+    if (!lastMessage) {
       return;
     }
 
     const animationFrameId = window.requestAnimationFrame(() => {
-      const bubbleBounds = lastBubble.getBoundingClientRect();
-      const previousAutoScroll = lastAutoScrollRef.current;
-      const isNewBubble = previousAutoScroll?.messageId !== lastMessage.id;
-      const isThrottledWait = Boolean(lastMessage.isThinking)
-        && isThrottledThinkingStatus(lastMessage.thinkingStatus)
-        && !sanitizeDebateMessageText(lastMessage.message, lastMessage.display_name).trim();
-      const enteredThrottledWait = previousAutoScroll?.messageId === lastMessage.id
-        && !previousAutoScroll.isThrottledWait
-        && isThrottledWait;
+      const previousMessageState = lastMessageStateRef.current;
       const isFirstAnswerOfRound = Boolean(
         !lastMessage.isThinking
-        && previousMessage?.isThinking
-        && previousMessage.turn_number === lastMessage.turn_number,
+        && previousMessageState?.agentId === lastMessage.agent_id
+        && previousMessageState?.turnNumber === lastMessage.turn_number
+        && previousMessageState.isThinking,
       );
-      const grewMeaningfullyWhileThrottled = previousAutoScroll?.messageId === lastMessage.id
-        && isThrottledWait
-        && bubbleBounds.height - previousAutoScroll.bubbleHeight > 24;
-      const viewportBottom = window.innerHeight - 88;
-      const bubbleOverflow = bubbleBounds.bottom - viewportBottom;
-      const shouldKeepThrottledWaitVisible = (enteredThrottledWait || grewMeaningfullyWhileThrottled) && bubbleOverflow > 8;
+      const isRoundOpeningAnswer = !roundStartAgentId || lastMessage.agent_id === roundStartAgentId;
 
-      if (isFirstAnswerOfRound) {
-        lastBubble.scrollIntoView({ block: "end", behavior: "smooth" });
-      } else if ((isNewBubble && bubbleOverflow > 0) || shouldKeepThrottledWaitVisible) {
-        const scrollBuffer = isThrottledWait ? 36 : 20;
-        window.scrollBy({
-          top: Math.ceil(Math.max(bubbleOverflow, 0) + scrollBuffer),
-          behavior: isThrottledWait ? "auto" : "smooth",
-        });
+      if (isFirstAnswerOfRound && isRoundOpeningAnswer && roundScrollKey > lastScrolledRoundKeyRef.current) {
+        const targetBubble = transcriptRef.current?.querySelector(
+          `article[data-message-id="${lastMessage.id}"]`,
+        ) as HTMLElement | null;
+
+        if (targetBubble) {
+          lastScrolledRoundKeyRef.current = roundScrollKey;
+          scrollBubbleToViewportTop(targetBubble);
+        }
       }
 
-      lastAutoScrollRef.current = {
-        messageId: lastMessage.id,
-        bubbleHeight: bubbleBounds.height,
-        isThrottledWait,
+      lastMessageStateRef.current = {
+        agentId: lastMessage.agent_id,
+        turnNumber: lastMessage.turn_number,
+        isThinking: Boolean(lastMessage.isThinking),
       };
     });
 
@@ -71,12 +148,18 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
     };
   }, [messages, transcriptRef]);
 
-  function getThinkingStatus(explicitStatus?: string): string {
+  function getThinkingStatus(messageId: string, explicitStatus?: string): string {
     if (explicitStatus) {
-      const retryMatch = explicitStatus.match(/retrying in\s+[\d.]+s?/i);
+      const retryCountdown = retryCountdownsRef.current[messageId];
+      if (retryCountdown) {
+        const elapsedSeconds = Math.max((retryCountdownTick - retryCountdown.startedAtMs) / 1000, 0);
+        const remainingSeconds = Math.max(retryCountdown.initialSeconds - elapsedSeconds, 0);
+
+        return `Request throttled. Retrying in ${remainingSeconds.toFixed(1)}s`;
+      }
 
       if (/rate limit|retry|\b429\b|\b5\d{2}\b/i.test(explicitStatus)) {
-        return retryMatch ? `Request throttled. ${retryMatch[0]}` : "Request throttled";
+        return "Request throttled";
       }
     }
 
@@ -108,13 +191,19 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
 
   return (
     <div className={styles.transcript} ref={transcriptRef}>
+      {messages.length === 0 ? (
+        <div className={styles.emptyState}>
+          <p className={styles.emptyStateEyebrow}>Stand by</p>
+          <p className={styles.emptyStateText}>{emptyStateMessage}</p>
+        </div>
+      ) : null}
       {messages.map((message) => {
         const isExpanded = expandedMessageIds[message.id] ?? false;
         const sanitizedMessage = sanitizeDebateMessageText(message.message, message.display_name);
         const shouldTruncate = sanitizedMessage.length > MESSAGE_PREVIEW_LIMIT;
         const bubbleToneIndex = getStyleIndex(message.agent_id);
         const thinkingStatus = message.isThinking
-          ? getThinkingStatus(message.thinkingStatus)
+          ? getThinkingStatus(message.id, message.thinkingStatus)
           : "";
         const visibleMessage = shouldTruncate && !isExpanded
           ? `${sanitizedMessage.slice(0, MESSAGE_PREVIEW_LIMIT).trimEnd()}...`
@@ -124,6 +213,9 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
         return (
           <article
             key={message.id}
+            data-message-id={message.id}
+            data-turn-number={message.turn_number}
+            data-thinking={message.isThinking ? "true" : "false"}
             className={[
               styles.bubble,
               styles.bubbleAssistant,
@@ -140,12 +232,10 @@ export function DiscussionTranscript({ emptyStateMessage, messages, transcriptRe
               />
               <div className={styles.bubbleIdentity}>
                 <p className={styles.bubbleName}>{message.display_name}</p>
-                <p className={styles.bubbleMeta}>
-                  Turn {message.turn_number}
-                  {thinkingStatus ? ` · ${thinkingStatus.toUpperCase()}` : ""}
-                </p>
+                <p className={styles.bubbleMeta}>Turn {message.turn_number}</p>
               </div>
             </div>
+            {thinkingStatus ? <p className={styles.bubbleStatus}>{thinkingStatus.toUpperCase()}</p> : null}
             {visibleMessage ? <p className={styles.bubbleText}>{visibleMessage}</p> : null}
             {showRetrySkull ? (
               <div className={styles.bubbleThinkingState} aria-hidden="true">

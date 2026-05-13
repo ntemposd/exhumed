@@ -46,6 +46,7 @@ export function useDebateController({
   const [isWipingSession, setIsWipingSession] = useState(false);
   const [isDownloadingTranscript, setIsDownloadingTranscript] = useState(false);
   const [isDebatePaused, setIsDebatePaused] = useState(false);
+  const [roundScrollKey, setRoundScrollKey] = useState(0);
 
   const turnInFlightRef = useRef(false);
   const resetSequenceRef = useRef(0);
@@ -138,6 +139,7 @@ export function useDebateController({
     setCurrentAgentIndex(0);
     setDebateEntropy(null);
     setDiscussionActive(false);
+    setRoundScrollKey(0);
     lastStartedTopicRef.current = "";
     setIsDebatePaused(false);
 
@@ -259,6 +261,7 @@ export function useDebateController({
       && currentAgentIndex >= 0
       && currentAgentIndex < selectedAgents.length
       && (isDebatePaused || currentAgentIndex > 0);
+    const shouldAnchorUpcomingRound = !canResumeQueuedSpeaker || currentAgentIndex === 0;
 
     setControlError("");
     pauseAfterCurrentTurnRef.current = false;
@@ -266,6 +269,10 @@ export function useDebateController({
 
     if (!canResumeQueuedSpeaker) {
       setCurrentAgentIndex(0);
+    }
+
+    if (shouldAnchorUpcomingRound) {
+      setRoundScrollKey((currentValue) => currentValue + 1);
     }
 
     setDiscussionActive(true);
@@ -513,6 +520,7 @@ export function useDebateController({
     isDownloadingTranscript,
     hasMessages,
     startButtonLabel,
+    roundScrollKey,
     wipeDebate,
     renewSession,
     downloadTranscript,
