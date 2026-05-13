@@ -1,6 +1,6 @@
 // DiscussionPanel frames the transcript stage and now owns the primary debate
 // controls so the main column is the single operator surface.
-import type { RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 
 import type { DebateMessage, LegendDetails, TranscriptViewState } from "../types";
 import { DiscussionTranscript } from "./discussion-transcript";
@@ -20,7 +20,9 @@ type DiscussionPanelProps = {
   startButtonLabel: string;
   transcriptState: TranscriptViewState;
   messages: DebateMessage[];
-    hasMessages: boolean;
+  hasMessages: boolean;
+  roundStartAgentId?: string;
+  roundScrollKey: number;
   transcriptRef: RefObject<HTMLDivElement | null>;
   onTopicChange: (value: string) => void;
   onOpenSpeakerModal: () => void;
@@ -51,7 +53,9 @@ export function DiscussionPanel({
   selectedCouncil,
   targetEntropy,
   controlError,
-    hasMessages,
+  hasMessages,
+  roundStartAgentId,
+  roundScrollKey,
   sessionId,
   isWipingSession,
   isDownloadingTranscript,
@@ -69,6 +73,7 @@ export function DiscussionPanel({
   onDownloadTranscript,
   onRenewSession,
 }: DiscussionPanelProps) {
+  const entropyTooltipRef = useRef<HTMLDetailsElement | null>(null);
   const selectedEntropyValue = ENTROPY_OPTIONS.reduce((closestValue, option) => {
     const currentDistance = Math.abs(option - targetEntropy);
     const closestDistance = Math.abs(closestValue - targetEntropy);
@@ -76,6 +81,33 @@ export function DiscussionPanel({
   }, ENTROPY_OPTIONS[0]);
   const hasTranscriptHistory = messages.some((message) => !message.isThinking);
   const showTranscriptControls = discussionActive || hasTranscriptHistory;
+
+  useEffect(() => {
+    function handlePointerDown(event: PointerEvent) {
+      const tooltipElement = entropyTooltipRef.current;
+      if (!tooltipElement?.open) {
+        return;
+      }
+
+      if (event.target instanceof Node && !tooltipElement.contains(event.target)) {
+        tooltipElement.open = false;
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && entropyTooltipRef.current?.open) {
+        entropyTooltipRef.current.open = false;
+      }
+    }
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <section className="chatColumn">
@@ -110,16 +142,20 @@ export function DiscussionPanel({
                 <button className={`button ${styles.commandButton}`.trim()} type="button" onClick={onStartDebate} disabled={discussionActive}>
                   {startButtonLabel}
                 </button>
-                <button className={`buttonGhost ${styles.commandButton}`.trim()} type="button" onClick={onHaltDebate} disabled={!discussionActive}>
-                  ❚❚ Halt
+                <button className={`buttonGhost ${styles.commandButton}`.trim()} type="button" onClick={onRenewSession}>
+                  ⟳ Refresh Session
                 </button>
+              </div>
+              <div className={styles.topicSessionMetaInline}>
+                <span className={styles.commandMetaLabel}>Active Session:</span>
+                <span className={styles.commandMetaValue}>{sessionId || "Pending"}</span>
               </div>
 
               {!showTranscriptControls && controlError ? <p className="statusNote">{controlError}</p> : null}
             </div>
           </section>
 
-          <section className={styles.sectionGroup}>
+          <section className={`${styles.sectionGroup} ${styles.dividedSection}`.trim()}>
             <div className={`${styles.sectionHeading} ${styles.councilHeading}`.trim()}>
               <span className={styles.councilHeadingLabel}>COUNCIL</span>
               <span className={styles.councilCountInline}>{selectedCouncil.length} Selected</span>
@@ -144,10 +180,10 @@ export function DiscussionPanel({
             </div>
           </section>
 
-          <section className={styles.sectionGroup}>
+          <section className={`${styles.sectionGroup} ${styles.dividedSection}`.trim()}>
             <div className={`${styles.sectionHeading} ${styles.entropyHeadingRow}`.trim()}>
               <span>LOGIC ENTROPY</span>
-              <details className={styles.tooltipDetails}>
+              <details className={styles.tooltipDetails} ref={entropyTooltipRef}>
                 <summary className={styles.tooltipButton} aria-label="What is logic entropy?">
                   ?
                 </summary>
@@ -180,14 +216,14 @@ export function DiscussionPanel({
           </section>
         </div>
 
-        <div className={styles.transcriptShell}>
+        <div className={`${styles.transcriptShell} ${styles.dividedSection}`.trim()}>
           <div className={styles.transcriptHeading}>
             <div className={`${styles.sectionHeading} ${styles.transcriptHeadingRow}`.trim()}>
               <span>LIVE TRANSCRIPT</span>
               <span className={styles.status}>[{transcriptState.statusLabel.toUpperCase()}]</span>
             </div>
           </div>
-          <DiscussionTranscript emptyStateMessage={transcriptState.emptyMessage} messages={messages} transcriptRef={transcriptRef} />
+          <DiscussionTranscript emptyStateMessage={transcriptState.emptyMessage} messages={messages} roundStartAgentId={roundStartAgentId} roundScrollKey={roundScrollKey} transcriptRef={transcriptRef} />
           {showTranscriptControls ? (
             <div className={styles.transcriptControlsBlock}>
               <div className={styles.transcriptControls}>
@@ -212,15 +248,7 @@ export function DiscussionPanel({
                 </div>
               </div>
               <div className={styles.commandFooter}>
-                <div className={styles.commandMeta}>
-                  <span className={styles.commandMetaLabel}>Active Session</span>
-                  <span className={styles.commandMetaValue}>{sessionId || "Pending"}</span>
-                </div>
-                <div className={styles.commandMetaActions}>
-                  <button className={`buttonGhost ${styles.commandButton}`.trim()} type="button" onClick={onRenewSession}>
-                    ⟳ Refresh Session
-                  </button>
-                </div>
+                <div className={styles.commandMetaActions} />
               </div>
               {controlError ? <p className="statusNote">{controlError}</p> : null}
             </div>

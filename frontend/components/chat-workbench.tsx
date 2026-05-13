@@ -76,6 +76,7 @@ export function ChatWorkbench() {
     isDownloadingTranscript,
     hasMessages,
     startButtonLabel,
+    roundScrollKey,
     wipeDebate,
     renewSession,
     downloadTranscript,
@@ -231,6 +232,8 @@ export function ChatWorkbench() {
           controlError={controlError}
           sessionId={sessionId}
           hasMessages={hasMessages}
+          roundStartAgentId={selectedAgents[0]}
+          roundScrollKey={roundScrollKey}
           isWipingSession={isWipingSession}
           isDownloadingTranscript={isDownloadingTranscript}
           startButtonLabel={startButtonLabel}

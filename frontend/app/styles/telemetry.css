@@ -57,7 +57,43 @@
 }
 
 .telemetryStatusHeading {
+  gap: 0;
+}
+
+.telemetryStatusToggle {
+  display: inline-flex;
+  align-items: center;
   gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.telemetryStatusCaret {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 120ms ease;
+}
+
+.telemetryStatusToggle[aria-expanded="true"] .telemetryStatusCaret {
+  transform: translateY(1px) rotate(225deg);
+}
+
+.telemetryStatusBody {
+  display: grid;
+  gap: 10px;
 }
 
 .telemetryStatusDot {
@@ -83,31 +119,8 @@
   background: radial-gradient(circle at 35% 35%, #fef3c7 0 34%, #f59e0b 35% 100%);
 }
 
-.telemetryDetails {
-  padding: 12px 12px 10px;
-  border: 2px solid var(--line);
-  background: var(--box-surface);
-  box-shadow: 6px 6px 0 var(--line);
-}
-
-.telemetryDetails summary {
-  cursor: pointer;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.telemetryDetails[open] {
-  padding-bottom: 12px;
-}
-
-.telemetryDetails[open] summary {
-  margin-bottom: 8px;
-}
-
 .telemetryNote {
-  margin: 8px 0 0;
+  margin: 0;
   color: #57534e;
   font-size: 0.69rem;
   line-height: 1.35;

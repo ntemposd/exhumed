@@ -12,6 +12,7 @@ export function AppNavbar() {
           <span className={styles.brandSubtitle}>Historical Logic Engine</span>
         </div>
       </div>
+      <span className={styles.betaBadge}>Beta</span>
     </header>
   );
 }

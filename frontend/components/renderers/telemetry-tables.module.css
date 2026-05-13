@@ -1,6 +1,6 @@
 .vectorUsageTableShell {
   width: 100%;
-  margin-top: 0.85rem;
+  margin-top: 0.2rem;
   min-width: 0;
   max-width: 100%;
   overflow-x: auto;
@@ -25,6 +25,17 @@
 .summaryTable th:first-child,
 .summaryTable td:first-child {
   white-space: nowrap;
+}
+
+.speakerCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.24rem;
+}
+
+.speakerMarker {
+  font-size: 0.52rem;
+  line-height: 1;
 }
 
 .summaryTable th:not(:first-child),

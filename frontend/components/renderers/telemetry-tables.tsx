@@ -34,6 +34,23 @@ function TelemetryTableShell({ children, className = "", variant = "plain" }: Te
   );
 }
 
+function renderSpeakerCell(value: string) {
+  const match = value.match(/^(T\d+)\s■\s(.+)$/);
+  if (!match) {
+    return value;
+  }
+
+  const [, turnLabel, speakerLabel] = match;
+
+  return (
+    <span className={styles.speakerCell}>
+      <span>{turnLabel}</span>
+      <span className={styles.speakerMarker} aria-hidden="true">■</span>
+      <span>{speakerLabel}</span>
+    </span>
+  );
+}
+
 export function VectorUsageTable({ rows }: { rows: VectorUsageRow[] }) {
   if (rows.length === 0) {
     return null;
@@ -54,7 +71,7 @@ export function VectorUsageTable({ rows }: { rows: VectorUsageRow[] }) {
           <tbody>
             {rows.map((row) => (
               <tr key={row.speaker}>
-                <td>{row.speaker}</td>
+                <td>{renderSpeakerCell(row.speaker)}</td>
                 <td>{row.hits}</td>
                 <td>{row.context}</td>
                 <td>{row.top}</td>
@@ -88,7 +105,7 @@ export function TelemetryTable({ rows, variant = "plain", tableClassName = "" }:
           {rows.map((row, index) => (
             <tr key={`${index}-${row[columns[0]]}`}>
               {columns.map((column) => (
-                <td key={column}>{row[column]}</td>
+                <td key={column}>{column === "Speaker" ? renderSpeakerCell(row[column]) : row[column]}</td>
               ))}
             </tr>
           ))}

@@ -47,21 +47,26 @@ export function TelemetrySummarySections({
         <div className={primitives.metricCardBare}>
           <div className={primitives.tokenHeader}>
             <div className={primitives.topline}>
-              <div className={primitives.value}>
-                <span className={primitives.metricValueNumber}>{totalVectorHits.toLocaleString()}</span>
-                <span className={primitives.metricInlineTitle}>Vector {totalVectorHits === 1 ? "Call" : "Calls"}</span>
-              </div>
+              <div className={primitives.metricHeading}>{totalVectorHits.toLocaleString()} Vector {totalVectorHits === 1 ? "Call" : "Calls"}</div>
               <span className={primitives.badge}>{uniqueVectorSources} {uniqueVectorSources === 1 ? "Source" : "Sources"}</span>
             </div>
           </div>
-          {uniqueVectorSourceLabels.length > 0 ? (
-            <div className={primitives.sourceChipRow}>
-              {uniqueVectorSourceLabels.map((source) => (
-                <span key={source} className={primitives.sourceChip}>{source}</span>
-              ))}
+          {vectorRows.length > 0 ? <VectorUsageTable rows={vectorRows} /> : (
+            <div className={primitives.emptyState}>
+              <p className={primitives.emptyStateEyebrow}>Stand by</p>
+              <p className={primitives.emptyStateText}>Sources will appear here.</p>
             </div>
-          ) : <div className={primitives.caption}>Sources will appear here.</div>}
-          {vectorRows.length > 0 ? <VectorUsageTable rows={vectorRows} /> : null}
+          )}
+          {uniqueVectorSourceLabels.length > 0 ? (
+            <div className={primitives.sourceSection}>
+              <p className={primitives.sourceLabel}>Sources:</p>
+              <div className={primitives.sourceChipRow}>
+                {uniqueVectorSourceLabels.map((source) => (
+                  <span key={source} className={primitives.sourceChip}>{source}</span>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       </SidebarSection>
 
@@ -86,14 +91,16 @@ export function TelemetrySummarySections({
         <div className={primitives.metricCardBare}>
           <div className={primitives.tokenHeader}>
             <div className={primitives.topline}>
-              <div className={primitives.value}>
-                <span className={primitives.metricValueNumber}>{displayedTotalTokens.toLocaleString()}</span>
-                <span className={primitives.metricInlineTitle}>Tokens Used</span>
-              </div>
+              <div className={primitives.metricHeading}>{displayedTotalTokens.toLocaleString()} Tokens Used</div>
               <span className={primitives.badge}>{requestCount} {requestCount === 1 ? "Request" : "Requests"}</span>
             </div>
           </div>
-          {tokenTableRows.length > 0 ? <TelemetryTable rows={tokenTableRows} variant="bordered" tableClassName="summaryTable" /> : <div className={primitives.caption}>No request metrics yet. Each turn will be one model request.</div>}
+          {tokenTableRows.length > 0 ? <TelemetryTable rows={tokenTableRows} variant="bordered" tableClassName="summaryTable" /> : (
+            <div className={primitives.emptyState}>
+              <p className={primitives.emptyStateEyebrow}>Stand by</p>
+              <p className={primitives.emptyStateText}>No request metrics yet. Each turn will be one model request.</p>
+            </div>
+          )}
         </div>
       </SidebarSection>
 
@@ -105,7 +112,12 @@ export function TelemetrySummarySections({
       </SidebarSection>
 
       <SidebarSection title="VOCAL SHARE">
-        {vocalShareRows.length > 0 ? <TelemetryTable rows={vocalShareRows} variant="shadowed" /> : <div className={primitives.caption}>No air-time data yet.</div>}
+        {vocalShareRows.length > 0 ? <TelemetryTable rows={vocalShareRows} variant="shadowed" /> : (
+          <div className={primitives.emptyState}>
+            <p className={primitives.emptyStateEyebrow}>Stand by</p>
+            <p className={primitives.emptyStateText}>No air-time data yet.</p>
+          </div>
+        )}
       </SidebarSection>
     </>
   );

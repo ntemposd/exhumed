@@ -1,7 +1,7 @@
 .navbar {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 12px;
   width: 100%;
   padding: 20px 28px 18px;
@@ -46,6 +46,22 @@
   text-transform: uppercase;
 }
 
+.betaBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 3px solid var(--line);
+  /* background: linear-gradient(180deg, #fff7df, #f4d670); */
+  box-shadow: 3px 3px 0 var(--line);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 @media (max-width: 767px) {
   .navbar {
     padding: 12px 12px 10px;
@@ -63,5 +79,12 @@
 
   .brandSubtitle {
     font-size: 0.66rem;
+  }
+
+  .betaBadge {
+    min-height: 24px;
+    padding: 0 8px;
+    font-size: 0.62rem;
+    box-shadow: 2px 2px 0 var(--line);
   }
 }
