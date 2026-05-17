@@ -74,7 +74,6 @@
   height: 52px;
   border: 2px solid var(--line);
   background: linear-gradient(180deg, #fffdf7, #f2ddbb);
-  box-shadow: 3px 3px 0 var(--line);
 }
 
 .agentPortrait {
@@ -150,9 +149,9 @@
   justify-content: center;
   min-height: 28px;
   padding: 0 12px;
-  border: 2px solid var(--line);
-  background: #fff;
-  box-shadow: 2px 2px 0 var(--line);
+  border: 2px solid var(--badge-border);
+  background: var(--badge-surface);
+  color: var(--badge-text);
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -160,9 +159,8 @@
 }
 
 .agentCardActive .agentDraftState {
-  background: #f4ffd8;
-  border-color: #547a1f;
-  box-shadow: 2px 2px 0 #547a1f;
+  background: var(--badge-surface-speaker);
+  border-color: var(--badge-border);
 }
 
 .agentCardUnavailable .agentDraftState {
@@ -170,10 +168,8 @@
   color: #78716c;
 }
 
-@media (min-width: 1181px) {
-  .agentName {
-    font-size: 1.08rem;
-  }
+.agentName {
+  font-size: 1.08rem;
 }
 
 @media (max-width: 767px) {

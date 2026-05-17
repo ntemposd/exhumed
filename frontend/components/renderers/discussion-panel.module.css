@@ -1,11 +1,12 @@
 .discussionPane {
-  --section-divider-gap: 16px;
+  --section-divider-gap: 28px;
   gap: 0;
-  padding: 18px 0 0;
+  padding: 22px 18px 0 0;
 }
 
 .header {
   display: grid;
+  gap: 12px;
   padding: 0 2px;
 }
 
@@ -34,42 +35,27 @@
 .controlsDeck {
   display: grid;
   gap: 0;
-  margin-top: 12px;
+  margin-top: 18px;
   padding: 0;
 }
 
 .sectionGroup {
   display: grid;
-  gap: 8px;
+  gap: 12px;
 }
 
 .dividedSection {
   margin-top: var(--section-divider-gap);
-  padding-top: 8px;
-  position: relative;
+  padding-top: 14px;
 }
 
-.dividedSection::before {
-  content: "";
-  position: absolute;
-  top: calc(var(--section-divider-gap) / -2);
-  left: 0;
-  right: 0;
-  border-top: 2px dashed rgba(20, 17, 15, 0.22);
-}
-
-.commandCluster {
+.topicSectionLayout {
   display: grid;
-  gap: 8px;
-  padding-top: 6px;
-}
-
-.topicSessionMetaInline {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  min-width: 0;
-  width: 100%;
+  --topic-editor-min-height: 150px;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: stretch;
+  gap: 12px;
+  min-height: var(--topic-editor-min-height);
 }
 
 .entropyHeadingRow {
@@ -87,22 +73,11 @@
   margin: 0;
   color: var(--ink);
   font-family: var(--font-display), sans-serif;
-  font-size: 1.48rem;
+  font-size: 1.28rem;
   font-weight: 800;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   line-height: 0.98;
-}
-
-.surface {
-  padding: 16px 18px 18px;
-  border: 2px solid var(--line);
-  background: linear-gradient(180deg, rgba(255, 251, 245, 0.98), rgba(243, 226, 196, 0.94));
-  box-shadow: 5px 5px 0 var(--line);
-}
-
-.surfaceMuted {
-  background: linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(247, 235, 214, 0.94));
 }
 
 .councilHeading {
@@ -119,6 +94,46 @@
 
 .topicSection {
   display: grid;
+  min-height: var(--topic-editor-min-height);
+}
+
+.topicActionStack {
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  min-height: var(--topic-editor-min-height);
+  align-content: stretch;
+}
+
+.topicSessionInline {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0;
+}
+
+.topicSessionLabel {
+  flex: 0 0 auto;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.topicSessionValue {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .councilCountInline {
@@ -127,9 +142,9 @@
   justify-content: center;
   min-height: 24px;
   padding: 0 10px;
-  border: 2px solid var(--line);
-  background: linear-gradient(180deg, #ffffff, #f7f2ea);
-  box-shadow: 2px 2px 0 var(--line);
+  border: 2px solid var(--badge-border);
+  background: var(--badge-surface);
+  color: var(--badge-text);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -142,34 +157,32 @@
   gap: 10px;
 }
 
-.editCouncilChip {
+.editCouncilButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
-  padding: 0 12px;
-  border: 2px dashed var(--line);
-  background: linear-gradient(180deg, rgba(250, 244, 255, 0.98), rgba(228, 212, 243, 0.96));
-  box-shadow: 3px 3px 0 var(--line);
+  gap: 4px;
+  min-height: 40px;
+  padding: 0 14px 0 11px;
   font-size: 0.72rem;
-  font-weight: 800;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
   white-space: nowrap;
-  cursor: pointer;
-  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 
-.editCouncilChip:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 var(--line);
-  background: linear-gradient(180deg, #f4eaff, #cfa6ec);
+.editCouncilButton::before {
+  content: "\270E";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  color: #6d5200;
+  font-size: 1rem;
+  line-height: 1;
 }
 
-.editCouncilChip:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-  transform: none;
+.editCouncilButton:disabled::before {
+  opacity: 0.7;
 }
 
 .entropyPanel {
@@ -192,15 +205,18 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
+  min-width: 22px;
   height: 22px;
-  border: 2px solid var(--line);
-  background: linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(242, 228, 203, 0.92));
-  box-shadow: 2px 2px 0 var(--line);
+  padding: 0 6px;
+  border: 2px solid var(--badge-border);
+  background: var(--badge-surface);
+  color: var(--badge-text);
   font-family: var(--font-display), sans-serif;
-  font-size: 0.7rem;
+  font-size: 0.64rem;
   font-weight: 800;
+  letter-spacing: 0.08em;
   line-height: 1;
+  text-transform: uppercase;
   cursor: pointer;
   list-style: none;
 }
@@ -215,13 +231,14 @@
   left: 0;
   width: min(220px, 70vw);
   padding: 10px 12px;
-  border: 2px solid var(--line);
-  background: linear-gradient(180deg, #fff8e6, #f2dfbb);
-  box-shadow: 3px 3px 0 var(--line);
-  color: var(--ink);
+  border: 2px solid var(--badge-border);
+  background: var(--badge-surface);
+  color: var(--badge-text);
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 0.04em;
   line-height: 1.45;
+  text-transform: uppercase;
 }
 
 .entropyOptions {
@@ -240,8 +257,9 @@
   min-width: 52px;
   padding: 4px 8px;
   border: 2px solid var(--line);
-  background: linear-gradient(180deg, rgba(255, 252, 247, 0.96), rgba(242, 228, 203, 0.92));
+  background: var(--badge-surface);
   box-shadow: 2px 2px 0 var(--line);
+  color: #5f476f;
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
@@ -249,13 +267,14 @@
 .entropyOption:hover {
   transform: translate(-1px, -1px);
   box-shadow: 3px 3px 0 var(--line);
-  background: linear-gradient(180deg, #f0faee, #cfe7c7);
+  background: var(--badge-surface-entropy);
 }
 
 .entropyOptionActive {
-  background: linear-gradient(180deg, #dff6d6, #83c96f);
-  box-shadow: 2px 2px 0 #315d25;
-  border-color: #315d25;
+  background: var(--badge-surface-entropy-strong);
+  box-shadow: 2px 2px 0 #6f4597;
+  border-color: #6f4597;
+  color: #4e2c70;
 }
 
 .entropyOption:disabled {
@@ -276,12 +295,6 @@
   gap: 10px;
 }
 
-.commandGridCompact {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
 .commandButton {
   min-height: 40px;
   padding: 8px 12px;
@@ -298,31 +311,6 @@
   flex-wrap: wrap;
   margin-top: 0;
   padding-top: 8px;
-  border-top: 2px dashed rgba(20, 17, 15, 0.22);
-}
-
-.commandMeta {
-  display: grid;
-  gap: 4px;
-}
-
-.commandMetaLabel {
-  color: var(--muted);
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.commandMetaValue {
-  font-family: var(--font-display), sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .commandMetaActions {
@@ -333,7 +321,7 @@
 
 .transcriptShell {
   display: grid;
-  gap: 16px;
+  gap: 22px;
 }
 
 .transcriptHeading {
@@ -357,13 +345,17 @@
 
 @media (max-width: 767px) {
   .discussionPane {
-    --section-divider-gap: 14px;
+    --section-divider-gap: 22px;
     gap: 0;
-    padding-top: 10px;
+    padding: 24px 0 0;
+  }
+
+  .header {
+    gap: 8px;
   }
 
   .controlsDeck {
-    margin-top: 10px;
+    margin-top: 16px;
   }
 
   .header,
@@ -373,27 +365,44 @@
     padding-right: 0;
   }
 
-  .surface,
-  .surfaceMuted,
-  .topicSection {
-    padding: 12px 12px 14px;
-    box-shadow: 2px 2px 0 var(--line);
-  }
-
   .topicSection {
     padding: 0;
+    box-shadow: none;
   }
 
   .sectionGroup {
-    gap: 8px;
+    gap: 12px;
   }
 
   .dividedSection {
-    padding-top: 8px;
+    padding-top: 14px;
+  }
+
+  .topicSectionLayout {
+    --topic-editor-min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+    min-height: auto;
+  }
+
+  .topicActionStack {
+    gap: 8px;
+    min-height: 0;
+    grid-template-rows: repeat(3, auto);
+  }
+
+  .topicSessionInline {
+    min-height: 0;
+    gap: 2px;
+  }
+
+  .topicSessionLabel,
+  .topicSessionValue {
+    font-size: 0.66rem;
   }
 
   .sectionHeading {
-    font-size: 1.02rem;
+    font-size: 0.96rem;
     gap: 8px;
   }
 
@@ -402,21 +411,35 @@
     flex-direction: column;
   }
 
-  .topicSessionMetaInline {
-    align-items: center;
-    gap: 6px;
-  }
-
-  .commandMetaLabel {
-    flex: 0 0 auto;
-  }
-
-  .commandMetaValue {
-    max-width: none;
-  }
-
   .entropyHeadingRow {
     align-items: center;
+  }
+
+  .tooltipDetails {
+    position: relative;
+  }
+
+  .tooltipDetails[open] {
+    z-index: 4;
+  }
+
+  .tooltipButton {
+    position: relative;
+    z-index: 5;
+  }
+
+  .tooltipCard {
+    top: calc(100% + 6px);
+    left: auto;
+    right: 0;
+    width: min(260px, calc(100vw - 44px));
+  }
+
+  .tooltipCard {
+    left: auto;
+    right: 0;
+    width: min(280px, calc(100vw - 40px));
+    max-width: none;
   }
 
   .entropyOptions {
@@ -436,8 +459,7 @@
     width: 100%;
   }
 
-  .commandGrid,
-  .commandGridCompact {
+  .commandGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -459,12 +481,12 @@
   }
 
   .commandButton,
-  .editCouncilChip {
+  .editCouncilButton {
     min-height: 38px;
     box-shadow: 2px 2px 0 var(--line);
   }
 
-  .editCouncilChip {
+  .editCouncilButton {
     width: auto;
     max-width: 100%;
     flex: 0 0 auto;

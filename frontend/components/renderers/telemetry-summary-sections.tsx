@@ -53,7 +53,6 @@ export function TelemetrySummarySections({
           </div>
           {vectorRows.length > 0 ? <VectorUsageTable rows={vectorRows} /> : (
             <div className={primitives.emptyState}>
-              <p className={primitives.emptyStateEyebrow}>Stand by</p>
               <p className={primitives.emptyStateText}>Sources will appear here.</p>
             </div>
           )}
@@ -97,7 +96,6 @@ export function TelemetrySummarySections({
           </div>
           {tokenTableRows.length > 0 ? <TelemetryTable rows={tokenTableRows} variant="bordered" tableClassName="summaryTable" /> : (
             <div className={primitives.emptyState}>
-              <p className={primitives.emptyStateEyebrow}>Stand by</p>
               <p className={primitives.emptyStateText}>No request metrics yet. Each turn will be one model request.</p>
             </div>
           )}
@@ -114,7 +112,6 @@ export function TelemetrySummarySections({
       <SidebarSection title="VOCAL SHARE">
         {vocalShareRows.length > 0 ? <TelemetryTable rows={vocalShareRows} variant="shadowed" /> : (
           <div className={primitives.emptyState}>
-            <p className={primitives.emptyStateEyebrow}>Stand by</p>
             <p className={primitives.emptyStateText}>No air-time data yet.</p>
           </div>
         )}

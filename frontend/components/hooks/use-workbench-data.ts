@@ -147,10 +147,15 @@ export function useAgentsCatalog({ councilStorageKey, cacheKey, cacheTtlMs }: Us
     };
   }, [cacheKey, cacheTtlMs, councilStorageKey]);
 
+  function resetSelectedAgents() {
+    setSelectedAgents(getDefaultCouncilAgentIds(agents));
+  }
+
   return {
     agents,
     selectedAgents,
     setSelectedAgents,
+    resetSelectedAgents,
     agentsError,
     isLoadingAgents,
     isRefreshingAgents,

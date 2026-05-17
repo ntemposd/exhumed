@@ -37,11 +37,11 @@ export function ChatWorkbench() {
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const telemetrySidebarRef = useRef<HTMLElement | null>(null);
   const telemetrySidebarUserScrolledRef = useRef(false);
-  const { topic, setTopic, topicEditorRef, hasHydratedTopic } = useTopicEditorState({
+  const { topic, setTopic, resetTopic, topicEditorRef, hasHydratedTopic } = useTopicEditorState({
     storageKey: TOPIC_STORAGE_KEY,
     defaultTopic: DEFAULT_TOPIC,
   });
-  const { agents, selectedAgents, setSelectedAgents, agentsError, isLoadingAgents, isRefreshingAgents } = useAgentsCatalog({
+  const { agents, selectedAgents, setSelectedAgents, resetSelectedAgents, agentsError, isLoadingAgents, isRefreshingAgents } = useAgentsCatalog({
     councilStorageKey: COUNCIL_STORAGE_KEY,
     cacheKey: AGENTS_CACHE_KEY,
     cacheTtlMs: AGENTS_CACHE_TTL_MS,
@@ -215,6 +215,8 @@ export function ChatWorkbench() {
 
   function handleRenewSession() {
     renewSession();
+    resetTopic();
+    resetSelectedAgents();
   }
 
   return (

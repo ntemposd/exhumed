@@ -7,7 +7,7 @@
 }
 
 .vectorUsageTableInner {
-  display: inline-block;
+  display: block;
   width: max-content;
   min-width: 100%;
 }
@@ -41,4 +41,8 @@
 .summaryTable th:not(:first-child),
 .summaryTable td:not(:first-child) {
   text-align: right;
+}
+
+.totalRow td {
+  font-weight: 800;
 }

@@ -34,16 +34,17 @@ export function TelemetryServiceStatus({
       : onlineServices === serviceRows.length
         ? "online"
         : "degraded";
+  const overallStatusLabel = overallStatusSlug.toUpperCase();
   const heading = (
     <button
       type="button"
-      className="telemetryStatusToggle"
+      className="telemetryStatusToggle sessionInline"
       aria-expanded={isExpanded}
       onClick={() => setIsExpanded((currentValue) => !currentValue)}
     >
-      <span className={`telemetryStatusDot telemetryStatusDot${overallStatusSlug.charAt(0).toUpperCase()}${overallStatusSlug.slice(1)}`} />
-      <span>SYSTEM STATUS</span>
       <span className="telemetryStatusCaret" aria-hidden="true" />
+      <span className="sessionInlineLabel telemetryStatusLabel">System Status:</span>
+      <span className={`sessionInlineValue telemetryStatusValue telemetryStatusValue${overallStatusSlug.charAt(0).toUpperCase()}${overallStatusSlug.slice(1)}`}>{overallStatusLabel}</span>
     </button>
   );
 

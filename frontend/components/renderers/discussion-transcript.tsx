@@ -23,6 +23,18 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundStartAg
   const lastScrolledRoundKeyRef = useRef(0);
   const retryCountdownsRef = useRef<Record<string, { initialSeconds: number; startedAtMs: number; status: string }>>({});
 
+  useEffect(() => {
+    if (roundScrollKey < lastScrolledRoundKeyRef.current) {
+      lastScrolledRoundKeyRef.current = roundScrollKey;
+    }
+
+    if (roundScrollKey === 0) {
+      lastScrolledRoundKeyRef.current = 0;
+      lastMessageStateRef.current = null;
+      setExpandedMessageIds({});
+    }
+  }, [roundScrollKey]);
+
   function scrollBubbleToViewportTop(targetBubble: HTMLElement) {
     const targetTop = Math.max(window.scrollY + targetBubble.getBoundingClientRect().top, 0);
     const startTop = window.scrollY;
@@ -193,7 +205,6 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundStartAg
     <div className={styles.transcript} ref={transcriptRef}>
       {messages.length === 0 ? (
         <div className={styles.emptyState}>
-          <p className={styles.emptyStateEyebrow}>Stand by</p>
           <p className={styles.emptyStateText}>{emptyStateMessage}</p>
         </div>
       ) : null}

@@ -120,39 +120,38 @@ export function DiscussionPanel({
 
         <div className={styles.controlsDeck}>
           <section className={styles.sectionGroup}>
-            <div className={styles.topicSection}>
-              {hasHydratedTopic ? (
-                <textarea
-                  ref={topicEditorRef}
-                  className="topicEditor"
-                  value={topic}
-                  rows={1}
-                  onChange={(event) => onTopicChange(event.target.value)}
-                  placeholder="Set the frame for the debate"
-                  disabled={discussionActive}
-                />
-              ) : (
-                <div className="topicEditor topicEditorLoading" aria-live="polite">
-                  Loading saved topic...
-                </div>
-              )}
-            </div>
-            <div className={styles.commandCluster}>
-              <div className={styles.commandGridCompact}>
+            <div className={styles.topicSectionLayout}>
+              <div className={styles.topicSection}>
+                {hasHydratedTopic ? (
+                  <textarea
+                    ref={topicEditorRef}
+                    className="topicEditor"
+                    value={topic}
+                    rows={1}
+                    onChange={(event) => onTopicChange(event.target.value)}
+                    placeholder="Set the frame for the debate"
+                    disabled={discussionActive}
+                  />
+                ) : (
+                  <div className="topicEditor topicEditorLoading" aria-live="polite">
+                    Loading saved topic...
+                  </div>
+                )}
+              </div>
+              <div className={styles.topicActionStack}>
                 <button className={`button ${styles.commandButton}`.trim()} type="button" onClick={onStartDebate} disabled={discussionActive}>
                   {startButtonLabel}
                 </button>
                 <button className={`buttonGhost ${styles.commandButton}`.trim()} type="button" onClick={onRenewSession}>
                   ⟳ Refresh Session
                 </button>
+                <div className={styles.topicSessionInline}>
+                  <span className={styles.topicSessionLabel}>Active Session</span>
+                  <span className={styles.topicSessionValue} title={sessionId || "Pending"}>{sessionId || "Pending"}</span>
+                </div>
               </div>
-              <div className={styles.topicSessionMetaInline}>
-                <span className={styles.commandMetaLabel}>Active Session:</span>
-                <span className={styles.commandMetaValue}>{sessionId || "Pending"}</span>
-              </div>
-
-              {!showTranscriptControls && controlError ? <p className="statusNote">{controlError}</p> : null}
             </div>
+            {!showTranscriptControls && controlError ? <p className="statusNote">{controlError}</p> : null}
           </section>
 
           <section className={`${styles.sectionGroup} ${styles.dividedSection}`.trim()}>
@@ -174,8 +173,8 @@ export function DiscussionPanel({
                 </button>
               ))}
 
-              <button className={styles.editCouncilChip} type="button" onClick={onOpenSpeakerModal}>
-                Edit Council
+              <button className={`button ${styles.editCouncilButton}`.trim()} type="button" onClick={onOpenSpeakerModal}>
+                Edit
               </button>
             </div>
           </section>
@@ -188,7 +187,7 @@ export function DiscussionPanel({
                   ?
                 </summary>
                 <div className={styles.tooltipCard} role="note">
-                  Adjust between rigid logic and creative unpredictability.
+                  Adjust between rigid logic (0) and creative unpredictability (1.5).
                 </div>
               </details>
             </div>

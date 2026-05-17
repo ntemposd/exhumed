@@ -38,7 +38,7 @@ function getSpeakerLastName(displayName: string): string {
 }
 
 function formatSpeakerTurnLabel(displayName: string, turnNumber: number): string {
-  return `T${String(turnNumber).padStart(2, "0")} ■ ${getSpeakerLastName(displayName)}`;
+  return `T${String(turnNumber).padStart(2, "0")}-${getSpeakerLastName(displayName)}`;
 }
 
 export function useTelemetryViewModel({

@@ -8,17 +8,8 @@
   display: grid;
   gap: 8px;
   padding: 18px 20px;
-  border: 2px dashed rgba(20, 17, 15, 0.28);
+  border: 2px dashed rgba(20, 17, 15, 0.32);
   background: linear-gradient(180deg, rgba(255, 251, 245, 0.92), rgba(245, 233, 210, 0.9));
-}
-
-.emptyStateEyebrow {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
 }
 
 .emptyStateText {
@@ -34,8 +25,7 @@
   width: 100%;
   max-width: 100%;
   padding: 16px;
-  border: 3px solid var(--line);
-  box-shadow: 6px 6px 0 var(--line);
+  border: 2px solid var(--badge-border);
 }
 
 .bubbleAssistant,
@@ -94,7 +84,7 @@
 
 .bubbleHeader {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   gap: 10px;
 }
 
@@ -106,7 +96,7 @@
   height: 42px;
   flex: 0 0 42px;
   overflow: hidden;
-  border: 2px solid var(--line);
+  border: 2px solid var(--badge-border);
   background: #fff;
   font-weight: 700;
   object-fit: cover;
@@ -114,36 +104,46 @@
 
 .bubbleIdentity {
   display: grid;
-  align-content: end;
-  gap: 4px;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  align-content: stretch;
+  gap: 0;
+  height: 42px;
   min-height: 42px;
   min-width: 0;
+  overflow: hidden;
 }
 
 .bubbleName {
   margin: 0;
-  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  font-size: 0.98rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  line-height: 1.05;
 }
 
 .bubbleMeta {
   margin: 0;
   display: inline-flex;
   align-items: center;
+  justify-content: flex-start;
   width: fit-content;
-  min-height: 22px;
+  max-width: 100%;
+  min-height: 0;
+  height: 100%;
   padding: 0 7px;
   border: 2px solid rgba(20, 17, 15, 0.18);
   background: rgba(255, 255, 255, 0.58);
   color: var(--muted);
-  box-shadow: 1px 1px 0 rgba(20, 17, 15, 0.2);
   font-size: 0.67rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  align-self: end;
+  align-self: stretch;
+  line-height: 1;
 }
 
 .bubbleStatus {
@@ -161,7 +161,7 @@
 .bubbleText {
   margin: 0;
   white-space: pre-wrap;
-  font-size: 0.95rem;
+  font-size: 1.08rem;
   line-height: 1.7;
 }
 
@@ -211,12 +211,6 @@
   cursor: pointer;
 }
 
-@media (min-width: 1181px) {
-  .bubbleName {
-    font-size: 0.92rem;
-  }
-}
-
 @media (max-width: 767px) {
   .transcript {
     padding: 0;
@@ -224,7 +218,6 @@
 
   .bubble {
     max-width: 100%;
-    box-shadow: 4px 4px 0 var(--line);
   }
 
   .avatar {
@@ -234,6 +227,7 @@
   }
 
   .bubbleIdentity {
+    height: 38px;
     min-height: 38px;
   }
 

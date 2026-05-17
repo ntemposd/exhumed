@@ -1,7 +1,6 @@
 .card {
-  border: 3px solid var(--line);
-  background: var(--box-surface);
-  box-shadow: 6px 6px 0 var(--line);
+  border: 2px solid var(--line);
+  background: linear-gradient(180deg, #fffbf5, #f3e7d4);
   padding: 0.8rem 0.85rem 0.75rem;
 }
 
@@ -18,8 +17,7 @@
 
 .tokenHeader {
   margin-bottom: 0.28rem;
-  padding-bottom: 0.45rem;
-  border-bottom: 2px solid var(--line);
+  padding-bottom: 0.2rem;
 }
 
 .topline {
@@ -61,12 +59,13 @@
   justify-content: center;
   min-height: 20px;
   padding: 0.04rem 0.4rem;
-  border: 2px solid var(--line);
-  background: var(--box-surface-soft);
-  box-shadow: 2px 2px 0 var(--line);
+  border: 2px solid var(--badge-border);
+  background: var(--badge-surface);
+  color: var(--badge-text);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -81,17 +80,8 @@
   display: grid;
   gap: 8px;
   padding: 18px 20px;
-  border: 2px dashed rgba(20, 17, 15, 0.28);
-  background: linear-gradient(180deg, rgba(255, 251, 245, 0.92), rgba(245, 233, 210, 0.9));
-}
-
-.emptyStateEyebrow {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  border: 2px dashed rgba(20, 17, 15, 0.32);
+  background: linear-gradient(180deg, #fffbf5, #f3e7d4);
 }
 
 .emptyStateText {
@@ -105,6 +95,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
+  min-width: 0;
   margin-top: 0.3rem;
   margin-bottom: 0.55rem;
 }
@@ -112,6 +103,7 @@
 .sourceSection {
   display: grid;
   gap: 0.2rem;
+  min-width: 0;
   margin-top: 0.7rem;
 }
 
@@ -127,16 +119,18 @@
 .sourceChip {
   display: inline-flex;
   align-items: center;
+  max-width: 100%;
   min-height: 24px;
-  border: 2px solid var(--line);
-  box-shadow: 2px 2px 0 var(--line);
+  border: 2px solid var(--badge-border);
+  color: var(--badge-text);
   font-size: 0.67rem;
   font-weight: 800;
   padding: 0.18rem 0.5rem;
-  background: rgba(255, 255, 255, 0.86);
+  background: linear-gradient(180deg, #f6f3ee, #e6dfd5);
   line-height: 1.25;
   letter-spacing: 0.02em;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .track {
@@ -144,13 +138,12 @@
   height: 16px;
   border: 2px solid var(--line);
   background: linear-gradient(180deg, #fffdf8, #f9ecd9);
-  box-shadow: 3px 3px 0 var(--line);
   overflow: hidden;
 }
 
 .fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), #ffb36b);
+  background: linear-gradient(90deg, var(--accent), var(--accent-orange));
 }
 
 .entropyTopline {
@@ -177,17 +170,15 @@
 .tableShell {
   width: 100%;
   overflow-x: auto;
-  background: var(--box-surface);
+  background: linear-gradient(180deg, #fffbf5, #f3e7d4);
 }
 
 .tableShellBordered {
   border: 2px solid var(--line);
-  box-shadow: 6px 6px 0 var(--line);
 }
 
 .tableShellShadowed {
   border: 2px solid var(--line);
-  box-shadow: 6px 6px 0 var(--line);
 }
 
 .table {
@@ -208,13 +199,15 @@
 .table th {
   font-size: 0.68rem;
   font-weight: 800;
+  color: var(--ink);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: var(--box-surface-strong);
+  background: var(--accent-orange);
+  border-bottom: 2px solid var(--line);
 }
 
 .table td {
-  background: rgba(255, 252, 247, 0.55);
+  background: #fffaf3;
 }
 
 .table tbody tr:last-child td {

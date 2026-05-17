@@ -103,7 +103,7 @@ export function TelemetryTable({ rows, variant = "plain", tableClassName = "" }:
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <tr key={`${index}-${row[columns[0]]}`}>
+            <tr key={`${index}-${row[columns[0]]}`} className={row[columns[0]] === "Total" ? styles.totalRow : undefined}>
               {columns.map((column) => (
                 <td key={column}>{column === "Speaker" ? renderSpeakerCell(row[column]) : row[column]}</td>
               ))}

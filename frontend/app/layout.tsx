@@ -1,14 +1,14 @@
 // RootLayout owns the global font setup and document shell for the Next app.
 import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import { IBM_Plex_Mono } from "next/font/google";
 
 import "./globals.css";
 
-const displayFont = Space_Grotesk({
+const displayFont = IBM_Plex_Mono({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["500", "700"],
+  weight: ["400", "500", "700"],
 });
 
 const monoFont = IBM_Plex_Mono({

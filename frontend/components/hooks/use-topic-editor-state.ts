@@ -12,6 +12,10 @@ export function useTopicEditorState({ storageKey, defaultTopic }: UseTopicEditor
   const [hasHydratedTopic, setHasHydratedTopic] = useState(false);
   const topicEditorRef = useRef<HTMLTextAreaElement | null>(null);
 
+  function resetTopic() {
+    setTopic(defaultTopic);
+  }
+
   useLayoutEffect(() => {
     const storedTopic = window.localStorage.getItem(storageKey);
     setTopic(storedTopic || defaultTopic);
@@ -39,6 +43,7 @@ export function useTopicEditorState({ storageKey, defaultTopic }: UseTopicEditor
   return {
     topic,
     setTopic,
+    resetTopic,
     topicEditorRef,
     hasHydratedTopic,
   };

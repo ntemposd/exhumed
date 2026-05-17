@@ -36,7 +36,7 @@ export function TelemetryPanel({ viewModel, containerRef }: TelemetryPanelProps)
     <aside className="telemetryColumn" ref={containerRef}>
       <div className="panel telemetryPanel">
         <div className="telemetryHero">
-          <h2 className="telemetryHeroTitle">TELEMETRY</h2>
+          <h2 className="sectionTitle columnTitle telemetryHeroTitle">TELEMETRY</h2>
         </div>
 
         <TelemetryServiceStatus
