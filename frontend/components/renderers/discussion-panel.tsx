@@ -146,7 +146,7 @@ export function DiscussionPanel({
                   ⟳ Refresh Session
                 </button>
                 <div className={styles.topicSessionInline}>
-                  <span className={styles.topicSessionLabel}>Active Session</span>
+                  <span className={styles.topicSessionLabel}>Active Session:</span>
                   <span className={styles.topicSessionValue} title={sessionId || "Pending"}>{sessionId || "Pending"}</span>
                 </div>
               </div>
@@ -157,7 +157,7 @@ export function DiscussionPanel({
           <section className={`${styles.sectionGroup} ${styles.dividedSection}`.trim()}>
             <div className={`${styles.sectionHeading} ${styles.councilHeading}`.trim()}>
               <span className={styles.councilHeadingLabel}>COUNCIL</span>
-              <span className={styles.councilCountInline}>{selectedCouncil.length} Selected</span>
+              <span className={styles.councilCountInline}>{selectedCouncil.length} Speakers</span>
             </div>
             <div className={`draftedCouncil ${styles.councilChips}`.trim()}>
               {selectedCouncil.map((legend) => (

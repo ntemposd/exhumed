@@ -51,9 +51,12 @@
 
 .topicSectionLayout {
   display: grid;
-  --topic-editor-min-height: 150px;
+  --topic-action-row-height: 40px;
+  --topic-session-row-height: 20px;
+  --topic-action-stack-gap: 8px;
+  --topic-editor-min-height: calc((var(--topic-action-row-height) * 2) + var(--topic-session-row-height) + (var(--topic-action-stack-gap) * 2));
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-  align-items: stretch;
+  align-items: start;
   gap: 12px;
   min-height: var(--topic-editor-min-height);
 }
@@ -94,24 +97,26 @@
 
 .topicSection {
   display: grid;
-  min-height: var(--topic-editor-min-height);
+  min-height: 0;
 }
 
 .topicActionStack {
   display: grid;
-  grid-template-rows: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-rows: repeat(2, var(--topic-action-row-height)) minmax(0, auto);
+  gap: var(--topic-action-stack-gap);
   min-height: var(--topic-editor-min-height);
-  align-content: stretch;
+  align-content: start;
 }
 
 .topicSessionInline {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   min-width: 0;
-  min-height: 38px;
+  min-height: var(--topic-session-row-height);
+  height: var(--topic-session-row-height);
   padding: 0;
+  align-self: start;
 }
 
 .topicSessionLabel {
@@ -121,6 +126,7 @@
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  padding-left: 0.33rem;
 }
 
 .topicSessionValue {
@@ -132,7 +138,7 @@
   color: var(--ink);
   font-family: var(--font-display), sans-serif;
   font-size: 0.8rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1;
 }
 
@@ -347,7 +353,7 @@
   .discussionPane {
     --section-divider-gap: 22px;
     gap: 0;
-    padding: 24px 0 0;
+    padding: 32px 0 0;
   }
 
   .header {
@@ -379,21 +385,21 @@
   }
 
   .topicSectionLayout {
-    --topic-editor-min-height: 0;
+    --topic-action-row-height: 38px;
+    --topic-session-row-height: 16px;
+    --topic-editor-min-height: calc((var(--topic-action-row-height) * 2) + var(--topic-session-row-height) + (var(--topic-action-stack-gap) * 2));
     grid-template-columns: minmax(0, 1fr);
     gap: 10px;
     min-height: auto;
   }
 
   .topicActionStack {
-    gap: 8px;
     min-height: 0;
-    grid-template-rows: repeat(3, auto);
+    grid-template-rows: repeat(2, var(--topic-action-row-height)) minmax(0, auto);
   }
 
   .topicSessionInline {
-    min-height: 0;
-    gap: 2px;
+    gap: 3px;
   }
 
   .topicSessionLabel,
@@ -413,10 +419,12 @@
 
   .entropyHeadingRow {
     align-items: center;
+    position: relative;
+    width: 100%;
   }
 
   .tooltipDetails {
-    position: relative;
+    position: static;
   }
 
   .tooltipDetails[open] {
@@ -429,17 +437,13 @@
   }
 
   .tooltipCard {
-    top: calc(100% + 6px);
-    left: auto;
-    right: 0;
-    width: min(260px, calc(100vw - 44px));
-  }
-
-  .tooltipCard {
-    left: auto;
-    right: 0;
-    width: min(280px, calc(100vw - 40px));
-    max-width: none;
+    top: calc(100% + 8px);
+    left: 0;
+    right: auto;
+    width: calc(100vw - 32px);
+    max-width: calc(100vw - 32px);
+    overflow-wrap: anywhere;
+    transform: none;
   }
 
   .entropyOptions {

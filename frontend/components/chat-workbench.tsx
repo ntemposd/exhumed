@@ -26,13 +26,14 @@ const ENTROPY_STORAGE_KEY = "exhumed-front-target-entropy";
 const AGENTS_CACHE_KEY = "exhumed-front-agents-cache";
 const SERVICES_CACHE_KEY = "exhumed-front-services-cache";
 const DEFAULT_TOPIC = "The future of AI in society.";
+const DEFAULT_TARGET_ENTROPY = 0;
 const AGENTS_CACHE_TTL_MS = 5 * 60_000;
 const SERVICES_CACHE_TTL_MS = 60_000;
 
 export function ChatWorkbench() {
   // Session + workspace chrome state that belongs at the composition root.
   const [sessionId, setSessionId] = useState("");
-  const [targetEntropy, setTargetEntropy] = useState(0.7);
+  const [targetEntropy, setTargetEntropy] = useState(DEFAULT_TARGET_ENTROPY);
   const [isSpeakerModalOpen, setIsSpeakerModalOpen] = useState(false);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const telemetrySidebarRef = useRef<HTMLElement | null>(null);
@@ -96,8 +97,11 @@ export function ChatWorkbench() {
       const parsedEntropy = Number(storedEntropy);
       if (!Number.isNaN(parsedEntropy)) {
         setTargetEntropy(clampNumber(parsedEntropy, 0, 1.5));
+        return;
       }
     }
+
+    setTargetEntropy(DEFAULT_TARGET_ENTROPY);
   }, []);
 
   useEffect(() => {

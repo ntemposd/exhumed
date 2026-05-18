@@ -83,13 +83,16 @@ select {
 }
 
 .siteFooter {
-	border-top: 1px solid var(--line);
+	border-top: 2px solid rgba(20, 17, 15, 0.12);
 	width: 100%;
 	margin: 0;
 	padding: 24px 24px 18px;
 	color: var(--muted);
 	font-size: 0.78rem;
 	text-align: center;
+	background:
+		radial-gradient(circle at top left, rgba(227, 177, 0, 0.15), transparent 28%),
+		linear-gradient(180deg, rgba(255, 249, 240, 0.98), rgba(246, 235, 214, 0.94));
 }
 
 .siteFooterLink {
@@ -631,8 +634,8 @@ select {
 	width: 100%;
 	max-width: 100%;
 	min-width: 0;
-	min-height: var(--topic-editor-min-height, 56px);
-	height: 100%;
+	min-height: 104px;
+	height: auto;
 	box-sizing: border-box;
 	border: 2px solid var(--line);
 	background:
@@ -648,13 +651,16 @@ select {
 	font-weight: 400;
 	letter-spacing: 0;
 	line-height: 1.7;
+	font-kerning: normal;
 	resize: none;
 	outline: none;
+	box-shadow: 4px 4px 0 var(--line);
 	transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 
 .topicEditor:focus {
 	transform: translate(-1px, -1px);
+	box-shadow: 5px 5px 0 var(--line);
 	background:
 		linear-gradient(180deg, rgba(255, 255, 252, 1), rgba(249, 241, 225, 0.98)),
 		linear-gradient(90deg, rgba(227, 177, 0, 0.1), rgba(15, 118, 110, 0.08));
@@ -884,15 +890,15 @@ select {
 		width: calc(100% + 32px);
 		margin-left: -16px;
 		margin-right: -16px;
-		padding-left: 16px;
-		padding-right: 16px;
+		padding-left: 0;
+		padding-right: 0;
 		padding-top: 0;
 		overflow: hidden;
+		background: transparent;
 	}
 
 	.telemetryColumn::before {
-		left: 0;
-		right: 0;
+		display: none;
 	}
 
 	.chatColumn {
@@ -945,6 +951,10 @@ select {
 		flex-direction: column;
 	}
 
+	.topicEditor {
+		min-height: 96px;
+	}
+
 	.speakerModalGrid {
 		grid-template-columns: minmax(0, 1fr);
 		gap: 14px;
@@ -962,7 +972,12 @@ select {
 	.telemetryPanel {
 		position: static;
 		top: auto;
-		padding-top: 16px;
+		padding: 24px 16px 22px;
+		background: linear-gradient(180deg, rgba(244, 236, 219, 1), rgba(232, 219, 192, 1));
+	}
+
+	.telemetryHero {
+		padding-top: 4px;
 	}
 
 	.telemetryPanel .sidebarSectionGroup:last-child {

@@ -107,6 +107,10 @@
   margin-top: 0.7rem;
 }
 
+.vocalSharePanel {
+  margin-bottom: 18px;
+}
+
 .sourceLabel {
   margin: 0 0 0.08rem;
   color: var(--muted);

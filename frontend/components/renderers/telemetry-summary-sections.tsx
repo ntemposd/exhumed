@@ -53,7 +53,7 @@ export function TelemetrySummarySections({
           </div>
           {vectorRows.length > 0 ? <VectorUsageTable rows={vectorRows} /> : (
             <div className={primitives.emptyState}>
-              <p className={primitives.emptyStateText}>Sources will appear here.</p>
+              <p className={primitives.emptyStateText}>Vector usage details, and historical sources will appear here.</p>
             </div>
           )}
           {uniqueVectorSourceLabels.length > 0 ? (
@@ -109,7 +109,7 @@ export function TelemetrySummarySections({
         </div>
       </SidebarSection>
 
-      <SidebarSection title="VOCAL SHARE">
+      <SidebarSection title="VOCAL SHARE" panelClassName={vocalShareRows.length > 0 ? primitives.vocalSharePanel : undefined}>
         {vocalShareRows.length > 0 ? <TelemetryTable rows={vocalShareRows} variant="shadowed" /> : (
           <div className={primitives.emptyState}>
             <p className={primitives.emptyStateText}>No air-time data yet.</p>
