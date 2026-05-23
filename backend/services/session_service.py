@@ -114,10 +114,10 @@ class SessionService:
         knowledge_block = ""
         retrieval_guidance = ""
         if agent_context_matches:
-            context_lines = [str(match.get("data") or "").strip() for match in agent_context_matches if match.get("data")]
-            if context_lines:
-                knowledge_block = "\n\nRelevant historical speaker context:\n" + "\n".join(
-                    f"- {line}" for line in context_lines
+            context_blocks = [str(match.get("data") or "").strip() for match in agent_context_matches if match.get("data")]
+            if context_blocks:
+                knowledge_block = "\n\nRelevant historical speaker context:\n\n" + "\n\n".join(
+                    f"[{index + 1}] {block}" for index, block in enumerate(context_blocks)
                 )
                 retrieval_guidance = (
                     "\n\nUse the historical speaker context as background philosophical grounding only. "

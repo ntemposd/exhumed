@@ -39,15 +39,25 @@ class TurnWorkflowService:
         topic: str,
         context_limit: int = 5,
     ) -> Tuple[Any, List[Dict[str, Any]], List[Dict[str, Any]], str]:
-        """Load the agent config, recent discussion context, and speaker knowledge in parallel."""
-        agent_config, context_messages, agent_context_matches = await asyncio.gather(
+        """Load the agent config and recent context, then perform a context-aware RAG query."""
+        agent_config, context_messages = await asyncio.gather(
             self.fetch_agent_config(agent_id),
             self.fetch_context_messages(session_id, context_limit, topic),
-            asyncio.to_thread(self.get_agent_context_matches, topic, agent_id),
         )
         previous_response = ""
         if context_messages:
             previous_response = str(context_messages[-1].get("message", "") or "").strip()
+
+        if previous_response:
+            query_text = f"{topic}. {previous_response[:200]}"
+        else:
+            query_text = topic
+
+        agent_context_matches = await asyncio.to_thread(
+            self.get_agent_context_matches,
+            query_text,
+            agent_id,
+        )
 
         return agent_config, context_messages, agent_context_matches, previous_response
 

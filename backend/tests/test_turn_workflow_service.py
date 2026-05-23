@@ -7,16 +7,19 @@ from backend.services.turn_workflow import TurnWorkflowService
 
 class TurnWorkflowServiceTests(unittest.IsolatedAsyncioTestCase):
     async def test_prepare_turn_inputs_extracts_previous_response(self):
-        captured_topics = []
+        captured_queries = []
 
         async def fetch_context_messages(session_id, limit, topic):
-            captured_topics.append(topic)
             return [{"message": "Previous turn", "display_name": "Socrates", "agent_id": "agt_001"}]
+
+        def get_agent_context_matches(query_text, agent_id):
+            captured_queries.append((query_text, agent_id))
+            return [{"data": query_text, "agent_id": agent_id}]
 
         service = TurnWorkflowService(
             fetch_agent_config=self._fetch_agent_config,
             fetch_context_messages=fetch_context_messages,
-            get_agent_context_matches=lambda topic, agent_id: [{"data": topic, "agent_id": agent_id}],
+            get_agent_context_matches=get_agent_context_matches,
             sanitize_generated_message=lambda message, display_name: message,
             save_latest_execution_metrics=self._noop_async,
             persist_session_telemetry=self._noop_async,
@@ -33,9 +36,40 @@ class TurnWorkflowServiceTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(agent_config.display_name, "Socrates")
         self.assertEqual(len(context_messages), 1)
-        self.assertEqual(matches[0]["data"], "virtue")
+        self.assertEqual(matches[0]["data"], "virtue. Previous turn")
         self.assertEqual(previous_response, "Previous turn")
-        self.assertEqual(captured_topics, ["virtue"])
+        self.assertEqual(captured_queries, [("virtue. Previous turn", "agt_001")])
+
+    async def test_prepare_turn_inputs_truncates_previous_response_in_rag_query(self):
+        long_message = "x" * 250
+        captured_queries = []
+
+        async def fetch_context_messages(session_id, limit, topic):
+            return [{"message": long_message, "display_name": "Sun Tzu", "agent_id": "agt_003"}]
+
+        def get_agent_context_matches(query_text, agent_id):
+            captured_queries.append(query_text)
+            return []
+
+        service = TurnWorkflowService(
+            fetch_agent_config=self._fetch_agent_config,
+            fetch_context_messages=fetch_context_messages,
+            get_agent_context_matches=get_agent_context_matches,
+            sanitize_generated_message=lambda message, display_name: message,
+            save_latest_execution_metrics=self._noop_async,
+            persist_session_telemetry=self._noop_async,
+            save_message_to_storage=self._save_message_to_storage,
+            calculate_entropy=lambda current, previous: 0.5,
+            build_telemetry=lambda **kwargs: kwargs,
+        )
+
+        await service.prepare_turn_inputs(
+            session_id=uuid4(),
+            agent_id="agt_003",
+            topic="strategy",
+        )
+
+        self.assertEqual(captured_queries, [f"strategy. {long_message[:200]}"])
 
     async def test_finalize_generated_turn_sanitizes_and_persists(self):
         stored_messages = []

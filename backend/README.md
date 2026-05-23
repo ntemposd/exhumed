@@ -1,27 +1,30 @@
 # Backend Guide
 
-This backend has three code surfaces:
+This document is the file-by-file code map for the Python backend. It is intended to be the safest form of comprehensive backend documentation: it explains what every backend code file does, how the pieces fit together, and where to look when debugging or extending a specific behavior, without creating high-churn comment-only edits across dozens of modules.
 
-- `main.py`: FastAPI application entrypoint, API routes, request orchestration, telemetry shaping, and response formatting.
-- `settings.py`: typed runtime configuration loader for env-backed backend settings.
-- `services/database.py`: Redis and Vector access layer for chat history, telemetry snapshots, and retrieval-backed prompt context.
-- `services/agent_registry.py`: agent registry reads/writes, cache invalidation, and cached agent listing/config lookup.
-- `services/turn_workflow.py`: shared turn preparation and turn finalization used by the generation endpoints.
-- `scripts/ingest_agent_knowledge.py`: offline ingestion pipeline that converts speaker source texts into Upstash Vector payloads.
+## Architecture
 
-## Runtime Flow
+The backend is a FastAPI application that coordinates four main concerns:
 
-`main.py` handles request validation, conversation state, retrieval, provider calls, and telemetry emission.
+- API request handling and response shaping.
+- Session and agent state persistence in Upstash Redis.
+- speaker-grounding retrieval from Upstash Vector.
+- LLM request orchestration, streaming, telemetry, and prompt capture.
 
-- Session history is stored in Upstash Redis.
-- Speaker context is retrieved from Upstash Vector.
-- The database service owns persistence and retrieval details so route handlers stay thin.
+At runtime, the flow is:
 
-## Configuration
+1. `main.py` builds the FastAPI app and installs the router modules.
+2. `composition.py` wires the service graph together.
+3. API route modules delegate to service modules.
+4. Service modules call Redis, Upstash Vector, and the inference provider.
+5. Utility modules normalize execution metrics, text metrics, and PDF export output.
+6. Script modules support offline ingestion, vector inspection, and prompt inspection.
+
+## Runtime Configuration
 
 Runtime configuration is validated through `settings.py` before the FastAPI app is built.
 
-Core required settings:
+Core required environment variables:
 
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
@@ -29,7 +32,7 @@ Core required settings:
 - `UPSTASH_VECTOR_REST_TOKEN`
 - `LLM_API_KEY`
 
-Useful optional settings:
+Useful optional variables:
 
 - `LLM_API_BASE_URL`
 - `LLM_MODEL_ID`
@@ -38,80 +41,190 @@ Useful optional settings:
 - `CORS_ALLOW_ORIGINS`
 - `CORS_ALLOW_ORIGIN_REGEX`
 - `BACKEND_STARTUP_READINESS_MODE`
+- `AGENT_REGISTRY_CACHE_TTL_SECONDS`
+- `AGENT_CONFIG_CACHE_TTL_SECONDS`
 
 `BACKEND_STARTUP_READINESS_MODE` supports:
 
-- `strict`: fail startup when Redis, Vector, or inference is offline
-- `warn`: log degraded startup but keep the app alive
-- `off`: skip the startup readiness probe
+- `strict`: fail startup when Redis, Vector, or inference is offline.
+- `warn`: report degraded readiness but keep serving.
+- `off`: skip startup readiness checks.
 
-## Service Layer
+## File Map
 
-`services/database.py` is responsible for:
+### Root modules
 
-- writing and reading ordered session history in Redis
-- storing short-lived telemetry snapshots in Redis
-- querying Upstash Vector with hosted embeddings when available and local embeddings as a fallback
-- building the retrieval-augmented system prompt block used by the model provider
+- `backend/main.py`
+Owns the FastAPI application, request and response models, shared logging setup, startup readiness behavior, route registration, static mounting, and runtime app-state exposure. This is the best entrypoint when you need to understand the externally visible API shape or the order in which the backend boots.
 
-## Ingestion Script
+- `backend/composition.py`
+Builds the runtime dependency graph. This module creates Redis and Vector clients, instantiates each service with its dependencies, and returns the service registry attached to `app.state`. This is the file to inspect when you want to know where a dependency comes from or how services are wired together.
 
-`scripts/ingest_agent_knowledge.py` now follows the same steps for every speaker:
+- `backend/settings.py`
+Parses environment-backed settings into typed Pydantic models. This module centralizes defaults, startup validation, base directory resolution, and CORS parsing. This is the authoritative place for backend configuration semantics.
 
-1. Resolve the source file. By default this is `data/<agent-id>.txt`.
-2. Run the speaker's extraction plan to isolate the source text that should be indexed.
-3. Run the speaker's chunking plan to split the text into retrievable units.
-4. Build Upstash Vector payloads with consistent metadata.
-5. Preview or upsert the chunks.
+### API package
 
-Useful operator commands:
+- `backend/api/__init__.py`
+Package marker for the API router modules.
+
+- `backend/api/root.py`
+Defines the root and top-level metadata routes. This is the shallowest route surface and usually the first smoke-check entrypoint for the backend.
+
+- `backend/api/agents.py`
+Defines agent registry endpoints for registration and listing. These routes delegate to `AgentRegistryService` and are responsible for shaping agent registry payloads at the HTTP boundary.
+
+- `backend/api/discussion.py`
+Defines the debate-generation routes, including non-streaming and streaming turn-generation endpoints. This router delegates to `DiscussionService` and is the main HTTP entrypoint for live debate turns.
+
+- `backend/api/sessions.py`
+Defines session-history, topic, and cleanup endpoints. These routes map session-related HTTP operations to `SessionService` behavior.
+
+- `backend/api/exports.py`
+Defines transcript export endpoints, including PDF-related flows that rely on `SessionService` and `pdf_export.py`.
+
+- `backend/api/telemetry.py`
+Defines backend telemetry and health-oriented endpoints. These routes surface execution metrics and service-readiness data to the frontend or operator workflows.
+
+### Services package
+
+- `backend/services/__init__.py`
+Package marker for the service layer.
+
+- `backend/services/agent_registry.py`
+Owns agent registry persistence and short-lived in-memory caching. It handles agent registration, agent listing, config lookup, and cache invalidation. This service sits between API routes and Redis-backed agent definitions.
+
+- `backend/services/database.py`
+Encapsulates Redis-backed session storage and Upstash Vector retrieval. It handles chat history reads and writes, telemetry snapshots, retrieval queries, neighbor enrichment, and fallback embedding logic when hosted embedding queries are unavailable.
+
+- `backend/services/session_service.py`
+Owns session-oriented formatting and storage behavior. It loads recent context turns, builds the context prompt passed to the LLM, summarizes vector telemetry, sanitizes model output, saves messages, and prepares transcript-oriented session data.
+
+- `backend/services/turn_workflow.py`
+Coordinates the shared turn lifecycle used by generation endpoints. It prepares the inputs needed for a turn, including context-aware retrieval, and finalizes a generated turn by sanitizing the message, deriving telemetry, and persisting it.
+
+- `backend/services/discussion_service.py`
+Coordinates route-level discussion flows so route handlers remain declarative. It ties together prompt building, vector telemetry summarization, provider request capture, non-streaming generation, streaming generation, and turn finalization.
+
+- `backend/services/llm_service.py`
+Owns outbound inference-provider calls. It builds provider request payloads, handles retry logic, implements request throttling and cooldown behavior, manages streaming token iteration, and normalizes provider execution metrics.
+
+- `backend/services/observability.py`
+Owns health checks, latest-metrics persistence, and local prompt-capture logging. This is the main operational introspection service for checking Redis, Vector, and inference health and for capturing exact provider requests locally.
+
+### Utilities package
+
+- `backend/utils/__init__.py`
+Package marker for backend utility helpers.
+
+- `backend/utils/execution_metrics.py`
+Normalizes provider timing and token usage into the shared execution metrics model. This module converts raw provider payloads and headers into stable backend telemetry structures for both non-streaming and streaming requests.
+
+- `backend/utils/text_metrics.py`
+Provides lightweight lexical text similarity helpers. It currently exposes Jaccard-based entropy scoring used to compare turns or measure response divergence.
+
+- `backend/utils/pdf_export.py`
+Renders session transcripts to PDF. It handles font selection, Unicode-safe or Latin-1-safe text sanitation, page layout, transcript formatting, and temporary-file output.
+
+### Script package
+
+- `backend/scripts/ingest_agent_knowledge.py`
+Offline ingestion pipeline for speaker RAG corpora. It resolves source files, extracts speaker-specific source documents, chunks them, builds Upstash Vector payloads, performs dry-runs, and upserts chunk batches safely. This is the main operator script for rebuilding the vector corpus.
+
+- `backend/scripts/query_vector_stats.py`
+Operator utility for querying or scanning Upstash Vector and summarizing corpus contents by agent and source. This is the safest script to inspect index state before and after ingestion.
+
+- `backend/scripts/render_provider_prompt_example.py`
+Prompt-inspection script for reconstructing or rendering provider request examples. This supports debugging prompt assembly, retrieval context, and stored local prompt captures.
+
+### Tests package
+
+- `backend/tests/test_api_smoke.py`
+FastAPI smoke coverage for startup readiness, root routes, agent routes, generation routes, and request-id behavior.
+
+- `backend/tests/test_agent_registry_service.py`
+Unit coverage for the agent registry caching and Redis-backed registry behaviors.
+
+- `backend/tests/test_database_service.py`
+Unit coverage for Redis-backed history persistence, topic-scoped history reads, vector retrieval behavior, fallback id parsing, neighbor enrichment, and low-score retrieval filtering.
+
+- `backend/tests/test_execution_metrics_utils.py`
+Unit coverage for execution metric extraction and normalization helpers.
+
+- `backend/tests/test_ingest_agent_knowledge.py`
+Regression coverage for speaker extraction plans, chunking policies, source metadata, and ingestion-specific cleanup rules.
+
+- `backend/tests/test_observability_service.py`
+Unit coverage for health checks, prompt capture persistence, and latest execution metrics reads and writes.
+
+- `backend/tests/test_pdf_export.py`
+Unit coverage for transcript PDF generation behavior and text sanitation.
+
+- `backend/tests/test_query_vector_stats.py`
+Unit coverage for vector summary aggregation and output formatting.
+
+- `backend/tests/test_render_provider_prompt_example.py`
+Unit coverage for prompt example rendering and captured prompt inspection behavior.
+
+- `backend/tests/test_session_service.py`
+Unit coverage for context-prompt formatting, including how retrieval blocks are rendered into the prompt.
+
+- `backend/tests/test_text_metrics.py`
+Unit coverage for the Jaccard entropy and text normalization helpers.
+
+- `backend/tests/test_turn_workflow_service.py`
+Unit coverage for shared turn preparation and turn finalization, including context-aware retrieval query construction.
+
+## Retrieval and RAG Notes
+
+The current retrieval path spans three files:
+
+- `services/turn_workflow.py`
+Builds a context-aware query by combining the topic with the latest discussion message when available before calling vector retrieval.
+
+- `services/database.py`
+Queries Upstash Vector, filters out weak matches under the configured score threshold, and optionally enriches strong matches with neighbor chunks.
+
+- `services/session_service.py`
+Formats retrieved multi-paragraph matches into numbered prompt blocks so neighbor-enriched passages keep their structure.
+
+This means retrieval is now both debate-aware and less noisy than the previous topic-only path.
+
+## Ingestion Notes
+
+`scripts/ingest_agent_knowledge.py` follows the same high-level flow for every supported speaker:
+
+1. Resolve the source file, usually `data/<agent-id>.txt`.
+2. Run the agent's source-document extraction plan.
+3. Chunk the extracted documents using the agent's chunking policy.
+4. Build stable vector ids and metadata payloads.
+5. Dry-run or upsert to Upstash Vector.
+
+Operational commands:
 
 - `python backend/scripts/ingest_agent_knowledge.py --list-agents`
-- `python backend/scripts/ingest_agent_knowledge.py --describe-agent agt_013`
-- `python backend/scripts/ingest_agent_knowledge.py --agent-id agt_013 --dry-run`
+- `python backend/scripts/ingest_agent_knowledge.py --describe-agent agt_014`
+- `python backend/scripts/ingest_agent_knowledge.py --agent-id agt_014 --dry-run`
 - `python backend/scripts/query_vector_stats.py --all-agents`
 - `python backend/scripts/query_vector_stats.py --query "stoic discipline" --top-k 20`
-- `python backend/scripts/query_vector_stats.py --query "innovation" --agent-id agt_013 --json`
-
-### Speaker Plans
-
-- `agt_001` Socrates: extracts `Apology` and `Crito`, then uses default paragraph chunking.
-- `agt_002` Steve Jobs: extracts the leading Stanford block plus later dashed source segments, then uses default paragraph chunking.
-- `agt_003` Sun Tzu: extracts the handbook body and chunks by chapter and numbered sections.
-- `agt_005` Marcus Aurelius: extracts the selected books and uses default paragraph chunking.
-- `agt_007` Leonardo da Vinci: extracts the main body before bibliography/reference appendices and uses default paragraph chunking.
-- `agt_011` Leon Trotsky: removes site-navigation noise, keeps the chapter body, and chunks by chapter heading.
-- `agt_012` Friedrich Nietzsche: extracts selected sections and uses banded structured chunking for aphorism groups.
-- `agt_013` Nikola Tesla: extracts the autobiography body and chunks by roman-numeral section headings.
-
-## Tests
-
-Focused backend tests currently live in `backend/tests/`.
-
-- `test_database_service.py` covers Redis-backed history persistence behavior.
-- `test_agent_registry_service.py` covers cached agent lookup, registration, and registry loading behavior.
-- `test_api_smoke.py` covers endpoint smoke tests against the FastAPI app with external boundaries patched.
-- `test_ingest_agent_knowledge.py` covers speaker-plan resolution, source-file resolution, extraction cleanup, and structured chunking.
-- `test_query_vector_stats.py` covers query-result aggregation and report formatting for the Vector stats script.
-- `test_turn_workflow_service.py` covers shared turn preparation and finalization behavior used by the generation endpoints.
+- `python backend/scripts/query_vector_stats.py --all-agents --agent-id agt_014`
 
 ## Production Notes
 
-The backend is close to production-ready for the current single-service deployment shape.
-
-What is now in place:
+What is already in place:
 
 - typed startup configuration validation
 - shared outbound HTTP client reuse
 - request-scoped logging with `X-Request-ID`
 - startup readiness checks
-- backend test suite passing
+- local prompt capture for provider-request inspection
+- retrieval neighbor enrichment and score filtering
+- an ingestion pipeline with dry-run support and batched Upstash writes
 
-What still deserves attention before a broader production rollout:
+Operational cautions:
 
-- focused streaming-path regression tests beyond smoke coverage
-- CI gates so deploys always run the backend suite automatically
-- observability and alerting in the target hosting environment
-- rate, latency, and failure monitoring for the configured inference provider
+- Upstash Vector enforces a maximum write batch size, so ingestion now batches upserts instead of sending arbitrarily large writes.
+- Full corpus rebuilds can still hit provider daily write quotas on lower-tier plans.
+- Retrieval quality depends on both chunk policy and source extraction quality, so ingestion changes should always be dry-run and re-queried.
 
-The repository now includes a backend CI workflow at `.github/workflows/backend-ci.yml` that runs `python -m unittest discover -s backend/tests` on pushes and pull requests.
+The repository includes backend CI coverage through `.github/workflows/backend-ci.yml`, which runs the backend unit suite on pushes and pull requests.

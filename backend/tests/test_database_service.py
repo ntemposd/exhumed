@@ -262,6 +262,27 @@ class DatabaseServiceHistoryTests(unittest.TestCase):
         self.assertIn("Central Tesla passage.", matches[0]["data"])
         self.assertIn("Next section.", matches[0]["data"])
 
+    def test_get_agent_context_filters_out_low_score_matches_before_neighbor_enrichment(self):
+        vector_index = FakeVectorIndex()
+        vector_index.query = lambda **kwargs: [
+            SimpleNamespace(
+                id="agt_001:apology:0001",
+                score=0.59,
+                metadata={"agent_id": "agt_001", "source_slug": "apology", "chunk_index": 1},
+                data="Weak match.",
+            )
+        ]
+
+        service = DatabaseService(
+            redis_client=FakeRedis(),
+            vector_index=vector_index,
+            embedding_provider=FakeEmbeddingProvider(),
+        )
+
+        matches = service.get_agent_context("virtue", "agt_001", top_k=1)
+
+        self.assertEqual(matches, [])
+
 
 if __name__ == "__main__":
     unittest.main()

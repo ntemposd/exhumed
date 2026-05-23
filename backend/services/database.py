@@ -52,6 +52,8 @@ class TelemetrySnapshot:
 class DatabaseService:
     """Encapsulates Redis-backed session state and Vector-backed speaker retrieval."""
 
+    _VECTOR_SCORE_THRESHOLD: float = 0.60
+
     def __init__(
         self,
         *,
@@ -375,6 +377,10 @@ class DatabaseService:
         matches: List[Dict[str, Any]] = []
         for item in results:
             matches.append(self._coerce_vector_match(item))
+
+        matches = [match for match in matches if (match.get("score") or 0.0) >= self._VECTOR_SCORE_THRESHOLD]
+        if not matches:
+            return []
 
         return self._enrich_matches_with_neighbors(matches, agent_id=agent_id, neighbor_window=neighbor_window)
 
