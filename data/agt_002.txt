@@ -1,5 +1,5 @@
 ------
-This is a prepared text of the Commencement Address delivered by Steve Jobs, CEO of Apple Computer and of Pixar Animation Studios, on June 12, 2005.
+Stanford Commencement Address 2005.
 ------
 
 I’m honored to be with you today for your commencement from one of the finest universities in the world. Truth be told, I never graduated from college. And this is the closest I’ve ever gotten to a college graduation.
@@ -99,7 +99,7 @@ On the back cover of their final issue was a photograph of an early-morning coun
 “Stay hungry. Stay foolish.” And I have always wished that for myself. And now, as you graduate to begin anew, I wish that for you. Stay hungry. Stay foolish. Thank you all very much.
 
 ------
-Steve Jobs The Lost Interview 1995 - Full Transcript and Highlights
+The Lost Interview 1995.
 ------
 
 Job’s entry into personal computers
@@ -275,7 +275,7 @@ Jobs: Well, ask yourself, “What is a hippie?” This is an old word that has a
 
 
 ------
-Thoughts on Flash, an open letter, April 2010
+Thoughts on Flash 2010.
 ------
 
 Apple has a long relationship with Adobe. In fact, we met Adobe’s founders when they were in their proverbial garage. Apple was their first big customer, adopting their Postscript language for our new Laserwriter printer. Apple invested in Adobe and owned around 20% of the company for many years. The two companies worked closely together to pioneer desktop publishing and there were many good times. Since that golden era, the companies have grown apart. Apple went through its near death experience, and Adobe was drawn to the corporate market with their Acrobat products. Today the two companies still work together to serve their joint creative customers – Mac users buy around half of Adobe’s Creative Suite products – but beyond that there are few joint interests.
@@ -336,9 +336,10 @@ The avalanche of media outlets offering their content for Apple’s mobile devic
 
 New open standards created in the mobile era, such as HTML5, will win on mobile devices (and PCs too). Perhaps Adobe should focus more on creating great HTML5 tools for the future, and less on criticizing Apple for leaving the past behind.
 
------
-Keynote 2007 iphone introduction
------
+------
+iPhone introduction 2007.
+------
+
 This is a day I've been looking forward to for two and a half years.
 
 Every once in a while, a revolutionary product comes along that changes everything. And Apple has been - well, first of all, one's very fortunate if you get to work on just one of these in your career.
@@ -1078,9 +1079,10 @@ Thank you very much.
 
 Thank you.
 
-----
-Internal Apple Meeting (1997 - Think Different era)
-----
+------
+Think Different era 1997.
+------
+
 Good morning.
 
 We were up until 3 o'clock last night finishing this advertising.

@@ -2,6 +2,7 @@ import json
 import sys
 import types
 import unittest
+from types import SimpleNamespace
 
 upstash_redis_module = types.ModuleType("upstash_redis")
 upstash_redis_module.Redis = object
@@ -75,8 +76,14 @@ class FakeRedis:
 
 
 class FakeVectorIndex:
+    def __init__(self):
+        self.fetch_payloads = {}
+
     def query(self, **kwargs):
         return []
+
+    def fetch(self, ids):
+        return [self.fetch_payloads[vector_id] for vector_id in ids if vector_id in self.fetch_payloads]
 
 
 class FakeEmbeddingProvider:
@@ -161,6 +168,99 @@ class DatabaseServiceHistoryTests(unittest.TestCase):
                 {"turn_number": 4, "topic": "Tyrany", "message": "second tyranny"},
             ],
         )
+
+    def test_get_agent_context_enriches_matches_with_neighbor_chunks(self):
+        vector_index = FakeVectorIndex()
+        vector_index.query = lambda **kwargs: [
+            SimpleNamespace(
+                id="agt_003:art_of_war:0002",
+                score=0.91,
+                metadata={
+                    "agent_id": "agt_003",
+                    "source_slug": "art_of_war",
+                    "chunk_index": 2,
+                    "source_title": "The Art of War",
+                },
+                data="Current strategic passage.",
+            )
+        ]
+        vector_index.fetch_payloads = {
+            "agt_003:art_of_war:0001": {
+                "id": "agt_003:art_of_war:0001",
+                "metadata": {"agent_id": "agt_003", "source_slug": "art_of_war", "chunk_index": 1},
+                "data": "Previous context.",
+            },
+            "agt_003:art_of_war:0002": {
+                "id": "agt_003:art_of_war:0002",
+                "metadata": {"agent_id": "agt_003", "source_slug": "art_of_war", "chunk_index": 2},
+                "data": "Current strategic passage.",
+            },
+            "agt_003:art_of_war:0003": {
+                "id": "agt_003:art_of_war:0003",
+                "metadata": {"agent_id": "agt_003", "source_slug": "art_of_war", "chunk_index": 3},
+                "data": "Following context.",
+            },
+        }
+
+        service = DatabaseService(
+            redis_client=FakeRedis(),
+            vector_index=vector_index,
+            embedding_provider=FakeEmbeddingProvider(),
+        )
+
+        matches = service.get_agent_context("strategy", "agt_003", top_k=1)
+
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(
+            matches[0]["data"],
+            "Previous context.\n\nCurrent strategic passage.\n\nFollowing context.",
+        )
+        self.assertEqual(
+            matches[0]["metadata"]["neighbor_chunk_ids"],
+            [
+                "agt_003:art_of_war:0001",
+                "agt_003:art_of_war:0002",
+                "agt_003:art_of_war:0003",
+            ],
+        )
+
+    def test_get_agent_context_falls_back_to_id_parsing_for_older_metadata(self):
+        vector_index = FakeVectorIndex()
+        vector_index.query = lambda **kwargs: [
+            SimpleNamespace(
+                id="agt_013:my_inventions:0007",
+                score=0.77,
+                metadata={"agent_id": "agt_013", "source_title": "My Inventions"},
+                data="Central Tesla passage.",
+            )
+        ]
+        vector_index.fetch_payloads = {
+            "agt_013:my_inventions:0006": {
+                "id": "agt_013:my_inventions:0006",
+                "metadata": {"agent_id": "agt_013", "source_slug": "my_inventions", "chunk_index": 6},
+                "data": "Prior section.",
+            },
+            "agt_013:my_inventions:0008": {
+                "id": "agt_013:my_inventions:0008",
+                "metadata": {"agent_id": "agt_013", "source_slug": "my_inventions", "chunk_index": 8},
+                "data": "Next section.",
+            },
+        }
+
+        service = DatabaseService(
+            redis_client=FakeRedis(),
+            vector_index=vector_index,
+            embedding_provider=FakeEmbeddingProvider(),
+        )
+
+        matches = service.get_agent_context("inventor", "agt_013", top_k=1)
+
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(matches[0]["metadata"]["source_slug"], "my_inventions")
+        self.assertEqual(matches[0]["metadata"]["chunk_index"], 7)
+        self.assertIn("Prior section.", matches[0]["data"])
+        self.assertIn("Central Tesla passage.", matches[0]["data"])
+        self.assertIn("Next section.", matches[0]["data"])
 
 
 if __name__ == "__main__":

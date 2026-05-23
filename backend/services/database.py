@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Protocol, Sequence
+from typing import Any, Dict, List, Optional, Protocol, Sequence, Tuple
 
 from upstash_redis import Redis
 from upstash_vector.errors import UpstashError
@@ -73,6 +74,10 @@ class DatabaseService:
         return f"session:{session_id}:telemetry"
 
     @staticmethod
+    def _chunk_id(agent_id: str, source_slug: str, chunk_index: int) -> str:
+        return f"{agent_id}:{source_slug}:{chunk_index:04d}"
+
+    @staticmethod
     def _decode_redis_value(value: Any) -> str:
         if isinstance(value, bytes):
             return value.decode("utf-8")
@@ -85,6 +90,144 @@ class DatabaseService:
     @staticmethod
     def _escape_filter_value(value: str) -> str:
         return value.replace("\\", "\\\\").replace("'", "\\'")
+
+    @staticmethod
+    def _coerce_optional_int(value: Any) -> Optional[int]:
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            return None
+
+    @classmethod
+    def _parse_chunk_locator(cls, match: Dict[str, Any], agent_id: str) -> Tuple[Optional[str], Optional[int]]:
+        metadata = match.get("metadata") or {}
+        source_slug = str(metadata.get("source_slug") or "").strip() or None
+        chunk_index = cls._coerce_optional_int(metadata.get("chunk_index"))
+
+        if source_slug and chunk_index is not None:
+            return source_slug, chunk_index
+
+        raw_id = str(match.get("id") or "").strip()
+        id_pattern = rf"^{re.escape(agent_id)}:(?P<source_slug>[^:]+):(?P<chunk_index>\d+)$"
+        id_match = re.match(id_pattern, raw_id)
+        if not id_match:
+            return source_slug, chunk_index
+
+        return (
+            source_slug or id_match.group("source_slug"),
+            chunk_index if chunk_index is not None else int(id_match.group("chunk_index")),
+        )
+
+    @staticmethod
+    def _coerce_vector_match(item: Any) -> Dict[str, Any]:
+        if isinstance(item, dict):
+            return {
+                "id": item.get("id"),
+                "score": item.get("score"),
+                "metadata": item.get("metadata") or {},
+                "data": item.get("data") or "",
+            }
+
+        return {
+            "id": getattr(item, "id", None),
+            "score": getattr(item, "score", None),
+            "metadata": getattr(item, "metadata", None) or {},
+            "data": getattr(item, "data", None) or "",
+        }
+
+    def _fetch_vectors_by_ids(self, ids: Sequence[str]) -> Dict[str, Dict[str, Any]]:
+        if not ids or not hasattr(self.vector_index, "fetch"):
+            return {}
+
+        raw_result = self.vector_index.fetch(ids=list(ids))
+        if isinstance(raw_result, dict):
+            raw_vectors = raw_result.get("vectors") or raw_result.get("items") or []
+        else:
+            raw_vectors = getattr(raw_result, "vectors", raw_result)
+
+        vectors_by_id: Dict[str, Dict[str, Any]] = {}
+        for item in raw_vectors or []:
+            coerced = self._coerce_vector_match(item)
+            vector_id = str(coerced.get("id") or "").strip()
+            if vector_id:
+                vectors_by_id[vector_id] = coerced
+
+        return vectors_by_id
+
+    def _enrich_matches_with_neighbors(
+        self,
+        matches: List[Dict[str, Any]],
+        *,
+        agent_id: str,
+        neighbor_window: int,
+    ) -> List[Dict[str, Any]]:
+        if neighbor_window <= 0 or not matches:
+            return matches
+
+        neighbor_ids: List[str] = []
+        for match in matches:
+            source_slug, chunk_index = self._parse_chunk_locator(match, agent_id)
+            if not source_slug or chunk_index is None:
+                continue
+
+            for offset in range(-neighbor_window, neighbor_window + 1):
+                candidate_index = chunk_index + offset
+                if candidate_index < 1:
+                    continue
+                neighbor_ids.append(self._chunk_id(agent_id, source_slug, candidate_index))
+
+        fetched_vectors = self._fetch_vectors_by_ids(list(dict.fromkeys(neighbor_ids)))
+        if not fetched_vectors:
+            return matches
+
+        enriched_matches: List[Dict[str, Any]] = []
+        for match in matches:
+            source_slug, chunk_index = self._parse_chunk_locator(match, agent_id)
+            if not source_slug or chunk_index is None:
+                enriched_matches.append(match)
+                continue
+
+            ordered_ids = [
+                self._chunk_id(agent_id, source_slug, candidate_index)
+                for candidate_index in range(max(1, chunk_index - neighbor_window), chunk_index + neighbor_window + 1)
+            ]
+
+            ordered_chunks: List[str] = []
+            neighbor_chunk_ids: List[str] = []
+            for vector_id in ordered_ids:
+                if vector_id == str(match.get("id") or ""):
+                    candidate = match
+                else:
+                    candidate = fetched_vectors.get(vector_id)
+                if not candidate:
+                    continue
+
+                candidate_text = str(candidate.get("data") or "").strip()
+                if not candidate_text:
+                    continue
+
+                ordered_chunks.append(candidate_text)
+                neighbor_chunk_ids.append(vector_id)
+
+            if not ordered_chunks:
+                enriched_matches.append(match)
+                continue
+
+            metadata = dict(match.get("metadata") or {})
+            metadata["source_slug"] = metadata.get("source_slug") or source_slug
+            metadata["chunk_index"] = metadata.get("chunk_index") or chunk_index
+            metadata["neighbor_chunk_ids"] = neighbor_chunk_ids
+            metadata["retrieval_text_mode"] = "neighbor_enriched"
+
+            enriched_matches.append(
+                {
+                    **match,
+                    "metadata": metadata,
+                    "data": "\n\n".join(ordered_chunks),
+                }
+            )
+
+        return enriched_matches
 
     @staticmethod
     def _normalize_topic(value: Any) -> str:
@@ -203,6 +346,7 @@ class DatabaseService:
         top_k: int = 5,
         include_metadata: bool = True,
         include_data: bool = True,
+        neighbor_window: int = 1,
     ) -> List[Dict[str, Any]]:
         """Retrieve speaker-specific knowledge chunks from Upstash Vector."""
         filter_expression = f"agent_id = '{self._escape_filter_value(agent_id)}'"
@@ -230,16 +374,9 @@ class DatabaseService:
 
         matches: List[Dict[str, Any]] = []
         for item in results:
-            matches.append(
-                {
-                    "id": getattr(item, "id", None),
-                    "score": getattr(item, "score", None),
-                    "metadata": getattr(item, "metadata", None),
-                    "data": getattr(item, "data", None),
-                }
-            )
+            matches.append(self._coerce_vector_match(item))
 
-        return matches
+        return self._enrich_matches_with_neighbors(matches, agent_id=agent_id, neighbor_window=neighbor_window)
 
     def build_system_prompt(
         self,
