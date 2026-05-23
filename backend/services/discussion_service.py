@@ -66,7 +66,10 @@ class DiscussionService:
             return
 
         provider_request = self._llm_service.build_provider_request(
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": str(getattr(agent_config, "system_prompt", "") or "").strip()},
+                {"role": "user", "content": prompt},
+            ],
             agent_config=agent_config,
             temperature_override=temperature_override,
             stream=stream,
@@ -110,6 +113,7 @@ class DiscussionService:
             request.agent_id,
             request.topic,
         )
+        await self._session_service.save_session_topic(request.session_id, request.topic)
 
         agent_config, context_messages, agent_context_matches, previous_response = await self._turn_workflow_service.prepare_turn_inputs(
             session_id=request.session_id,
@@ -171,6 +175,7 @@ class DiscussionService:
             request.agent_id,
             request.topic,
         )
+        await self._session_service.save_session_topic(request.session_id, request.topic)
 
         agent_config, context_messages, agent_context_matches, previous_response = await self._turn_workflow_service.prepare_turn_inputs(
             session_id=request.session_id,
@@ -241,7 +246,10 @@ class DiscussionService:
             async def produce_stream_events() -> None:
                 try:
                     async for chunk in self._llm_service.stream_llm_api(
-                        [{"role": "user", "content": prompt}],
+                        [
+                            {"role": "system", "content": str(getattr(agent_config, "system_prompt", "") or "").strip()},
+                            {"role": "user", "content": prompt},
+                        ],
                         agent_config,
                         temperature_override=request.temperature,
                         on_complete=handle_stream_completion,

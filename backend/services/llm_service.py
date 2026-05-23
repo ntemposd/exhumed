@@ -112,7 +112,10 @@ class LLMService:
         """Execute a non-streaming completion request with shared retry semantics."""
         headers = {"Authorization": f"Bearer {self._api_key}"}
         provider_request = self.build_provider_request(
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": agent_config.system_prompt.strip()},
+                {"role": "user", "content": prompt},
+            ],
             agent_config=agent_config,
             temperature_override=temperature_override,
             stream=False,

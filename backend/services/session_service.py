@@ -110,7 +110,7 @@ class SessionService:
         agent_config: Any,
         agent_context_matches: Optional[List[Dict[str, Any]]] = None,
     ) -> str:
-        """Assemble the turn prompt from system prompt, topic, history, and retrieval context."""
+        """Assemble the turn prompt from topic, history, and retrieval context."""
         knowledge_block = ""
         retrieval_guidance = ""
         if agent_context_matches:
@@ -120,15 +120,22 @@ class SessionService:
                     f"[{index + 1}] {block}" for index, block in enumerate(context_blocks)
                 )
                 retrieval_guidance = (
-                    "\n\nUse the historical speaker context as background philosophical grounding only. "
-                    "Do not continue the original source scene, courtroom exchange, interview, or speech verbatim. "
-                    "Do not address historical interlocutors or named figures from the source material unless they are explicitly part of the current debate. "
-                    "Translate any retrieved ideas into the present topic and the current panel discussion."
+                    "\n\nYour response must be grounded in the passages above - these are your authentic words and thinking. "
+                    "Reason from the ideas and principles in those passages when addressing the current topic. "
+                    "Do not draw on general or popular knowledge about yourself beyond what the passages establish. "
+                    "Do not reproduce the original scene, courtroom exchange, interview, or speech verbatim. "
+                    "Do not address historical interlocutors from the source material unless they are part of this debate. "
+                    "Apply the retrieved ideas directly to the current topic and panel discussion."
                 )
+        else:
+            retrieval_guidance = (
+                "\n\nNo source passages were retrieved for this turn. "
+                "Respond using only the documented philosophy, principles, and positions "
+                "that define your persona. Do not speculate beyond what is historically established."
+            )
 
         if not context_messages:
             return (
-                f"{agent_config.system_prompt}\n\n"
                 f"Discussion topic: {topic}\n"
                 f"{knowledge_block}"
                 f"{retrieval_guidance}"
@@ -142,7 +149,6 @@ class SessionService:
         )
 
         return (
-            f"{agent_config.system_prompt}\n\n"
             f"Discussion topic: {topic}\n"
             f"{knowledge_block}"
             f"{retrieval_guidance}\n"
