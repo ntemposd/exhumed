@@ -450,7 +450,6 @@ select {
 	padding: 6px 8px 6px 10px;
 	border: 2px solid var(--line);
 	background: var(--badge-surface-speaker);
-	box-shadow: 3px 3px 0 var(--line);
 	color: var(--muted);
 	transition: background 120ms ease, opacity 120ms ease;
 }
@@ -997,13 +996,11 @@ select {
 	.button,
 	.buttonGhost,
 	.buttonDanger,
-	.draftedChip,
 	.topicEditor,
 	.speakerModalPanel {
 		box-shadow: 2px 2px 0 var(--line);
 	}
 
-	.draftedChip:hover,
 	.button:hover,
 	.buttonGhost:hover,
 	.buttonDanger:hover,

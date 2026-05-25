@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import json
 import time
 from typing import Any, AsyncIterator, Awaitable, Callable, Dict, Optional
 from uuid import UUID
@@ -167,8 +168,43 @@ class DiscussionService:
             execution_metrics=execution_metrics,
         )
 
+    @staticmethod
+    def _ai_text_part(token: str) -> bytes:
+        """Encode a single token as a Vercel AI SDK text part line."""
+        return (f"0:{json.dumps(token)}\n").encode("utf-8")
+
+    @staticmethod
+    def _ai_data_part(data: Any) -> bytes:
+        """Encode structured data as a Vercel AI SDK data-annotations line."""
+        return (f"2:{json.dumps([data])}\n").encode("utf-8")
+
+    @staticmethod
+    def _ai_annotation_part(annotation: Any) -> bytes:
+        """Encode a message annotation as a Vercel AI SDK annotation line."""
+        return (f"8:{json.dumps([annotation])}\n").encode("utf-8")
+
+    @staticmethod
+    def _ai_finish_part(finish_reason: str = "stop", prompt_tokens: Optional[int] = None, completion_tokens: Optional[int] = None) -> bytes:
+        """Encode the finish signal as a Vercel AI SDK finish line."""
+        usage: Dict[str, Any] = {}
+        if prompt_tokens is not None:
+            usage["promptTokens"] = prompt_tokens
+        if completion_tokens is not None:
+            usage["completionTokens"] = completion_tokens
+        payload: Dict[str, Any] = {"finishReason": finish_reason}
+        if usage:
+            payload["usage"] = usage
+        return (f"d:{json.dumps(payload)}\n").encode("utf-8")
+
     async def process_turn_stream(self, request: Any) -> Any:
-        """Stream a debate turn token-by-token and finalize persistence on completion."""
+        """Stream a debate turn using the Vercel AI SDK data stream protocol.
+
+        Wire format (text/plain; charset=utf-8, x-vercel-ai-data-stream: v1):
+          • 0:"token"         — incremental text tokens
+          • 8:[{status}]      — rate-limit retry annotations
+          • 2:[{final}]       — full turn metadata (message_id, telemetry, etc.)
+          • d:{finish}        — finish signal with token usage
+        """
         self._logger.info(
             "Streaming turn: session=%s, agent=%s, topic=%s",
             request.session_id,
@@ -201,11 +237,13 @@ class DiscussionService:
             temperature_override=request.temperature,
             stream=True,
         )
-        final_payload: Optional[Any] = None
+
+        final_data: Optional[Dict[str, Any]] = None
+        finish_metrics: Optional[Any] = None
         event_queue: asyncio.Queue[Optional[bytes]] = asyncio.Queue()
 
         async def handle_stream_completion(generated_message: str, execution_metrics: Any) -> None:
-            nonlocal final_payload
+            nonlocal final_data, finish_metrics
             generated_message, telemetry, stored_message = await self._turn_workflow_service.finalize_generated_turn(
                 session_id=request.session_id,
                 agent_id=request.agent_id,
@@ -218,7 +256,7 @@ class DiscussionService:
                 execution_metrics=execution_metrics,
             )
 
-            final_payload = self._process_turn_stream_final_model(
+            final_model = self._process_turn_stream_final_model(
                 type="final",
                 message_id=UUID(str(stored_message["id"])),
                 agent_id=request.agent_id,
@@ -229,18 +267,20 @@ class DiscussionService:
                 telemetry=telemetry,
                 execution_metrics=execution_metrics,
             )
+            final_data = json.loads(final_model.model_dump_json())
+            finish_metrics = execution_metrics
 
         async def handle_stream_retry(retry_after_seconds: float, attempt_number: int) -> None:
-            retry_message = f"Groq rate limit hit. Retrying in {retry_after_seconds:.1f}s"
-            await event_queue.put(
-                (self._process_turn_stream_status_model(
-                    type="status",
-                    stage="retrying",
-                    message=retry_message,
-                    retry_after_seconds=retry_after_seconds,
-                    attempt_number=attempt_number,
-                ).model_dump_json() + "\n").encode("utf-8")
+            # Provider-agnostic retry annotation (no hardcoded provider name).
+            status_model = self._process_turn_stream_status_model(
+                type="status",
+                stage="retrying",
+                message=f"Rate limit hit. Retrying in {retry_after_seconds:.1f}s",
+                retry_after_seconds=retry_after_seconds,
+                attempt_number=attempt_number,
             )
+            annotation = json.loads(status_model.model_dump_json())
+            await event_queue.put(self._ai_annotation_part(annotation))
 
         async def event_stream() -> AsyncIterator[bytes]:
             async def produce_stream_events() -> None:
@@ -255,12 +295,23 @@ class DiscussionService:
                         on_complete=handle_stream_completion,
                         on_retry=handle_stream_retry,
                     ):
-                        await event_queue.put(
-                            (self._process_turn_stream_chunk_model(type="chunk", content=chunk).model_dump_json() + "\n").encode("utf-8")
-                        )
+                        await event_queue.put(self._ai_text_part(chunk))
 
-                    if final_payload is not None:
-                        await event_queue.put((final_payload.model_dump_json() + "\n").encode("utf-8"))
+                    # Send final metadata as a data annotation so the frontend
+                    # can access message_id, telemetry, etc.
+                    if final_data is not None:
+                        await event_queue.put(self._ai_data_part(final_data))
+
+                    # Finish signal with token usage.
+                    prompt_tokens = getattr(finish_metrics, "prompt_tokens", None) if finish_metrics else None
+                    completion_tokens = getattr(finish_metrics, "completion_tokens", None) if finish_metrics else None
+                    await event_queue.put(
+                        self._ai_finish_part(
+                            finish_reason="stop",
+                            prompt_tokens=prompt_tokens,
+                            completion_tokens=completion_tokens,
+                        )
+                    )
                 finally:
                     await event_queue.put(None)
 
@@ -278,7 +329,11 @@ class DiscussionService:
                     with contextlib.suppress(asyncio.CancelledError):
                         await producer_task
 
-        return self._streaming_response_factory(event_stream(), media_type="application/x-ndjson")
+        return self._streaming_response_factory(
+            event_stream(),
+            media_type="text/plain; charset=utf-8",
+            headers={"x-vercel-ai-data-stream": "v1"},
+        )
 
     async def generate(self, request: Any) -> Any:
         """Generate a response plus entropy telemetry for the legacy non-streaming route."""

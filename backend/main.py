@@ -273,10 +273,14 @@ def _build_services(settings: BackendSettings) -> Dict[str, Any]:
         llm_api_base_url=settings.llm.api_base_url,
         llm_api_key=settings.llm.api_key,
         llm_model_id=settings.llm.model_id,
+        llm_top_p=settings.llm.top_p,
         llm_429_max_retries=max(0, settings.llm.max_retries),
         llm_request_throttle_seconds=max(0.0, settings.llm.request_throttle_seconds),
         agent_registry_cache_ttl_seconds=settings.storage.agent_registry_cache_ttl_seconds,
         agent_config_cache_ttl_seconds=settings.storage.agent_config_cache_ttl_seconds,
+        session_max_messages=settings.storage.session_max_messages,
+        prompt_capture_backend=settings.storage.prompt_capture_backend,
+        prompt_capture_max_entries=settings.storage.prompt_capture_max_entries,
         decode_redis_value=_decode_redis_value,
         parse_agent_payload=_parse_agent_payload,
         run_blocking_io=_run_blocking_io,
@@ -364,6 +368,56 @@ def create_app(settings: Optional[BackendSettings] = None) -> FastAPI:
     app.state.services = services
     app.state.settings = active_settings
 
+    # ------------------------------------------------------------------
+    # Health / readiness endpoints — registered before auth middleware so
+    # Railway's health checks and load-balancer probes never need a key.
+    # ------------------------------------------------------------------
+
+    @app.get("/healthz", include_in_schema=False)
+    async def healthz():
+        """Liveness probe — always returns 200 while the process is alive."""
+        return {"status": "alive"}
+
+    @app.get("/readyz", include_in_schema=False)
+    async def readyz():
+        """Readiness probe — reflects the result of the startup dependency check."""
+        readiness = getattr(app.state, "startup_readiness", None)
+        if readiness is None:
+            return JSONResponse(status_code=503, content={"status": "initializing"})
+        overall = readiness.get("status", "UNKNOWN")
+        http_status = 200 if overall in ("OPTIMAL", "SKIPPED") else 503
+        return JSONResponse(status_code=http_status, content=readiness)
+
+    # ------------------------------------------------------------------
+    # Optional API-key authentication middleware
+    # ------------------------------------------------------------------
+
+    _auth_api_key = active_settings.auth.api_key
+
+    if _auth_api_key:
+        # Paths that bypass auth entirely (health probes + CORS preflight).
+        _UNPROTECTED_PATHS = {"/healthz", "/readyz"}
+
+        @app.middleware("http")
+        async def enforce_api_key(request, call_next):
+            if request.method == "OPTIONS" or request.url.path in _UNPROTECTED_PATHS:
+                return await call_next(request)
+
+            # Accept either X-API-Key header or Authorization: Bearer <key>
+            provided_key = request.headers.get("X-API-Key", "").strip()
+            if not provided_key:
+                auth_header = request.headers.get("Authorization", "")
+                if auth_header.lower().startswith("bearer "):
+                    provided_key = auth_header[7:].strip()
+
+            if provided_key != _auth_api_key:
+                return JSONResponse(
+                    status_code=401,
+                    content={"detail": "Unauthorized"},
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+            return await call_next(request)
+
     @app.middleware("http")
     async def attach_request_context(request, call_next):
         request_id = request.headers.get("X-Request-ID", "").strip() or str(uuid4())
@@ -380,17 +434,35 @@ def create_app(settings: Optional[BackendSettings] = None) -> FastAPI:
         finally:
             _request_id_context.reset(context_token)
 
+        # For streaming responses (StreamingResponse / SSE) call_next() returns
+        # as soon as the response *headers* are sent — the body is still being
+        # produced asynchronously.  Labelling that elapsed time "duration_ms"
+        # is misleading in monitoring tools, so we distinguish the two cases.
         elapsed_ms = int((datetime.now(timezone.utc) - started_at).total_seconds() * 1000)
         response.headers["X-Request-ID"] = request_id
+
+        is_streaming = response.headers.get("content-type", "").startswith("text/") and \
+            response.headers.get("transfer-encoding", "") == "chunked" or \
+            "stream" in response.headers.get("content-type", "")
+
         completion_token = _request_id_context.set(request_id)
         try:
-            logger.info(
-                "Request completed: method=%s path=%s status=%s duration_ms=%s",
-                request.method,
-                request.url.path,
-                response.status_code,
-                elapsed_ms,
-            )
+            if is_streaming:
+                logger.info(
+                    "Stream response headers sent: method=%s path=%s status=%s ttfb_ms=%s",
+                    request.method,
+                    request.url.path,
+                    response.status_code,
+                    elapsed_ms,
+                )
+            else:
+                logger.info(
+                    "Request completed: method=%s path=%s status=%s duration_ms=%s",
+                    request.method,
+                    request.url.path,
+                    response.status_code,
+                    elapsed_ms,
+                )
         finally:
             _request_id_context.reset(completion_token)
         return response
@@ -400,8 +472,9 @@ def create_app(settings: Optional[BackendSettings] = None) -> FastAPI:
         allow_origins=active_settings.cors.allow_origins,
         allow_origin_regex=active_settings.cors.allow_origin_regex,
         allow_credentials=False,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization", "X-API-Key", "X-Request-ID"],
+        expose_headers=["X-Request-ID"],
     )
     if active_settings.static_dir.exists():
         app.mount("/static", StaticFiles(directory=str(active_settings.static_dir)), name="static")

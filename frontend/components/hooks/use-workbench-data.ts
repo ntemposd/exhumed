@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { backendUrl } from "@/lib/config";
-import { getRequestFailureMessage, getResponseErrorMessage } from "@/lib/http";
+import { apiFetch, getRequestFailureMessage, getResponseErrorMessage } from "@/lib/http";
 import type { Agent, AgentsResponse, ServicesStatusResponse } from "@/lib/types";
 
 import { getDefaultCouncilAgentIds } from "../utils";
@@ -92,7 +92,7 @@ export function useAgentsCatalog({ councilStorageKey, cacheKey, cacheTtlMs }: Us
       setIsRefreshingAgents(hasCachedAgents);
 
       try {
-        const response = await fetch(`${backendUrl}/agents`, {
+        const response = await apiFetch(`${backendUrl}/agents`, {
           headers: { Accept: "application/json" },
           cache: "no-store",
           signal: abortController.signal,
@@ -211,7 +211,7 @@ export function useServicesStatus({ cacheKey, cacheTtlMs }: UseServicesStatusOpt
       setIsRefreshingServices(hasCachedServices);
 
       try {
-        const response = await fetch(`${backendUrl}/services-status`, {
+        const response = await apiFetch(`${backendUrl}/services-status`, {
           headers: { Accept: "application/json" },
           cache: "no-store",
           signal: abortController.signal,

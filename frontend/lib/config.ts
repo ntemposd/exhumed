@@ -1,17 +1,5 @@
-// Normalize the backend origin once so fetch callers can append routes without
-// worrying about trailing slash mismatches across environments.
-const rawBackendUrl = process.env.NEXT_PUBLIC_BACKEND_URL?.trim();
-
-function resolveBackendUrl() {
-	if (rawBackendUrl) {
-		return rawBackendUrl.replace(/\/+$/, "");
-	}
-
-	if (process.env.NODE_ENV === "production") {
-		throw new Error("NEXT_PUBLIC_BACKEND_URL must be set for production builds.");
-	}
-
-	return "http://localhost:8000";
-}
-
-export const backendUrl = resolveBackendUrl();
+// All backend calls are proxied through the Next.js API route so that
+// BACKEND_URL and BACKEND_API_KEY never reach the browser bundle.
+// The proxy lives at /api/backend and forwards to the real Railway backend
+// server-side, injecting the API key there.
+export const backendUrl = "/api/backend";

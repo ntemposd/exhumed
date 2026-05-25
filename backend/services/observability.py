@@ -15,6 +15,9 @@ ExecutionMetricsT = TypeVar("ExecutionMetricsT")
 class ObservabilityService:
     """Own health checks and latest-metrics polling state for the backend."""
 
+    # Redis key that stores prompt captures as a capped list.
+    _PROMPT_CAPTURE_REDIS_KEY = "telemetry:prompt_captures"
+
     def __init__(
         self,
         *,
@@ -26,6 +29,8 @@ class ObservabilityService:
         llm_api_base_url: str,
         llm_api_key: str,
         logger: Any,
+        prompt_capture_backend: str = "off",
+        prompt_capture_max_entries: int = 500,
         prompt_capture_log_path: Optional[Any] = None,
         http_client_factory: Callable[..., Any] = httpx.AsyncClient,
         shared_http_client: Optional[httpx.AsyncClient] = None,
@@ -40,6 +45,8 @@ class ObservabilityService:
         self._llm_api_base_url = llm_api_base_url
         self._llm_api_key = llm_api_key
         self._logger = logger
+        self._prompt_capture_backend = (prompt_capture_backend or "off").strip().lower()
+        self._prompt_capture_max_entries = max(1, int(prompt_capture_max_entries))
         self._prompt_capture_log_path = Path(prompt_capture_log_path) if prompt_capture_log_path else None
         self._http_client_factory = http_client_factory
         self._shared_http_client = shared_http_client
@@ -62,18 +69,37 @@ class ObservabilityService:
         await self._run_blocking_io(self.save_latest_execution_metrics, metrics)
 
     def save_prompt_capture(self, capture: Dict[str, Any]) -> None:
-        """Append a local JSONL record of the exact provider request for offline prompt inspection."""
-        if self._prompt_capture_log_path is None:
+        """Persist a prompt capture record using the configured backend.
+
+        Backends:
+          "redis" — LPUSH into a capped Redis list (safe on Railway / ephemeral
+                    containers; survives pod restarts as long as Redis is up).
+          "file"  — Append to a local JSONL file (development only; data is
+                    lost when the Railway container is replaced).
+          "off"   — Discard the capture silently.
+        """
+        if self._prompt_capture_backend == "off":
             return
 
         try:
             payload = dict(capture)
             payload.setdefault("captured_at", self._utcnow().isoformat())
-            self._prompt_capture_log_path.parent.mkdir(parents=True, exist_ok=True)
-            with self._prompt_capture_log_path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(payload, ensure_ascii=True) + "\n")
+            serialized = json.dumps(payload, ensure_ascii=True)
+
+            if self._prompt_capture_backend == "redis":
+                # LPUSH keeps the newest entry at index 0; LTRIM caps the list.
+                self._redis.lpush(self._PROMPT_CAPTURE_REDIS_KEY, serialized)
+                self._redis.ltrim(
+                    self._PROMPT_CAPTURE_REDIS_KEY,
+                    0,
+                    self._prompt_capture_max_entries - 1,
+                )
+            elif self._prompt_capture_backend == "file" and self._prompt_capture_log_path is not None:
+                self._prompt_capture_log_path.parent.mkdir(parents=True, exist_ok=True)
+                with self._prompt_capture_log_path.open("a", encoding="utf-8") as handle:
+                    handle.write(serialized + "\n")
         except Exception as exc:
-            self._logger.warning("Unable to persist local prompt capture: %s", exc)
+            self._logger.warning("Unable to persist prompt capture (%s): %s", self._prompt_capture_backend, exc)
 
     async def save_prompt_capture_async(self, capture: Dict[str, Any]) -> None:
         """Async wrapper around local prompt capture persistence."""

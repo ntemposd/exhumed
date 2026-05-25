@@ -1,3 +1,9 @@
+// Thin alias kept so call-sites don't need updating.
+// Auth is handled server-side by the /api/backend proxy route.
+export function apiFetch(input: string, init?: RequestInit): Promise<Response> {
+  return fetch(input, init);
+}
+
 type ReadableErrorPayload = {
   detail?: string | Array<{ msg?: string; loc?: Array<string | number> }>;
   message?: string;

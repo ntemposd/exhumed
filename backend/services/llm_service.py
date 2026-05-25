@@ -22,6 +22,7 @@ class LLMService:
         model_id: str,
         max_retries: int,
         throttle_seconds: float,
+        top_p: float = 0.95,
         execution_metrics_builder: Callable[..., Any],
         extract_execution_metrics: Callable[..., Any],
         build_stream_execution_metrics: Callable[..., Any],
@@ -36,6 +37,7 @@ class LLMService:
         self._model_id = model_id
         self._max_retries = max_retries
         self._throttle_seconds = throttle_seconds
+        self._top_p = top_p
         self._execution_metrics_builder = execution_metrics_builder
         self._extract_execution_metrics = extract_execution_metrics
         self._build_stream_execution_metrics = build_stream_execution_metrics
@@ -92,7 +94,7 @@ class LLMService:
             "messages": messages,
             "temperature": self._resolve_temperature(agent_config, temperature_override),
             "max_tokens": agent_config.max_tokens,
-            "top_p": 0.95,
+            "top_p": self._top_p,
             "stream": stream,
         }
         if stream:

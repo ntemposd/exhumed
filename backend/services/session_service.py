@@ -63,8 +63,12 @@ class SessionService:
         """Persist the current discussion topic for session resume and export flows."""
         try:
             def _persist_topic() -> None:
-                self._redis.set(f"session:{session_id}:topic", topic)
-                self._redis.expire(f"session:{session_id}:topic", 60 * 60 * 24 * 30)
+                key = f"session:{session_id}:topic"
+                # Single pipeline round-trip instead of two sequential SET + EXPIRE calls.
+                pipeline = self._redis.pipeline()
+                pipeline.set(key, topic)
+                pipeline.expire(key, 60 * 60 * 24 * 30)
+                pipeline.exec()
 
             await self._run_blocking_io(_persist_topic)
         except Exception as exc:

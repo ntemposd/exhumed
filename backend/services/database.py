@@ -62,12 +62,17 @@ class DatabaseService:
         embedding_provider: EmbeddingProvider,
         history_ttl_seconds: int = 60 * 60 * 24 * 30,
         telemetry_ttl_seconds: int = 60 * 60 * 24 * 7,
+        max_messages: Optional[int] = 200,
     ) -> None:
         self.redis = redis_client
         self.vector_index = vector_index
         self.embedding_provider = embedding_provider
         self.history_ttl_seconds = history_ttl_seconds
         self.telemetry_ttl_seconds = telemetry_ttl_seconds
+        # Cap on messages stored per session list. When exceeded, the oldest
+        # messages are trimmed via LTRIM so the list never grows unbounded.
+        # Set to None to disable trimming.
+        self.max_messages = max_messages
 
     def _history_key(self, session_id: str) -> str:
         return f"session:{session_id}:messages"
@@ -262,10 +267,18 @@ class DatabaseService:
         pipeline.exec()
 
     def store_chat_message(self, session_id: str, message: Dict[str, Any]) -> None:
-        """Append a single message while preserving the session TTL."""
+        """Append a single message while preserving the session TTL.
+
+        When max_messages is set the list is trimmed from the left so only the
+        most recent N messages are retained, preventing unbounded Redis list
+        growth on ephemeral hosting platforms such as Railway.
+        """
         key = self._history_key(session_id)
         pipeline = self.redis.pipeline()
         pipeline.rpush(key, json.dumps(dict(message)))
+        if self.max_messages and self.max_messages > 0:
+            # Keep only the newest max_messages entries.
+            pipeline.ltrim(key, -self.max_messages, -1)
         pipeline.expire(key, self.history_ttl_seconds)
         pipeline.exec()
 
@@ -319,8 +332,11 @@ class DatabaseService:
             }
         )
         key = self._telemetry_key(session_id)
-        self.redis.set(key, payload)
-        self.redis.expire(key, self.telemetry_ttl_seconds)
+        # Single pipeline round-trip instead of two sequential SET + EXPIRE calls.
+        pipeline = self.redis.pipeline()
+        pipeline.set(key, payload)
+        pipeline.expire(key, self.telemetry_ttl_seconds)
+        pipeline.exec()
 
     def get_telemetry_metrics(self, session_id: str) -> TelemetrySnapshot:
         """Return the stored telemetry snapshot for a session if one exists."""

@@ -298,13 +298,14 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
         return (
           <section key={`round-${round.roundNumber}`} className={styles.roundSection} aria-label={`Round ${round.roundNumber}`}>
             <div className={styles.roundHeader}>
-              <div className={styles.roundHeadingBlock}>
-                <div>
+              <div className={styles.roundHeaderMain}>
+                <div className={styles.roundIdBlock}>
                   <p className={styles.roundKicker}>ROUND</p>
                   <h3 className={styles.roundTitle}>{String(round.roundNumber).padStart(2, "0")}</h3>
                 </div>
+
                 {isCollapsed && roundSpeakers.length > 0 && (
-                  <>
+                  <div className={styles.roundSpeakerInfo}>
                     <div className={styles.roundAvatarRow}>
                       {roundSpeakers.map((speaker) => (
                         <img
@@ -319,12 +320,10 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                     <p className={styles.roundSpeakerSummary}>
                       {roundSpeakerNames.join(" · ")}
                     </p>
-                  </>
+                  </div>
                 )}
-              </div>
 
-              <div className={styles.roundMetaBlock}>
-                <div className={styles.roundMetaTopRow}>
+                <div className={styles.roundMetaRow}>
                   <span className={styles.roundMeta}>
                     {round.messages.length} {round.messages.length === 1 ? "turn" : "turns"}
                   </span>
@@ -336,17 +335,17 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                   )}
                 </div>
               </div>
-            </div>
 
-            {roundSources.length > 0 && (
-              <div className={styles.roundSourceRow}>
-                {roundSources.map((source) => (
-                  <span key={source} className={styles.roundSourceChip} title={source}>
-                    {source}
-                  </span>
-                ))}
-              </div>
-            )}
+              {roundSources.length > 0 && (
+                <div className={styles.roundSourceRow}>
+                  {roundSources.map((source) => (
+                    <span key={source} className={styles.roundSourceChip} title={source}>
+                      {source}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <div className={styles.roundControls}>
               <button type="button" className={styles.roundToggleButton} onClick={() => toggleRound(round.roundNumber)}>

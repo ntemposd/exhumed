@@ -3,13 +3,39 @@
 import { useEffect, useRef, useState } from "react";
 
 import { backendUrl } from "@/lib/config";
-import { getRequestFailureMessage, getResponseErrorMessage } from "@/lib/http";
-import type { Agent, ProcessTurnStreamEvent } from "@/lib/types";
+import { apiFetch, getRequestFailureMessage, getResponseErrorMessage } from "@/lib/http";
+import type { Agent, ProcessTurnStreamEvent, ProcessTurnStreamFinal, ProcessTurnStreamStatus } from "@/lib/types";
 
 import type { DebateMessage } from "../types";
 import { clampNumber } from "../utils";
 
 const STREAM_REVEAL_CHARS_PER_FRAME = 4;
+
+// Vercel AI SDK data-stream lines have the form:  PREFIX:JSON\n
+//   0:"token"      → text chunk
+//   8:[{...}]      → message annotation (retry status)
+//   2:[{...}]      → data annotation (final turn metadata)
+//   d:{...}        → finish signal (ignored)
+function parseDataStreamLine(line: string): ProcessTurnStreamEvent | null {
+  const colon = line.indexOf(":");
+  if (colon === -1) return null;
+  const prefix = line.slice(0, colon);
+  try {
+    const value = JSON.parse(line.slice(colon + 1)) as unknown;
+    if (prefix === "0") {
+      return { type: "chunk", content: value as string };
+    }
+    if (prefix === "8" && Array.isArray(value) && value.length > 0) {
+      return value[0] as ProcessTurnStreamStatus;
+    }
+    if (prefix === "2" && Array.isArray(value) && value.length > 0) {
+      return value[0] as ProcessTurnStreamFinal;
+    }
+  } catch {
+    // malformed line — skip
+  }
+  return null;
+}
 
 type ResetDebateStateOptions = {
   nextSessionId?: string;
@@ -163,7 +189,7 @@ export function useDebateController({
     resetDebateState();
 
     try {
-      const response = await fetch(`${backendUrl}/sessions/${sessionId}`, {
+      const response = await apiFetch(`${backendUrl}/sessions/${sessionId}`, {
         method: "DELETE",
       });
 
@@ -210,7 +236,7 @@ export function useDebateController({
       const exportUrl = exportTopic
         ? `${backendUrl}/export-pdf/${sessionId}?topic=${encodeURIComponent(exportTopic)}`
         : `${backendUrl}/export-pdf/${sessionId}`;
-      const response = await fetch(exportUrl);
+      const response = await apiFetch(exportUrl);
 
       if (!response.ok) {
         throw new Error(await getResponseErrorMessage(response, "Transcript export failed"));
@@ -363,7 +389,7 @@ export function useDebateController({
 
     void (async () => {
       try {
-        const response = await fetch(`${backendUrl}/process-turn/stream`, {
+        const response = await apiFetch(`${backendUrl}/process-turn/stream`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -411,7 +437,8 @@ export function useDebateController({
               continue;
             }
 
-            const event = JSON.parse(trimmedLine) as ProcessTurnStreamEvent;
+            const event = parseDataStreamLine(trimmedLine);
+            if (event === null) continue;
             if (requestResetSequence !== resetSequenceRef.current) {
               return;
             }

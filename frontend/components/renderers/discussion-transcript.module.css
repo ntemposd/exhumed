@@ -14,18 +14,27 @@
 
 .roundHeader {
   display: flex;
-  width: 100%;
-  padding: 0 0 10px;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 0 12px;
   border-bottom: 2px solid var(--line-divider);
 }
 
-.roundHeadingBlock {
+.roundHeaderMain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.roundIdBlock {
+  flex-shrink: 0;
+}
+
+.roundSpeakerInfo {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 3px;
+  flex: 1;
   min-width: 0;
 }
 
@@ -39,26 +48,19 @@
 .roundAvatar {
   width: 28px;
   height: 28px;
-  border: 2px solid var(--line-subtle);
+  border: 2px solid var(--line-medium);
   border-radius: 999px;
   object-fit: cover;
   background: var(--surface-0);
 }
 
-.roundMetaBlock {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.roundMetaTopRow {
+.roundMetaRow {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 8px;
   flex-wrap: wrap;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .roundSourceRow {
@@ -66,26 +68,25 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  padding-top: 10px;
 }
 
 .roundSourceChip {
-  display: inline-flex;
-  align-items: center;
-  max-width: 100%;
+  display: inline-block;
   min-height: 22px;
   padding: 2px 8px;
-  border: 1px solid var(--badge-border);
+  border: 1px solid var(--line-medium);
   background: var(--surface-ghost);
   color: var(--muted);
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.06em;
+  line-height: 18px;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 200px;
+  vertical-align: middle;
 }
 
 .roundControls {
@@ -114,7 +115,7 @@
 
 .roundMeta {
   margin: 0;
-  color: var(--muted);
+  color: var(--ink);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -136,9 +137,9 @@
   align-items: center;
   min-height: 20px;
   padding: 0 8px;
-  border: 2px solid var(--line-divider);
+  border: 2px solid var(--line-strong);
   background: var(--surface-ghost);
-  color: var(--muted);
+  color: var(--ink);
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -432,32 +433,19 @@
     padding: 14px 12px 16px;
   }
 
-  .roundHeader {
-    align-items: flex-start;
-    flex-direction: row;
-  }
-
-  .roundHeadingBlock {
-    width: 100%;
-    align-items: center;
-    justify-content: space-between;
-    flex-direction: row;
-  }
-
-  .roundMetaBlock {
-    width: auto;
-    justify-items: end;
+  /* On mobile, hide the long dash-separated speaker text — avatars alone are enough */
+  .roundSpeakerSummary {
+    display: none;
   }
 
   .roundSourceRow {
     gap: 4px;
-    padding-top: 8px;
   }
 
   .roundSourceChip {
     font-size: 0.60rem;
     padding: 2px 6px;
-    max-width: 160px;
+    max-width: 140px;
   }
 
   .roundControls {
