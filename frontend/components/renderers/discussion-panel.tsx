@@ -3,6 +3,7 @@
 import { useEffect, useRef, type RefObject } from "react";
 
 import type { DebateMessage, LegendDetails, TranscriptViewState } from "../types";
+import { avatarUrlForAgent } from "../utils";
 import { DiscussionTranscript } from "./discussion-transcript";
 import styles from "./discussion-panel.module.css";
 
@@ -12,6 +13,8 @@ type DiscussionPanelProps = {
   topicEditorRef: RefObject<HTMLTextAreaElement | null>;
   discussionActive: boolean;
   selectedCouncil: LegendDetails[];
+  legendEntries: LegendDetails[];
+  isCouncilEditing: boolean;
   targetEntropy: number;
   controlError: string;
   sessionId: string;
@@ -25,14 +28,13 @@ type DiscussionPanelProps = {
   roundScrollKey: number;
   transcriptRef: RefObject<HTMLDivElement | null>;
   onTopicChange: (value: string) => void;
-  onOpenSpeakerModal: () => void;
+  onToggleCouncilEdit: () => void;
   onToggleCouncilMember: (agentId: string) => void;
   onTargetEntropyChange: (value: number) => void;
   onStartDebate: () => void;
   onHaltDebate: () => void;
   onWipeDebate: () => void | Promise<void>;
   onDownloadTranscript: () => void | Promise<void>;
-  onRenewSession: () => void;
 };
 
 const ENTROPY_OPTIONS = [0, 0.375, 0.75, 1.125, 1.5];
@@ -51,12 +53,13 @@ export function DiscussionPanel({
   topicEditorRef,
   discussionActive,
   selectedCouncil,
+  legendEntries,
+  isCouncilEditing,
   targetEntropy,
   controlError,
   hasMessages,
   roundStartAgentId,
   roundScrollKey,
-  sessionId,
   isWipingSession,
   isDownloadingTranscript,
   startButtonLabel,
@@ -64,14 +67,13 @@ export function DiscussionPanel({
   messages,
   transcriptRef,
   onTopicChange,
-  onOpenSpeakerModal,
+  onToggleCouncilEdit,
   onToggleCouncilMember,
   onTargetEntropyChange,
   onStartDebate,
   onHaltDebate,
   onWipeDebate,
   onDownloadTranscript,
-  onRenewSession,
 }: DiscussionPanelProps) {
   const entropyTooltipRef = useRef<HTMLDetailsElement | null>(null);
   const selectedEntropyValue = ENTROPY_OPTIONS.reduce((closestValue, option) => {
@@ -81,6 +83,8 @@ export function DiscussionPanel({
   }, ENTROPY_OPTIONS[0]);
   const hasTranscriptHistory = messages.some((message) => !message.isThinking);
   const showTranscriptControls = discussionActive || hasTranscriptHistory;
+  const selectedAgentIds = new Set(selectedCouncil.map((legend) => legend.agent_id));
+  const availableCouncil = legendEntries.filter((legend) => !selectedAgentIds.has(legend.agent_id));
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
@@ -137,18 +141,11 @@ export function DiscussionPanel({
                     Loading saved topic...
                   </div>
                 )}
-              </div>
-              <div className={styles.topicActionStack}>
-                <button className={`button ${styles.commandButton}`.trim()} type="button" onClick={onStartDebate} disabled={discussionActive}>
-                  {startButtonLabel}
-                </button>
-                <button className={`buttonGhost ${styles.commandButton}`.trim()} type="button" onClick={onRenewSession}>
-                  ⟳ Refresh Session
-                </button>
-                <div className={styles.topicSessionInline}>
-                  <span className={styles.topicSessionLabel}>Active Session:</span>
-                  <span className={styles.topicSessionValue} title={sessionId || "Pending"}>{sessionId || "Pending"}</span>
-                </div>
+                {!showTranscriptControls && (
+                  <button className={`button ${styles.commandButton}`.trim()} type="button" onClick={onStartDebate}>
+                    {startButtonLabel}
+                  </button>
+                )}
               </div>
             </div>
             {!showTranscriptControls && controlError ? <p className="statusNote">{controlError}</p> : null}
@@ -161,21 +158,70 @@ export function DiscussionPanel({
             </div>
             <div className={`draftedCouncil ${styles.councilChips}`.trim()}>
               {selectedCouncil.map((legend) => (
-                <button
+                <div
                   key={legend.agent_id}
-                  type="button"
                   className="draftedChip"
-                  onClick={() => onToggleCouncilMember(legend.agent_id)}
-                  disabled={discussionActive}
+                  data-disabled={discussionActive ? "true" : "false"}
                 >
-                  <span className="draftedChipLabel">{legend.display_name}</span>
-                  <span className="draftedChipRemove" aria-hidden="true">x</span>
-                </button>
+                  <div className="draftedChipMain" title={legend.display_name}>
+                    <span className="draftedChipAvatarWrap">
+                      <img
+                        className="draftedChipAvatar"
+                        src={avatarUrlForAgent(legend.agent_id)}
+                        alt=""
+                      />
+                    </span>
+                    <span className="draftedChipLabel">{legend.display_name}</span>
+                  </div>
+                  {isCouncilEditing ? (
+                    <button
+                      type="button"
+                      className="draftedChipActionButton draftedChipActionRemove"
+                      onClick={() => onToggleCouncilMember(legend.agent_id)}
+                      disabled={discussionActive}
+                      aria-label={`Remove ${legend.display_name} from council`}
+                      title={`Remove ${legend.display_name}`}
+                    >
+                      <span className="draftedChipActionGlyph" aria-hidden="true">×</span>
+                    </button>
+                  ) : null}
+                </div>
               ))}
 
-              <button className={`button ${styles.editCouncilButton}`.trim()} type="button" onClick={onOpenSpeakerModal}>
-                Edit
+              <button
+                className={`button ${styles.editCouncilButton}`.trim()}
+                type="button"
+                onClick={onToggleCouncilEdit}
+                aria-pressed={isCouncilEditing}
+                disabled={discussionActive}
+              >
+                {isCouncilEditing ? "Done" : "Edit"}
               </button>
+
+              {isCouncilEditing ? availableCouncil.map((legend) => (
+                <div key={legend.agent_id} className="draftedChip draftedChipAvailable" data-disabled={discussionActive ? "true" : "false"}>
+                  <div className="draftedChipMain" title={legend.display_name}>
+                    <span className="draftedChipAvatarWrap">
+                      <img
+                        className="draftedChipAvatar"
+                        src={avatarUrlForAgent(legend.agent_id)}
+                        alt=""
+                      />
+                    </span>
+                    <span className="draftedChipLabel">{legend.display_name}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="draftedChipActionButton draftedChipActionAdd"
+                    onClick={() => onToggleCouncilMember(legend.agent_id)}
+                    disabled={discussionActive}
+                    aria-label={`Add ${legend.display_name} to council`}
+                    title={`Add ${legend.display_name}`}
+                  >
+                    <span className="draftedChipActionGlyph" aria-hidden="true">✓</span>
+                  </button>
+                </div>
+              )) : null}
             </div>
           </section>
 
@@ -222,19 +268,27 @@ export function DiscussionPanel({
               <span className={styles.status}>[{transcriptState.statusLabel.toUpperCase()}]</span>
             </div>
           </div>
-          <DiscussionTranscript emptyStateMessage={transcriptState.emptyMessage} messages={messages} roundStartAgentId={roundStartAgentId} roundScrollKey={roundScrollKey} transcriptRef={transcriptRef} />
+          <DiscussionTranscript
+            emptyStateMessage={transcriptState.emptyMessage}
+            messages={messages}
+            roundSize={Math.max(selectedCouncil.length, 1)}
+            roundStartAgentId={roundStartAgentId}
+            roundScrollKey={roundScrollKey}
+            transcriptRef={transcriptRef}
+          />
           {showTranscriptControls ? (
             <div className={styles.transcriptControlsBlock}>
               <div className={styles.transcriptControls}>
                 <div className={styles.commandGrid}>
-                  <button className={`button ${styles.commandButton}`.trim()} type="button" onClick={onStartDebate} disabled={discussionActive}>
-                    {startButtonLabel}
-                  </button>
-                  <button className={`buttonGhost ${styles.commandButton}`.trim()} type="button" onClick={onHaltDebate} disabled={!discussionActive}>
-                    ❚❚ Halt
+                  <button
+                    className={`button ${styles.commandButton}`.trim()}
+                    type="button"
+                    onClick={discussionActive ? onHaltDebate : onStartDebate}
+                  >
+                    {discussionActive ? "⏸ Pause" : startButtonLabel}
                   </button>
                   <button className={`buttonDanger ${styles.commandButton}`.trim()} type="button" onClick={() => void onWipeDebate()} disabled={isWipingSession}>
-                    {isWipingSession ? "Wiping..." : "🧹 Wipe"}
+                    {isWipingSession ? "Wiping..." : "Wipe"}
                   </button>
                   <button
                     className={`buttonGhost ${styles.commandButton}`.trim()}
@@ -242,7 +296,7 @@ export function DiscussionPanel({
                     onClick={() => void onDownloadTranscript()}
                     disabled={isDownloadingTranscript}
                   >
-                    {isDownloadingTranscript ? "Preparing..." : "📃 Export"}
+                    {isDownloadingTranscript ? "Preparing..." : "Export"}
                   </button>
                 </div>
               </div>

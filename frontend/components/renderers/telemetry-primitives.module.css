@@ -1,6 +1,6 @@
 .card {
   border: 2px solid var(--line);
-  background: linear-gradient(180deg, #fffbf5, #f3e7d4);
+  background: var(--card-bg);
   padding: 0.8rem 0.85rem 0.75rem;
 }
 
@@ -71,7 +71,7 @@
 
 .caption {
   margin: 8px 0 0;
-  color: #57534e;
+  color: var(--muted);
   font-size: 0.69rem;
   line-height: 1.35;
 }
@@ -80,8 +80,8 @@
   display: grid;
   gap: 8px;
   padding: 18px 20px;
-  border: 2px dashed rgba(20, 17, 15, 0.32);
-  background: linear-gradient(180deg, #fffbf5, #f3e7d4);
+  border: 2px dashed var(--line-strong);
+  background: var(--card-empty-bg);
 }
 
 .emptyStateText {
@@ -130,7 +130,7 @@
   font-size: 0.67rem;
   font-weight: 800;
   padding: 0.18rem 0.5rem;
-  background: linear-gradient(180deg, #f6f3ee, #e6dfd5);
+  background: var(--chip-bg);
   line-height: 1.25;
   letter-spacing: 0.02em;
   white-space: normal;
@@ -141,13 +141,13 @@
   width: 100%;
   height: 16px;
   border: 2px solid var(--line);
-  background: linear-gradient(180deg, #fffdf8, #f9ecd9);
+  background: var(--card-track-bg);
   overflow: hidden;
 }
 
 .fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent), var(--accent-orange));
+  background: var(--accent);
 }
 
 .entropyTopline {
@@ -174,7 +174,7 @@
 .tableShell {
   width: 100%;
   overflow-x: auto;
-  background: linear-gradient(180deg, #fffbf5, #f3e7d4);
+  background: var(--table-shell-bg);
 }
 
 .tableShellBordered {
@@ -195,7 +195,7 @@
 .table th,
 .table td {
   padding: 9px 10px;
-  border-bottom: 1px solid rgba(20, 17, 15, 0.14);
+  border-bottom: 1px solid var(--line-subtle);
   text-align: left;
   font-size: 0.76rem;
 }
@@ -203,17 +203,35 @@
 .table th {
   font-size: 0.68rem;
   font-weight: 800;
-  color: var(--ink);
+  color: var(--table-header-text);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: var(--accent-orange);
+  background: var(--table-header-bg);
   border-bottom: 2px solid var(--line);
 }
 
 .table td {
-  background: #fffaf3;
+  background: var(--table-row-bg);
 }
 
 .table tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* Agent tone - row background tint */
+.table tbody tr[data-tone="0"] { background: rgba(15, 118, 110, 0.10); }
+.table tbody tr[data-tone="1"] { background: rgba(180, 83, 9, 0.10); }
+.table tbody tr[data-tone="2"] { background: rgba(55, 48, 163, 0.10); }
+.table tbody tr[data-tone="3"] { background: rgba(190, 24, 93, 0.10); }
+.table tbody tr[data-tone="4"] { background: rgba(21, 128, 61, 0.10); }
+
+/* Agent tone - first cell text color */
+.table tbody tr[data-tone="0"] td:first-child { color: var(--tone-0); font-weight: 800; }
+.table tbody tr[data-tone="1"] td:first-child { color: var(--tone-1); font-weight: 800; }
+.table tbody tr[data-tone="2"] td:first-child { color: var(--tone-2); font-weight: 800; }
+.table tbody tr[data-tone="3"] td:first-child { color: var(--tone-3); font-weight: 800; }
+.table tbody tr[data-tone="4"] td:first-child { color: var(--tone-4); font-weight: 800; }
+
+.table tbody tr[data-tone] td {
+  background: transparent;
 }

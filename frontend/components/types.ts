@@ -28,9 +28,7 @@ export type TelemetryPanelViewModel = {
   serviceRows: ServiceStatus[];
   performanceRows: TelemetryTableRow[];
   totalVectorHits: number;
-  vectorTurnCount: number;
   uniqueVectorSources: number;
-  uniqueVectorSourceLabels: string[];
   vectorRows: VectorUsageRow[];
   displayedTotalTokens: number;
   requestCount: number;
@@ -47,6 +45,7 @@ export type DebateMessage = {
   agent_id: string;
   display_name: string;
   message: string;
+  round_number?: number;
   turn_number: number;
   created_at: string;
   isThinking?: boolean;

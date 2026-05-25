@@ -12,6 +12,7 @@ export type VectorUsageRow = {
   hits: string;
   top: string;
   context: string;
+  _tone?: string;
 };
 
 type TelemetryTableShellProps = {
@@ -70,7 +71,7 @@ export function VectorUsageTable({ rows }: { rows: VectorUsageRow[] }) {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.speaker}>
+              <tr key={row.speaker} {...(row._tone !== undefined ? { "data-tone": row._tone } : {})}>
                 <td>{renderSpeakerCell(row.speaker)}</td>
                 <td>{row.hits}</td>
                 <td>{row.context}</td>
@@ -89,7 +90,7 @@ export function TelemetryTable({ rows, variant = "plain", tableClassName = "" }:
     return null;
   }
 
-  const columns = Object.keys(rows[0]);
+  const columns = Object.keys(rows[0]).filter((key) => !key.startsWith("_"));
 
   return (
     <TelemetryTableShell variant={variant}>
@@ -103,7 +104,11 @@ export function TelemetryTable({ rows, variant = "plain", tableClassName = "" }:
         </thead>
         <tbody>
           {rows.map((row, index) => (
-            <tr key={`${index}-${row[columns[0]]}`} className={row[columns[0]] === "Total" ? styles.totalRow : undefined}>
+            <tr
+              key={`${index}-${row[columns[0]]}`}
+              className={row[columns[0]] === "Total" ? styles.totalRow : undefined}
+              data-tone={row["_tone"]}
+            >
               {columns.map((column) => (
                 <td key={column}>{column === "Speaker" ? renderSpeakerCell(row[column]) : row[column]}</td>
               ))}

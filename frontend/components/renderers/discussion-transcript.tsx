@@ -11,17 +11,26 @@ const MESSAGE_PREVIEW_LIMIT = 140;
 type DiscussionTranscriptProps = {
   emptyStateMessage: string;
   messages: DebateMessage[];
+  roundSize: number;
   roundStartAgentId?: string;
   roundScrollKey: number;
   transcriptRef: RefObject<HTMLDivElement | null>;
 };
 
-export function DiscussionTranscript({ emptyStateMessage, messages, roundStartAgentId, roundScrollKey, transcriptRef }: DiscussionTranscriptProps) {
+type TranscriptRound = {
+  roundNumber: number;
+  messages: DebateMessage[];
+};
+
+export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, roundStartAgentId, roundScrollKey, transcriptRef }: DiscussionTranscriptProps) {
   const [expandedMessageIds, setExpandedMessageIds] = useState<Record<string, boolean>>({});
+  const [collapsedRounds, setCollapsedRounds] = useState<Record<number, boolean>>({});
   const [retryCountdownTick, setRetryCountdownTick] = useState(0);
   const lastMessageStateRef = useRef<{ agentId: string; turnNumber: number; isThinking: boolean } | null>(null);
   const lastScrolledRoundKeyRef = useRef(0);
+  const lastAutoCollapsedRoundRef = useRef(0);
   const retryCountdownsRef = useRef<Record<string, { initialSeconds: number; startedAtMs: number; status: string }>>({});
+  const normalizedRoundSize = Math.max(roundSize, 1);
 
   useEffect(() => {
     if (roundScrollKey < lastScrolledRoundKeyRef.current) {
@@ -30,7 +39,9 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundStartAg
 
     if (roundScrollKey === 0) {
       lastScrolledRoundKeyRef.current = 0;
+      lastAutoCollapsedRoundRef.current = 0;
       lastMessageStateRef.current = null;
+      setCollapsedRounds({});
       setExpandedMessageIds({});
     }
   }, [roundScrollKey]);
@@ -201,6 +212,58 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundStartAg
     styles.bubbleTone4,
   ];
 
+  const transcriptRounds = messages.reduce<TranscriptRound[]>((rounds, message) => {
+    const roundNumber = Math.max(1, message.round_number ?? Math.ceil(message.turn_number / normalizedRoundSize));
+    const existingRound = rounds.at(-1);
+
+    if (!existingRound || existingRound.roundNumber !== roundNumber) {
+      rounds.push({ roundNumber, messages: [message] });
+      return rounds;
+    }
+
+    existingRound.messages.push(message);
+    return rounds;
+  }, []);
+
+  useEffect(() => {
+    if (transcriptRounds.length === 0) {
+      setCollapsedRounds({});
+      return;
+    }
+
+    const latestRoundNumber = transcriptRounds[transcriptRounds.length - 1]?.roundNumber ?? 1;
+    if (latestRoundNumber === lastAutoCollapsedRoundRef.current) {
+      return;
+    }
+
+    lastAutoCollapsedRoundRef.current = latestRoundNumber;
+    setCollapsedRounds((currentValue) => {
+      const nextValue: Record<number, boolean> = { ...currentValue };
+      let changed = false;
+
+      for (const round of transcriptRounds) {
+        const nextCollapsed = round.roundNumber < latestRoundNumber;
+        nextValue[round.roundNumber] = nextCollapsed;
+        if (currentValue[round.roundNumber] !== nextCollapsed) {
+          changed = true;
+        }
+      }
+
+      if (!changed && Object.keys(currentValue).length === Object.keys(nextValue).length) {
+        return currentValue;
+      }
+
+      return nextValue;
+    });
+  }, [transcriptRounds]);
+
+  function toggleRound(roundNumber: number) {
+    setCollapsedRounds((currentValue) => ({
+      ...currentValue,
+      [roundNumber]: !(currentValue[roundNumber] ?? false),
+    }));
+  }
+
   return (
     <div className={styles.transcript} ref={transcriptRef}>
       {messages.length === 0 ? (
@@ -208,61 +271,167 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundStartAg
           <p className={styles.emptyStateText}>{emptyStateMessage}</p>
         </div>
       ) : null}
-      {messages.map((message) => {
-        const isExpanded = expandedMessageIds[message.id] ?? false;
-        const sanitizedMessage = sanitizeDebateMessageText(message.message, message.display_name);
-        const shouldTruncate = sanitizedMessage.length > MESSAGE_PREVIEW_LIMIT;
-        const bubbleToneIndex = getStyleIndex(message.agent_id);
-        const thinkingStatus = message.isThinking
-          ? getThinkingStatus(message.id, message.thinkingStatus)
-          : "";
-        const visibleMessage = shouldTruncate && !isExpanded
-          ? `${sanitizedMessage.slice(0, MESSAGE_PREVIEW_LIMIT).trimEnd()}...`
-          : sanitizedMessage;
-        const showRetrySkull = message.isThinking && !visibleMessage && isThrottledThinkingStatus(message.thinkingStatus);
+      {transcriptRounds.map((round) => {
+        const isCollapsed = collapsedRounds[round.roundNumber] ?? false;
+        const roundSpeakers = Array.from(
+          new Map(round.messages.map((m) => [m.agent_id, m.display_name])).entries(),
+        ).map(([agentId, displayName]) => ({ agentId, displayName }));
+        const roundSpeakerNames = roundSpeakers.map((s) => s.displayName);
+        const roundEntropyValues = round.messages
+          .filter((m) => typeof m.telemetry?.entropy === "number")
+          .map((m) => m.telemetry!.entropy as number);
+        const roundAvgEntropy = roundEntropyValues.length > 0
+          ? Math.round((roundEntropyValues.reduce((s, v) => s + v, 0) / roundEntropyValues.length) * 100)
+          : null;
+        const roundTopScoreValues = round.messages
+          .filter((m) => typeof m.telemetry?.vector?.top_score === "number")
+          .map((m) => m.telemetry!.vector!.top_score as number);
+        const roundAvgRagScore = roundTopScoreValues.length > 0
+          ? (roundTopScoreValues.reduce((s, v) => s + v, 0) / roundTopScoreValues.length).toFixed(2)
+          : null;
+        const roundSources = Array.from(
+          new Set(
+            round.messages.flatMap((m) => m.telemetry?.vector?.sources ?? []),
+          ),
+        ).filter(Boolean);
 
         return (
-          <article
-            key={message.id}
-            data-message-id={message.id}
-            data-turn-number={message.turn_number}
-            data-thinking={message.isThinking ? "true" : "false"}
-            className={[
-              styles.bubble,
-              styles.bubbleAssistant,
-              bubbleToneClasses[bubbleToneIndex] ?? styles.bubbleTone0,
-              message.isThinking ? styles.bubbleThinking : "",
-              message.failed ? styles.bubbleFailed : "",
-            ].filter(Boolean).join(" ")}
-          >
-            <div className={styles.bubbleHeader}>
-              <img
-                className={styles.avatar}
-                src={avatarUrlForAgent(message.agent_id)}
-                alt={`${message.display_name} portrait`}
-              />
-              <div className={styles.bubbleIdentity}>
-                <p className={styles.bubbleName}>{message.display_name}</p>
-                <p className={styles.bubbleMeta}>Turn {message.turn_number}</p>
+          <section key={`round-${round.roundNumber}`} className={styles.roundSection} aria-label={`Round ${round.roundNumber}`}>
+            <div className={styles.roundHeader}>
+              <div className={styles.roundHeadingBlock}>
+                <div>
+                  <p className={styles.roundKicker}>ROUND</p>
+                  <h3 className={styles.roundTitle}>{String(round.roundNumber).padStart(2, "0")}</h3>
+                </div>
+                {isCollapsed && roundSpeakers.length > 0 && (
+                  <>
+                    <div className={styles.roundAvatarRow}>
+                      {roundSpeakers.map((speaker) => (
+                        <img
+                          key={speaker.agentId}
+                          className={styles.roundAvatar}
+                          src={avatarUrlForAgent(speaker.agentId)}
+                          alt={speaker.displayName}
+                          title={speaker.displayName}
+                        />
+                      ))}
+                    </div>
+                    <p className={styles.roundSpeakerSummary}>
+                      {roundSpeakerNames.join(" · ")}
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <div className={styles.roundMetaBlock}>
+                <div className={styles.roundMetaTopRow}>
+                  <span className={styles.roundMeta}>
+                    {round.messages.length} {round.messages.length === 1 ? "turn" : "turns"}
+                  </span>
+                  {roundAvgEntropy !== null && (
+                    <span className={styles.roundTelemetryBadge}>{roundAvgEntropy}% div</span>
+                  )}
+                  {roundAvgRagScore !== null && (
+                    <span className={styles.roundTelemetryBadge}>{roundAvgRagScore} sim</span>
+                  )}
+                </div>
               </div>
             </div>
-            {thinkingStatus ? <p className={styles.bubbleStatus}>{thinkingStatus.toUpperCase()}</p> : null}
-            {visibleMessage ? <p className={styles.bubbleText}>{visibleMessage}</p> : null}
-            {showRetrySkull ? (
-              <div className={styles.bubbleThinkingState} aria-hidden="true">
-                <img className={styles.bubbleThinkingIcon} src="/waiting-skull.svg" alt="" />
+
+            {roundSources.length > 0 && (
+              <div className={styles.roundSourceRow}>
+                {roundSources.map((source) => (
+                  <span key={source} className={styles.roundSourceChip} title={source}>
+                    {source}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className={styles.roundControls}>
+              <button type="button" className={styles.roundToggleButton} onClick={() => toggleRound(round.roundNumber)}>
+                <span className={styles.roundToggle} aria-hidden="true">{isCollapsed ? "+" : "-"}</span>
+                <span>{isCollapsed ? "Expand round" : "Collapse round"}</span>
+              </button>
+            </div>
+
+            {!isCollapsed ? (
+              <div className={styles.roundTimeline}>
+                {round.messages.map((message) => {
+                  const isExpanded = expandedMessageIds[message.id] ?? false;
+                  const sanitizedMessage = sanitizeDebateMessageText(message.message, message.display_name);
+                  const shouldTruncate = sanitizedMessage.length > MESSAGE_PREVIEW_LIMIT;
+                  const bubbleToneIndex = getStyleIndex(message.agent_id);
+                  const thinkingStatus = message.isThinking
+                    ? getThinkingStatus(message.id, message.thinkingStatus)
+                    : "";
+                  const previewMessage = shouldTruncate
+                    ? sanitizedMessage.slice(0, MESSAGE_PREVIEW_LIMIT).trimEnd()
+                    : sanitizedMessage;
+                  const visibleMessage = shouldTruncate && !isExpanded
+                    ? previewMessage
+                    : sanitizedMessage;
+                  const showRetrySkull = message.isThinking && !visibleMessage && isThrottledThinkingStatus(message.thinkingStatus);
+
+                  return (
+                    <div key={message.id} className={styles.turnRow}>
+                      <div className={styles.turnRail}>
+                        <div className={styles.turnInfoRow}>
+                          <img
+                            className={styles.avatar}
+                            src={avatarUrlForAgent(message.agent_id)}
+                            alt={`${message.display_name} portrait`}
+                          />
+                        </div>
+                        <div className={styles.turnConnector} aria-hidden="true" />
+                      </div>
+                      <article
+                        data-message-id={message.id}
+                        data-turn-number={message.turn_number}
+                        data-thinking={message.isThinking ? "true" : "false"}
+                        className={[
+                          styles.bubble,
+                          styles.bubbleAssistant,
+                          bubbleToneClasses[bubbleToneIndex] ?? styles.bubbleTone0,
+                          message.isThinking ? styles.bubbleThinking : "",
+                          message.failed ? styles.bubbleFailed : "",
+                        ].filter(Boolean).join(" ")}
+                      >
+                        <div className={styles.bubbleHeader}>
+                          <div className={styles.bubbleIdentity}>
+                            <p className={styles.bubbleName}>{message.display_name}</p>
+                          </div>
+                        </div>
+                        {thinkingStatus ? <p className={styles.bubbleStatus}>{thinkingStatus.toUpperCase()}</p> : null}
+                        {visibleMessage ? (
+                          <p className={styles.bubbleText}>
+                            {visibleMessage}
+                            {shouldTruncate ? (
+                              <>
+                                {!isExpanded ? "... " : " "}
+                                <button
+                                  type="button"
+                                  className={styles.bubbleInlineToggle}
+                                  onClick={() => toggleExpandedMessage(message.id)}
+                                >
+                                  {isExpanded ? "Read less" : "Read more"}
+                                </button>
+                              </>
+                            ) : null}
+                          </p>
+                        ) : null}
+                        {showRetrySkull ? (
+                          <div className={styles.bubbleThinkingState} aria-hidden="true">
+                            <img className={styles.bubbleThinkingIcon} src="/waiting-skull.svg" alt="" />
+                          </div>
+                        ) : null}
+                      </article>
+                    </div>
+                  );
+                })}
               </div>
             ) : null}
-            {shouldTruncate ? (
-              <button
-                type="button"
-                className={styles.bubbleReadMore}
-                onClick={() => toggleExpandedMessage(message.id)}
-              >
-                {isExpanded ? "Read less" : "Read more"}
-              </button>
-            ) : null}
-          </article>
+          </section>
         );
       })}
     </div>

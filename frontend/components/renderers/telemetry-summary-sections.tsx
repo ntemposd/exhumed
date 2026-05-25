@@ -11,9 +11,7 @@ const DIVERSITY_HELPER_TEXT = "Diversity calculated as average pairwise Jaccard 
 type TelemetrySummarySectionsProps = {
   performanceRows: TelemetryTableRow[];
   totalVectorHits: number;
-  vectorTurnCount: number;
   uniqueVectorSources: number;
-  uniqueVectorSourceLabels: string[];
   vectorRows: VectorUsageRow[];
   displayedTotalTokens: number;
   requestCount: number;
@@ -28,9 +26,7 @@ type TelemetrySummarySectionsProps = {
 export function TelemetrySummarySections({
   performanceRows,
   totalVectorHits,
-  vectorTurnCount,
   uniqueVectorSources,
-  uniqueVectorSourceLabels,
   vectorRows,
   displayedTotalTokens,
   requestCount,
@@ -56,16 +52,6 @@ export function TelemetrySummarySections({
               <p className={primitives.emptyStateText}>Vector usage details, and historical sources will appear here.</p>
             </div>
           )}
-          {uniqueVectorSourceLabels.length > 0 ? (
-            <div className={primitives.sourceSection}>
-              <p className={primitives.sourceLabel}>Sources:</p>
-              <div className={primitives.sourceChipRow}>
-                {uniqueVectorSourceLabels.map((source) => (
-                  <span key={source} className={primitives.sourceChip}>{source}</span>
-                ))}
-              </div>
-            </div>
-          ) : null}
         </div>
       </SidebarSection>
 
@@ -84,6 +70,14 @@ export function TelemetrySummarySections({
 
       <SidebarSection title="MODEL PERFORMANCE">
         <TelemetryTable rows={performanceRows} variant="shadowed" />
+      </SidebarSection>
+
+      <SidebarSection title="VOCAL SHARE" panelClassName={vocalShareRows.length > 0 ? primitives.vocalSharePanel : undefined}>
+        {vocalShareRows.length > 0 ? <TelemetryTable rows={vocalShareRows} variant="shadowed" /> : (
+          <div className={primitives.emptyState}>
+            <p className={primitives.emptyStateText}>No air-time data yet.</p>
+          </div>
+        )}
       </SidebarSection>
 
       <SidebarSection>
@@ -107,14 +101,6 @@ export function TelemetrySummarySections({
           <div className={primitives.costValue}>${sessionBurnUsd.toFixed(6)}</div>
           <div className={primitives.caption}>{SESSION_COST_HELPER_TEXT}</div>
         </div>
-      </SidebarSection>
-
-      <SidebarSection title="VOCAL SHARE" panelClassName={vocalShareRows.length > 0 ? primitives.vocalSharePanel : undefined}>
-        {vocalShareRows.length > 0 ? <TelemetryTable rows={vocalShareRows} variant="shadowed" /> : (
-          <div className={primitives.emptyState}>
-            <p className={primitives.emptyStateText}>No air-time data yet.</p>
-          </div>
-        )}
       </SidebarSection>
     </>
   );

@@ -4,6 +4,7 @@ import type { ExecutionMetrics, ServiceStatus, VectorTelemetry } from "@/lib/typ
 
 import type { AsyncViewState, DebateMessage, TelemetryPanelViewModel } from "../types";
 import type { TelemetryTableRow, VectorUsageRow } from "../renderers/telemetry-tables";
+import { getStyleIndex } from "../utils";
 
 type RoleBreakdownEntry = {
   label: string;
@@ -14,6 +15,7 @@ type RoleBreakdownEntry = {
 type VectorTurnEntry = {
   turn_number: number;
   display_name: string;
+  agent_id: string;
   vector: VectorTelemetry;
 };
 
@@ -25,7 +27,6 @@ type UseTelemetryViewModelOptions = {
   roleBreakdown: RoleBreakdownEntry[];
   onlineServices: number;
   serviceRows: ServiceStatus[];
-  debateEntropy: number | null;
 };
 
 function getSpeakerLastName(displayName: string): string {
@@ -49,7 +50,6 @@ export function useTelemetryViewModel({
   roleBreakdown,
   onlineServices,
   serviceRows,
-  debateEntropy,
 }: UseTelemetryViewModelOptions): TelemetryPanelViewModel {
   const metricsHistory = messages
     .map((message) => message.execution_metrics)
@@ -58,6 +58,7 @@ export function useTelemetryViewModel({
     .map((message) => ({
       turn_number: message.turn_number,
       display_name: message.display_name,
+      agent_id: message.agent_id,
       vector: message.telemetry?.vector,
     }))
     .filter((entry): entry is VectorTurnEntry => Boolean(entry.vector));
@@ -74,6 +75,7 @@ export function useTelemetryViewModel({
         Prompt: String(prompt),
         Comp: String(completion),
         Total: String(total),
+        _tone: String(getStyleIndex(message.agent_id)),
       };
     });
 
@@ -92,6 +94,7 @@ export function useTelemetryViewModel({
       Prompt: String(promptTokens),
       Comp: String(completionTokens),
       Total: String(displayedTotalTokens),
+      _tone: "",
     });
   }
 
@@ -154,33 +157,38 @@ export function useTelemetryViewModel({
     Share: `${Math.max(0, entry.share).toFixed(0)}%`,
   }));
   const totalVectorHits = vectorTurns.reduce((sum, entry) => sum + entry.vector.match_count, 0);
-  const vectorTurnCount = vectorTurns.length;
   const uniqueVectorSources = new Set(
     vectorTurns.flatMap((entry) => entry.vector.sources).map((source) => source.trim()).filter(Boolean),
   ).size;
-  const uniqueVectorSourceLabels = Array.from(new Set(
-    vectorTurns.flatMap((entry) => entry.vector.sources).map((source) => source.trim()).filter(Boolean),
-  ));
-  const vectorRows: VectorUsageRow[] = vectorTurns.map(({ turn_number, display_name, vector }) => {
+  const vectorRows: VectorUsageRow[] = vectorTurns.map(({ turn_number, display_name, vector, agent_id }) => {
     return {
       speaker: formatSpeakerTurnLabel(display_name, turn_number),
       hits: String(vector.match_count),
       top: typeof vector.top_score === "number" ? vector.top_score.toFixed(3) : "--",
       context: String(vector.context_chars),
+      _tone: String(getStyleIndex(agent_id)),
     };
   });
 
-  const observedRatio = debateEntropy !== null ? Math.max(0, Math.min(1, debateEntropy)) : 0;
+  const entropyValues = messages
+    .filter((message) => typeof message.telemetry?.entropy === "number")
+    .map((message) => message.telemetry!.entropy as number);
+
+  const averageEntropy = entropyValues.length > 0
+    ? entropyValues.reduce((sum, value) => sum + value, 0) / entropyValues.length
+    : null;
+
+  const observedRatio = averageEntropy !== null ? Math.max(0, Math.min(1, averageEntropy)) : 0;
   let diversityLabel = "No Data";
   let diversityValue = "0%";
 
-  if (debateEntropy !== null) {
+  if (averageEntropy !== null) {
     diversityValue = `${Math.round(observedRatio * 100)}%`;
     diversityLabel = "High Spread";
-    if (debateEntropy < 0.7) {
+    if (averageEntropy < 0.7) {
       diversityLabel = "Moderate";
     }
-    if (debateEntropy < 0.35) {
+    if (averageEntropy < 0.35) {
       diversityLabel = "Low Spread";
     }
   }
@@ -191,9 +199,7 @@ export function useTelemetryViewModel({
     serviceRows,
     performanceRows,
     totalVectorHits,
-    vectorTurnCount,
     uniqueVectorSources,
-    uniqueVectorSourceLabels,
     vectorRows,
     displayedTotalTokens,
     requestCount,

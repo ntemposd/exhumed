@@ -5,7 +5,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import { AppNavbar, DiscussionPanel, SpeakerSelectorModal, TelemetryPanel } from "./renderers";
+import { AppNavbar, DiscussionPanel, TelemetryPanel } from "./renderers";
 import type { LegendDetails } from "./types";
 import { useAgentsCatalog, useDebateController, useServicesStatus, useTopicEditorState } from "./hooks";
 import { useTelemetryViewModel, useWorkbenchViewState } from "./view-models";
@@ -34,15 +34,16 @@ export function ChatWorkbench() {
   // Session + workspace chrome state that belongs at the composition root.
   const [sessionId, setSessionId] = useState("");
   const [targetEntropy, setTargetEntropy] = useState(DEFAULT_TARGET_ENTROPY);
-  const [isSpeakerModalOpen, setIsSpeakerModalOpen] = useState(false);
+  const [isCouncilEditing, setIsCouncilEditing] = useState(false);
+  const [draftSelectedAgents, setDraftSelectedAgents] = useState<string[]>([]);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const telemetrySidebarRef = useRef<HTMLElement | null>(null);
   const telemetrySidebarUserScrolledRef = useRef(false);
-  const { topic, setTopic, resetTopic, topicEditorRef, hasHydratedTopic } = useTopicEditorState({
+  const { topic, setTopic, topicEditorRef, hasHydratedTopic } = useTopicEditorState({
     storageKey: TOPIC_STORAGE_KEY,
     defaultTopic: DEFAULT_TOPIC,
   });
-  const { agents, selectedAgents, setSelectedAgents, resetSelectedAgents, agentsError, isLoadingAgents, isRefreshingAgents } = useAgentsCatalog({
+  const { agents, selectedAgents, setSelectedAgents, agentsError, isLoadingAgents, isRefreshingAgents } = useAgentsCatalog({
     councilStorageKey: COUNCIL_STORAGE_KEY,
     cacheKey: AGENTS_CACHE_KEY,
     cacheTtlMs: AGENTS_CACHE_TTL_MS,
@@ -51,6 +52,7 @@ export function ChatWorkbench() {
     cacheKey: SERVICES_CACHE_KEY,
     cacheTtlMs: SERVICES_CACHE_TTL_MS,
   });
+  const effectiveSelectedAgents = isCouncilEditing ? draftSelectedAgents : selectedAgents;
 
   function issueSessionId(nextSessionId = makeSessionId()) {
     setSessionId(nextSessionId);
@@ -60,7 +62,7 @@ export function ChatWorkbench() {
 
   const debateController = useDebateController({
     agents,
-    selectedAgents,
+    selectedAgents: effectiveSelectedAgents,
     sessionId,
     topic,
     targetEntropy,
@@ -70,7 +72,6 @@ export function ChatWorkbench() {
   const {
     messages,
     discussionActive,
-    debateEntropy,
     statusNote,
     controlError,
     isWipingSession,
@@ -79,7 +80,6 @@ export function ChatWorkbench() {
     startButtonLabel,
     roundScrollKey,
     wipeDebate,
-    renewSession,
     downloadTranscript,
     startDebate,
     haltDebate,
@@ -109,23 +109,6 @@ export function ChatWorkbench() {
   }, [targetEntropy]);
 
   useEffect(() => {
-    if (!isSpeakerModalOpen) {
-      return;
-    }
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setIsSpeakerModalOpen(false);
-      }
-    }
-
-    window.addEventListener("keydown", handleEscape);
-    return () => {
-      window.removeEventListener("keydown", handleEscape);
-    };
-  }, [isSpeakerModalOpen]);
-
-  useEffect(() => {
     const element = telemetrySidebarRef.current;
     if (!element) {
       return;
@@ -153,7 +136,7 @@ export function ChatWorkbench() {
   }, [messages]);
 
   const legendEntries = agents.map(getLegendDetails);
-  const selectedCouncil = selectedAgents
+  const selectedCouncil = effectiveSelectedAgents
     .map((agentId) => legendEntries.find((legend) => legend.agent_id === agentId))
     .filter((legend): legend is LegendDetails => Boolean(legend));
   const transcriptTokenEstimate = estimateTokenCount(
@@ -186,13 +169,23 @@ export function ChatWorkbench() {
     roleBreakdown,
     onlineServices,
     serviceRows,
-    debateEntropy,
   });
 
   function toggleCouncilMember(agentId: string) {
     // Council changes are blocked during a live round so the speaking order and
     // transcript semantics stay stable for the active session.
     if (discussionActive) {
+      return;
+    }
+
+    if (isCouncilEditing) {
+      setDraftSelectedAgents((currentSelection) => {
+        if (currentSelection.includes(agentId)) {
+          return currentSelection.filter((selectedId) => selectedId !== agentId);
+        }
+
+        return [...currentSelection, agentId];
+      });
       return;
     }
 
@@ -205,22 +198,29 @@ export function ChatWorkbench() {
     });
   }
 
-  function openSpeakerModal() {
-    setIsSpeakerModalOpen(true);
-  }
+  function toggleCouncilEdit() {
+    if (discussionActive) {
+      return;
+    }
 
-  function closeSpeakerModal() {
-    setIsSpeakerModalOpen(false);
+    setIsCouncilEditing((currentValue) => {
+      if (!currentValue) {
+        setDraftSelectedAgents(selectedAgents);
+        return true;
+      }
+
+      setSelectedAgents(draftSelectedAgents);
+      return false;
+    });
   }
 
   function handleStartDebate() {
-    startDebate();
-  }
+    if (isCouncilEditing) {
+      setSelectedAgents(draftSelectedAgents);
+      setIsCouncilEditing(false);
+    }
 
-  function handleRenewSession() {
-    renewSession();
-    resetTopic();
-    resetSelectedAgents();
+    startDebate();
   }
 
   return (
@@ -235,10 +235,11 @@ export function ChatWorkbench() {
           discussionActive={discussionActive}
           selectedCouncil={selectedCouncil}
           targetEntropy={targetEntropy}
+          isCouncilEditing={isCouncilEditing}
           controlError={controlError}
           sessionId={sessionId}
           hasMessages={hasMessages}
-          roundStartAgentId={selectedAgents[0]}
+          roundStartAgentId={effectiveSelectedAgents[0]}
           roundScrollKey={roundScrollKey}
           isWipingSession={isWipingSession}
           isDownloadingTranscript={isDownloadingTranscript}
@@ -246,30 +247,19 @@ export function ChatWorkbench() {
           transcriptState={transcriptState}
           messages={messages}
           transcriptRef={transcriptRef}
+          legendEntries={legendEntries}
           onTopicChange={setTopic}
-          onOpenSpeakerModal={openSpeakerModal}
+          onToggleCouncilEdit={toggleCouncilEdit}
           onToggleCouncilMember={toggleCouncilMember}
           onTargetEntropyChange={setTargetEntropy}
           onStartDebate={handleStartDebate}
           onHaltDebate={haltDebate}
           onWipeDebate={wipeDebate}
           onDownloadTranscript={downloadTranscript}
-          onRenewSession={handleRenewSession}
         />
 
         <TelemetryPanel viewModel={telemetryViewModel} containerRef={telemetrySidebarRef} />
       </section>
-
-      <SpeakerSelectorModal
-        isOpen={isSpeakerModalOpen}
-        discussionActive={discussionActive}
-        agents={agents}
-        legendEntries={legendEntries}
-        selectedAgents={selectedAgents}
-        catalogState={legendCatalogState}
-        onClose={closeSpeakerModal}
-        onToggleCouncilMember={toggleCouncilMember}
-      />
 
       <footer className="siteFooter">
         Built with ❤️ by <a className="siteFooterLink" href="https://ntemposd.me" target="_blank" rel="noreferrer">ntemposd</a>

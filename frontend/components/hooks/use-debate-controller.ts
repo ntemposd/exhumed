@@ -53,6 +53,7 @@ export function useDebateController({
   const currentTurnAbortControllerRef = useRef<AbortController | null>(null);
   const lastStartedTopicRef = useRef("");
   const pauseAfterCurrentTurnRef = useRef(false);
+  const activeRoundNumberRef = useRef(0);
   const streamRevealQueuesRef = useRef<Record<string, string>>({});
   const streamRevealFrameRef = useRef<number | null>(null);
 
@@ -140,6 +141,7 @@ export function useDebateController({
     setDebateEntropy(null);
     setDiscussionActive(false);
     setRoundScrollKey(0);
+    activeRoundNumberRef.current = 0;
     lastStartedTopicRef.current = "";
     setIsDebatePaused(false);
 
@@ -204,7 +206,11 @@ export function useDebateController({
     setStatusNote("Generating transcript...");
 
     try {
-      const response = await fetch(`${backendUrl}/export-pdf/${sessionId}`);
+      const exportTopic = topic.trim();
+      const exportUrl = exportTopic
+        ? `${backendUrl}/export-pdf/${sessionId}?topic=${encodeURIComponent(exportTopic)}`
+        : `${backendUrl}/export-pdf/${sessionId}`;
+      const response = await fetch(exportUrl);
 
       if (!response.ok) {
         throw new Error(await getResponseErrorMessage(response, "Transcript export failed"));
@@ -272,6 +278,7 @@ export function useDebateController({
     }
 
     if (shouldAnchorUpcomingRound) {
+      activeRoundNumberRef.current += 1;
       setRoundScrollKey((currentValue) => currentValue + 1);
     }
 
@@ -325,6 +332,7 @@ export function useDebateController({
     const currentAgentId = selectedAgents[currentAgentIndex];
     const currentAgent = agents.find((agent) => agent.agent_id === currentAgentId);
     const currentTurnNumber = turnCount + 1;
+    const currentRoundNumber = Math.max(activeRoundNumberRef.current, 1);
     const thinkingId = `thinking-${currentAgentId}-${currentTurnNumber}`;
     const displayName = currentAgent?.display_name ?? currentAgentId;
     const requestResetSequence = resetSequenceRef.current;
@@ -346,6 +354,7 @@ export function useDebateController({
         agent_id: currentAgentId,
         display_name: displayName,
         message: "",
+        round_number: currentRoundNumber,
         turn_number: currentTurnNumber,
         created_at: new Date().toISOString(),
         isThinking: true,
@@ -434,10 +443,12 @@ export function useDebateController({
               currentMessages.map((message) =>
                 message.id === thinkingId
                   ? {
+                      ...message,
                       id: event.message_id,
                       agent_id: event.agent_id,
                       display_name: event.display_name,
                       message: event.message,
+                      round_number: message.round_number ?? currentRoundNumber,
                       turn_number: event.turn_number,
                       created_at: event.created_at,
                       telemetry: event.telemetry,
@@ -493,6 +504,7 @@ export function useDebateController({
               ? {
                   ...message,
                   message: "Agent failed to produce a response.",
+                  round_number: message.round_number ?? currentRoundNumber,
                   isThinking: false,
                   failed: true,
                   created_at: new Date().toISOString(),

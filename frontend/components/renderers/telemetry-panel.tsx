@@ -18,9 +18,7 @@ export function TelemetryPanel({ viewModel, containerRef }: TelemetryPanelProps)
     serviceRows,
     performanceRows,
     totalVectorHits,
-    vectorTurnCount,
     uniqueVectorSources,
-    uniqueVectorSourceLabels,
     vectorRows,
     displayedTotalTokens,
     requestCount,
@@ -39,18 +37,10 @@ export function TelemetryPanel({ viewModel, containerRef }: TelemetryPanelProps)
           <h2 className="sectionTitle columnTitle telemetryHeroTitle">TELEMETRY</h2>
         </div>
 
-        <TelemetryServiceStatus
-          servicesState={servicesState}
-          onlineServices={onlineServices}
-          serviceRows={serviceRows}
-        />
-
         <TelemetrySummarySections
           performanceRows={performanceRows}
           totalVectorHits={totalVectorHits}
-          vectorTurnCount={vectorTurnCount}
           uniqueVectorSources={uniqueVectorSources}
-          uniqueVectorSourceLabels={uniqueVectorSourceLabels}
           vectorRows={vectorRows}
           displayedTotalTokens={displayedTotalTokens}
           requestCount={requestCount}
@@ -60,6 +50,12 @@ export function TelemetryPanel({ viewModel, containerRef }: TelemetryPanelProps)
           diversityValue={diversityValue}
           diversityLabel={diversityLabel}
           vocalShareRows={vocalShareRows}
+        />
+
+        <TelemetryServiceStatus
+          servicesState={servicesState}
+          onlineServices={onlineServices}
+          serviceRows={serviceRows}
         />
       </div>
     </aside>

@@ -5,7 +5,7 @@ import unittest
 from datetime import datetime, timezone
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, patch
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from fastapi.testclient import TestClient
 
@@ -278,11 +278,12 @@ class ApiSmokeTests(unittest.TestCase):
             backend_main.session_service,
             "export_pdf_file",
             AsyncMock(return_value=temp_pdf_path),
-        ):
-            response = client.get(f"/export-pdf/{session_id}")
+        ) as export_pdf_mock:
+            response = client.get(f"/export-pdf/{session_id}?topic=Current%20Topic")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers["content-type"], "application/pdf")
+        export_pdf_mock.assert_awaited_once_with(UUID(session_id), topic="Current Topic")
 
 
 if __name__ == "__main__":

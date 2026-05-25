@@ -12,6 +12,10 @@ from fastapi import HTTPException
 class SessionService:
     """Own session storage, retrieval context, and transcript-oriented formatting concerns."""
 
+    @staticmethod
+    def _normalize_topic(value: Any) -> str:
+        return str(value or "").strip().casefold()
+
     def __init__(
         self,
         *,
@@ -294,9 +298,17 @@ class SessionService:
         messages.sort(key=lambda item: int(item.get("turn_number", 0)))
         return messages
 
-    async def export_pdf_file(self, session_id: UUID) -> str:
+    async def export_pdf_file(self, session_id: UUID, *, topic: Optional[str] = None) -> str:
         """Render a persisted session transcript to PDF and return its temporary file path."""
+        active_topic = topic if str(topic or "").strip() else await self.fetch_session_topic(session_id)
         messages = await self.fetch_session_messages(session_id)
+        normalized_active_topic = self._normalize_topic(active_topic)
+        if normalized_active_topic:
+            messages = [
+                message
+                for message in messages
+                if self._normalize_topic(message.get("topic")) == normalized_active_topic
+            ]
         if not messages:
             raise HTTPException(status_code=404, detail=f"No messages found for session {session_id}")
         return self._export_session_pdf(messages, session_id, logger=self._logger)
