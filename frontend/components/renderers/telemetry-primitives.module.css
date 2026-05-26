@@ -1,13 +1,7 @@
 .card {
   border: 2px solid var(--line);
-  background: var(--card-bg);
+  background: color-mix(in srgb, var(--card-bg) 88%, transparent);
   padding: 0.8rem 0.85rem 0.75rem;
-}
-
-.metricCardBare {
-  display: grid;
-  gap: 0;
-  min-width: 0;
 }
 
 .costValue {
@@ -31,7 +25,7 @@
   gap: 8px;
   padding: 18px 20px;
   border: 2px dashed var(--line-strong);
-  background: var(--card-empty-bg);
+  background: color-mix(in srgb, var(--card-empty-bg) 88%, transparent);
 }
 
 .emptyStateText {
@@ -42,7 +36,7 @@
 }
 
 .vocalSharePanel {
-  margin-bottom: 18px;
+  margin-bottom: 0;
 }
 
 .track {
@@ -82,7 +76,7 @@
 .tableShell {
   width: 100%;
   overflow-x: auto;
-  background: var(--table-shell-bg);
+  background: transparent;
 }
 
 .tableShellBordered {
@@ -100,12 +94,24 @@
   background: transparent;
 }
 
+/* tbody carries the solid cream — this prevents the shell bg from bleeding
+   below the last row. td is transparent so tr tints (vocal share) show through. */
+.table tbody {
+  background: var(--table-body-bg);
+}
+
 .table th,
 .table td {
-  padding: 9px 10px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--line-subtle);
   text-align: left;
   font-size: 0.76rem;
+}
+
+/* Label column stays left-aligned; all value columns align right */
+.table th:not(:first-child),
+.table td:not(:first-child) {
+  text-align: right;
 }
 
 .table th {
@@ -119,26 +125,49 @@
 }
 
 .table td {
-  background: var(--table-row-bg);
+  background: transparent;
+  font-variant-numeric: tabular-nums;
 }
 
 .table tbody tr:last-child td {
   border-bottom: none;
 }
 
-/* Agent tone - row background tint */
-.table tbody tr[data-tone="0"] { background: rgba(15, 118, 110, 0.10); }
-.table tbody tr[data-tone="1"] { background: rgba(180, 83, 9, 0.10); }
-.table tbody tr[data-tone="2"] { background: rgba(55, 48, 163, 0.10); }
-.table tbody tr[data-tone="3"] { background: rgba(190, 24, 93, 0.10); }
-.table tbody tr[data-tone="4"] { background: rgba(21, 128, 61, 0.10); }
+/* Agent tone - row background tint (all 16 slots) */
+.table tbody tr[data-tone="0"]  { background: color-mix(in srgb, var(--tone-0)  10%, transparent); }
+.table tbody tr[data-tone="1"]  { background: color-mix(in srgb, var(--tone-1)  10%, transparent); }
+.table tbody tr[data-tone="2"]  { background: color-mix(in srgb, var(--tone-2)  10%, transparent); }
+.table tbody tr[data-tone="3"]  { background: color-mix(in srgb, var(--tone-3)  10%, transparent); }
+.table tbody tr[data-tone="4"]  { background: color-mix(in srgb, var(--tone-4)  10%, transparent); }
+.table tbody tr[data-tone="5"]  { background: color-mix(in srgb, var(--tone-5)  10%, transparent); }
+.table tbody tr[data-tone="6"]  { background: color-mix(in srgb, var(--tone-6)  10%, transparent); }
+.table tbody tr[data-tone="7"]  { background: color-mix(in srgb, var(--tone-7)  10%, transparent); }
+.table tbody tr[data-tone="8"]  { background: color-mix(in srgb, var(--tone-8)  10%, transparent); }
+.table tbody tr[data-tone="9"]  { background: color-mix(in srgb, var(--tone-9)  10%, transparent); }
+.table tbody tr[data-tone="10"] { background: color-mix(in srgb, var(--tone-10) 10%, transparent); }
+.table tbody tr[data-tone="11"] { background: color-mix(in srgb, var(--tone-11) 10%, transparent); }
+.table tbody tr[data-tone="12"] { background: color-mix(in srgb, var(--tone-12) 10%, transparent); }
+.table tbody tr[data-tone="13"] { background: color-mix(in srgb, var(--tone-13) 10%, transparent); }
+.table tbody tr[data-tone="14"] { background: color-mix(in srgb, var(--tone-14) 10%, transparent); }
+.table tbody tr[data-tone="15"] { background: color-mix(in srgb, var(--tone-15) 10%, transparent); }
 
-/* Agent tone - first cell text color */
-.table tbody tr[data-tone="0"] td:first-child { color: var(--tone-0); font-weight: 800; }
-.table tbody tr[data-tone="1"] td:first-child { color: var(--tone-1); font-weight: 800; }
-.table tbody tr[data-tone="2"] td:first-child { color: var(--tone-2); font-weight: 800; }
-.table tbody tr[data-tone="3"] td:first-child { color: var(--tone-3); font-weight: 800; }
-.table tbody tr[data-tone="4"] td:first-child { color: var(--tone-4); font-weight: 800; }
+/* Agent tone - first cell text color (all 16 slots) */
+.table tbody tr[data-tone="0"]  td:first-child { color: var(--tone-0);  font-weight: 800; }
+.table tbody tr[data-tone="1"]  td:first-child { color: var(--tone-1);  font-weight: 800; }
+.table tbody tr[data-tone="2"]  td:first-child { color: var(--tone-2);  font-weight: 800; }
+.table tbody tr[data-tone="3"]  td:first-child { color: var(--tone-3);  font-weight: 800; }
+.table tbody tr[data-tone="4"]  td:first-child { color: var(--tone-4);  font-weight: 800; }
+.table tbody tr[data-tone="5"]  td:first-child { color: var(--tone-5);  font-weight: 800; }
+.table tbody tr[data-tone="6"]  td:first-child { color: var(--tone-6);  font-weight: 800; }
+.table tbody tr[data-tone="7"]  td:first-child { color: var(--tone-7);  font-weight: 800; }
+.table tbody tr[data-tone="8"]  td:first-child { color: var(--tone-8);  font-weight: 800; }
+.table tbody tr[data-tone="9"]  td:first-child { color: var(--tone-9);  font-weight: 800; }
+.table tbody tr[data-tone="10"] td:first-child { color: var(--tone-10); font-weight: 800; }
+.table tbody tr[data-tone="11"] td:first-child { color: var(--tone-11); font-weight: 800; }
+.table tbody tr[data-tone="12"] td:first-child { color: var(--tone-12); font-weight: 800; }
+.table tbody tr[data-tone="13"] td:first-child { color: var(--tone-13); font-weight: 800; }
+.table tbody tr[data-tone="14"] td:first-child { color: var(--tone-14); font-weight: 800; }
+.table tbody tr[data-tone="15"] td:first-child { color: var(--tone-15); font-weight: 800; }
 
 .table tbody tr[data-tone] td {
   background: transparent;

@@ -4,6 +4,12 @@ import type { AsyncViewState } from "../types";
 import { SidebarSection } from "./sidebar-section";
 import { TelemetryTable, type TelemetryTableRow } from "./telemetry-tables";
 
+const SERVICE_PROVIDER: Record<string, string> = {
+  Redis: "Upstash",
+  Vector: "Upstash",
+  Inference: "Groq",
+};
+
 type TelemetryServiceStatusProps = {
   servicesState: AsyncViewState;
   onlineServices: number;
@@ -17,6 +23,7 @@ export function TelemetryServiceStatus({
 }: TelemetryServiceStatusProps) {
   const serviceTableRows: TelemetryTableRow[] = serviceRows.map((service) => ({
     Service: service.name,
+    Provider: SERVICE_PROVIDER[service.name] ?? "—",
     "Net RTT": typeof service.latency_ms === "number" ? `${Math.round(service.latency_ms)} ms` : "--",
   }));
   const serviceNotes = serviceRows

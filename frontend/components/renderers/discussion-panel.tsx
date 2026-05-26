@@ -3,7 +3,7 @@
 import { type RefObject } from "react";
 
 import type { DebateMessage, LegendDetails, TranscriptViewState } from "../types";
-import { avatarUrlForAgent, getStyleIndex } from "../utils";
+import { avatarUrlForAgent, getAgentArchetype } from "../utils";
 import { DiscussionTranscript } from "./discussion-transcript";
 import styles from "./discussion-panel.module.css";
 
@@ -86,9 +86,10 @@ export function DiscussionPanel({
       <div className={`discussionPane ${styles.discussionPane}`.trim()}>
         <div className={styles.controlsDeck}>
           <section className={styles.sectionGroup}>
+            <span className={styles.sectionLabel}>Theme</span>
             <div className={styles.topicSectionLayout}>
               <div className={styles.topicSection}>
-                <div className="topicEditorWrap">
+                <div className="topicEditorWrap" data-replicated-value={topic || "The future of AI in society"}>
                   {hasHydratedTopic ? (
                     <textarea
                       ref={topicEditorRef}
@@ -110,25 +111,6 @@ export function DiscussionPanel({
                     </span>
                   )}
                 </div>
-                <div className={styles.entropyOptions} role="radiogroup" aria-label="Logic entropy selector">
-                  {ENTROPY_PROFILES.map((profile) => {
-                    const isSelected = profile.value === selectedEntropyValue.value;
-
-                    return (
-                      <button
-                        key={profile.value}
-                        type="button"
-                        role="radio"
-                        aria-checked={isSelected}
-                        className={`${styles.entropyOption} ${isSelected ? styles.entropyOptionActive : ""}`.trim()}
-                        onClick={() => onTargetEntropyChange(profile.value)}
-                        disabled={discussionActive}
-                      >
-                        <span className={styles.entropyOptionValue}>{profile.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
                 {!showTranscriptControls && (
                   <button className={`button ${styles.commandButton} ${styles.startConvoButton}`.trim()} type="button" onClick={onStartDebate}>
                     {startButtonLabel}
@@ -146,7 +128,7 @@ export function DiscussionPanel({
                 <div
                   key={legend.agent_id}
                   className="draftedChip"
-                  data-tone={getStyleIndex(legend.agent_id)}
+                  data-archetype={getAgentArchetype(legend.agent_id)}
                   data-disabled={discussionActive ? "true" : "false"}
                 >
                   <div className="draftedChipMain" title={legend.display_name}>
@@ -189,7 +171,7 @@ export function DiscussionPanel({
                 <div
                   key={legend.agent_id}
                   className="draftedChip draftedChipAvailable"
-                  data-tone={getStyleIndex(legend.agent_id)}
+                  data-archetype={getAgentArchetype(legend.agent_id)}
                   data-disabled={discussionActive ? "true" : "false"}
                 >
                   <div className="draftedChipMain" title={legend.display_name}>
@@ -217,14 +199,37 @@ export function DiscussionPanel({
               )) : null}
             </div>
           </section>
+
+          <section className={`${styles.sectionGroup} ${styles.dividedSection}`.trim()}>
+            <span className={styles.sectionLabel}>Type</span>
+            <div className={styles.entropyOptions} role="radiogroup" aria-label="Logic entropy selector">
+              {ENTROPY_PROFILES.map((profile) => {
+                const isSelected = profile.value === selectedEntropyValue.value;
+
+                return (
+                  <button
+                    key={profile.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={isSelected}
+                    className={`${styles.entropyOption} ${isSelected ? styles.entropyOptionActive : ""}`.trim()}
+                    onClick={() => onTargetEntropyChange(profile.value)}
+                    disabled={discussionActive}
+                  >
+                    <span className={styles.entropyOptionValue}>{profile.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
         </div>
 
         <div className={`${styles.transcriptShell} ${styles.dividedSection}`.trim()}>
           <div className={styles.transcriptHeading}>
             <div className={styles.transcriptHeadingRow}>
               <span>Live Transcript</span>
-              <span className={styles.status}>[{transcriptState.statusLabel.toUpperCase()}]</span>
             </div>
+            <p className={styles.transcriptStatusMessage}>{transcriptState.statusLabel}</p>
           </div>
           <DiscussionTranscript
             emptyStateMessage={transcriptState.emptyMessage}

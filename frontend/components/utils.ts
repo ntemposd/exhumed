@@ -6,6 +6,36 @@ import type { Agent } from "@/lib/types";
 import type { DebateMessage, LegendDetails } from "./types";
 
 const DEFAULT_COUNCIL_AGENT_IDS = ["agt_001", "agt_002", "agt_003", "agt_004"];
+
+export type AgentArchetype = "thinker" | "commander" | "creator" | "strategist";
+
+// Maps each known agent to one of four visual archetype buckets.
+// Thinkers: Socrates, Ada Lovelace, Marie Curie, Nietzsche, Tesla
+// Commanders: Napoleon, Marcus Aurelius, Cleopatra
+// Creators: Steve Jobs, Da Vinci, Marie Antoinette, Frida Kahlo, Dalí
+// Strategists: Sun Tzu, Borges, Trotsky
+const AGENT_ARCHETYPE_MAP: Record<string, AgentArchetype> = {
+  agt_001: "thinker",
+  agt_002: "creator",
+  agt_003: "strategist",
+  agt_004: "commander",
+  agt_005: "commander",
+  agt_006: "commander",
+  agt_007: "creator",
+  agt_008: "thinker",
+  agt_009: "thinker",
+  agt_010: "strategist",
+  agt_011: "strategist",
+  agt_012: "thinker",
+  agt_013: "thinker",
+  agt_014: "creator",
+  agt_015: "creator",
+  agt_016: "creator",
+};
+
+export function getAgentArchetype(agentId: string): AgentArchetype {
+  return AGENT_ARCHETYPE_MAP[agentId] ?? "thinker";
+}
 const INPUT_USD_PER_MILLION = 0.05;
 const OUTPUT_USD_PER_MILLION = 0.08;
 const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;

@@ -26,15 +26,6 @@
   margin-top: 16px;
 }
 
-.status {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  white-space: normal;
-}
 
 .controlsDeck {
   display: grid;
@@ -76,8 +67,7 @@
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
-  column-gap: 12px;
-  row-gap: 10px;
+  gap: 6px;
   padding-right: 0;
 }
 
@@ -86,21 +76,21 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 40px;
-  padding: 0 14px;
-  font-size: 0.72rem;
+  min-height: 32px;
+  padding: 4px 14px;
+  font-size: 0.68rem;
   letter-spacing: 0.08em;
   white-space: nowrap;
-  background: var(--surface-1);
-  border-color: var(--line-medium);
-  color: var(--muted);
+  background: var(--accent);
+  border-color: var(--line);
+  color: #111111;
   box-shadow: 3px 3px 0 var(--line);
 }
 
 .editCouncilButton:hover {
-  background: var(--surface-2);
+  background: var(--accent-soft);
   border-color: var(--line);
-  color: var(--ink);
+  color: #111111;
   transform: translate(-1px, -1px);
   box-shadow: 4px 4px 0 var(--line);
 }
@@ -122,8 +112,8 @@
   min-width: 42px;
   padding: 3px 10px;
   border: 2px solid var(--line-medium);
-  background: var(--surface-0);
-  box-shadow: 2px 2px 0 var(--line);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-0));
+  box-shadow: 2px 2px 0 var(--line-medium);
   color: var(--muted);
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease;
@@ -133,13 +123,13 @@
   transform: translate(-1px, -1px);
   box-shadow: 3px 3px 0 var(--line);
   border-color: var(--line);
-  background: var(--badge-surface-entropy);
+  background: color-mix(in srgb, var(--accent) 55%, var(--surface-0));
   color: var(--ink);
 }
 
 .entropyOptionActive {
-  background: var(--badge-surface-entropy-strong);
-  box-shadow: 2px 2px 0 var(--line);
+  background: var(--accent-soft);
+  box-shadow: 3px 3px 0 var(--line);
   border-color: var(--line);
   color: var(--ink);
 }
@@ -161,15 +151,15 @@
 .commandGrid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .commandButton {
-  min-height: 40px;
-  padding: 8px 12px;
+  min-height: 52px;
+  padding: 12px 16px;
   box-shadow: 3px 3px 0 var(--line);
   font-size: 0.76rem;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
 .startConvoButton {
@@ -193,6 +183,9 @@
 }
 
 .transcriptHeading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: 0;
 }
 
@@ -203,13 +196,26 @@
   gap: 8px;
 }
 
+.transcriptStatusMessage {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  font-style: italic;
+  line-height: 1.4;
+}
+
 .transcriptControls {
-  margin-top: 4px;
+  margin-top: 0;
 }
 
 .transcriptControlsBlock {
   display: grid;
   gap: 10px;
+  padding-top: 16px;
+  padding-bottom: 28px;
+  margin-top: 8px;
 }
 
 @media (max-width: 767px) {
@@ -261,7 +267,7 @@
     min-height: 32px;
     min-width: 0;
     padding: 4px 10px;
-    box-shadow: 2px 2px 0 var(--line);
+    box-shadow: 2px 2px 0 var(--line-medium);
   }
 
   .commandGrid {
@@ -269,8 +275,7 @@
   }
 
   .councilChips {
-    column-gap: 10px;
-    row-gap: 8px;
+    gap: 6px;
     padding-right: 0;
   }
 
@@ -283,7 +288,8 @@
 
   .commandButton,
   .editCouncilButton {
-    min-height: 38px;
+    min-height: 48px;
+    padding: 10px 12px;
     box-shadow: 2px 2px 0 var(--line);
   }
 
@@ -301,10 +307,4 @@
     flex: 0 0 auto;
   }
 
-  .status {
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    max-width: 100%;
-    overflow-wrap: anywhere;
-  }
 }

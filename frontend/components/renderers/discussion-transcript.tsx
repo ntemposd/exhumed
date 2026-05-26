@@ -1,6 +1,6 @@
 // DiscussionTranscript owns transcript-only interaction state such as message
 // expansion and animated thinking indicators.
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 
 import type { DebateMessage } from "../types";
 import { getStyleIndex, sanitizeDebateMessageText } from "../utils";
@@ -246,7 +246,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
     styles.bubbleTone15,
   ];
 
-  const transcriptRounds = messages.reduce<TranscriptRound[]>((rounds, message) => {
+  const transcriptRounds = useMemo(() => messages.reduce<TranscriptRound[]>((rounds, message) => {
     const roundNumber = Math.max(1, message.round_number ?? Math.ceil(message.turn_number / normalizedRoundSize));
     const existingRound = rounds.at(-1);
 
@@ -257,7 +257,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
 
     existingRound.messages.push(message);
     return rounds;
-  }, []);
+  }, []), [messages, normalizedRoundSize]);
 
   useEffect(() => {
     if (transcriptRounds.length === 0) {
@@ -292,10 +292,16 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
   }, [transcriptRounds]);
 
   function toggleRound(roundNumber: number) {
+    const savedScrollY = window.scrollY;
     setCollapsedRounds((currentValue) => ({
       ...currentValue,
       [roundNumber]: !(currentValue[roundNumber] ?? false),
     }));
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: savedScrollY, behavior: "auto" });
+      });
+    });
   }
 
   return (
@@ -322,7 +328,15 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
 
         return (
           <section key={`round-${round.roundNumber}`} className={styles.roundSection} aria-label={`Round ${round.roundNumber}`}>
-            <div className={styles.roundHeader}>
+            <div
+              className={styles.roundHeader}
+              role="button"
+              tabIndex={0}
+              aria-expanded={!isCollapsed}
+              aria-label={`Round ${round.roundNumber} — ${isCollapsed ? "expand" : "collapse"}`}
+              onClick={() => toggleRound(round.roundNumber)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleRound(round.roundNumber); } }}
+            >
               <div className={styles.roundHeaderMain}>
                 <h3 className={styles.roundTitle}>ROUND {String(round.roundNumber).padStart(2, "0")}</h3>
 
@@ -339,10 +353,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                 </div>
               </div>
 
-              <button type="button" className={styles.roundToggleButton} onClick={() => toggleRound(round.roundNumber)}>
-                <span className={styles.roundToggle} aria-hidden="true">{isCollapsed ? "+" : "−"}</span>
-                <span>{isCollapsed ? "Expand" : "Collapse"}</span>
-              </button>
+              <span className={styles.roundToggle} aria-hidden="true">{isCollapsed ? "+" : "−"}</span>
             </div>
 
             {!isCollapsed ? (
@@ -388,10 +399,10 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                         <div className={styles.bubbleHeader}>
                           <div className={styles.bubbleIdentity}>
                             <p className={styles.bubbleName}>{message.display_name}</p>
-                            {message.turn_number ? (
-                              <span className={styles.bubbleTurn}>Turn {message.turn_number}</span>
-                            ) : null}
                           </div>
+                          {message.turn_number ? (
+                            <span className={styles.bubbleTurn}>Turn {message.turn_number}</span>
+                          ) : null}
                         </div>
                         {thinkingStatus ? <p className={styles.bubbleStatus}>{thinkingStatus.toUpperCase()}</p> : null}
                         {visibleMessage ? (

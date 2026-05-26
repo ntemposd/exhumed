@@ -1,8 +1,8 @@
 :root {
-	--bg: #E8DCBA;
-	--bg-wash: #DDD0A4;
-	--panel: #F4EEDA;
-	--panel-strong: #EFDFC6;
+	--bg: #F0E8CE;
+	--bg-wash: #E6D9B2;
+	--panel: #FAF4E4;
+	--panel-strong: #F4ECDA;
 	--box-surface: #F4EEDA;
 	--box-surface-soft: #EBE1C4;
 	--box-surface-strong: #E0D4AB;
@@ -22,9 +22,6 @@
 	--accent-soft: #F5E880;
 	--grid-color: rgba(20, 17, 15, 0.07);
 	--ui-dark: #2e3a4d;
-	--btn-dark: #1f2937;
-	--btn-dark-hover: #374151;
-	--btn-dark-text: #FFFFFF;
 	--signal: #0f766e;
 	--warning: #b91c1c;
 	--shadow: 5px 5px 0 var(--line);
@@ -37,9 +34,9 @@
 	--space-8: 22px;
 
 	/* --- Surface scale --- */
-	--surface-0: #F4EEDA;
-	--surface-1: #EBE1C4;
-	--surface-2: #E0D4AB;
+	--surface-0: #FAF4E4;
+	--surface-1: #F0E8D0;
+	--surface-2: #E6DABC;
 	--surface-ghost: rgba(244, 238, 218, 0.70);
 	--surface-error: #FDE8E6;
 
@@ -49,33 +46,38 @@
 	--line-medium: rgba(20, 17, 15, 0.30);
 	--line-strong: rgba(20, 17, 15, 0.44);
 
-	/* --- Agent identity colors (16 slots) --- */
-	--tone-0:  #0f766e;
-	--tone-1:  #b45309;
-	--tone-2:  #3730a3;
-	--tone-3:  #be185d;
-	--tone-4:  #15803d;
-	--tone-5:  #1d4ed8;
-	--tone-6:  #7c3aed;
-	--tone-7:  #c2410c;
-	--tone-8:  #991b1b;
-	--tone-9:  #0e7490;
-	--tone-10: #92400e;
-	--tone-11: #4d7c0f;
-	--tone-12: #86198f;
-	--tone-13: #1e40af;
-	--tone-14: #065f46;
-	--tone-15: #9a3412;
+	/* --- Agent identity colors — archetype-aligned muted palette (16 slots) --- */
+	/* Creators */
+	--tone-0:  #4A7A98;  /* Dali */
+	--tone-2:  #3A6A88;  /* Jobs */
+	--tone-7:  #5488A8;  /* Da Vinci */
+	--tone-14: #306078;  /* Marie Antoinette */
+	--tone-15: #5C8EB4;  /* Kahlo */
+	/* Thinkers */
+	--tone-1:  #A07832;  /* Socrates */
+	--tone-8:  #B28A3E;  /* Ada Lovelace */
+	--tone-9:  #906825;  /* Curie */
+	--tone-12: #C49840;  /* Nietzsche */
+	--tone-13: #886020;  /* Tesla */
+	/* Commanders */
+	--tone-4:  #9E4A40;  /* Napoleon */
+	--tone-5:  #8A3D36;  /* Aurelius */
+	--tone-6:  #B0605A;  /* Cleopatra */
+	/* Strategists */
+	--tone-3:  #5E7830;  /* Sun Tzu */
+	--tone-10: #4E6826;  /* Borges */
+	--tone-11: #6C8840;  /* Trotsky */
 
 	/* --- Accent variants --- */
 	--accent-icon: #8A6000;
 	--accent-on-dark: #FFFFFF;
 
 	/* --- Table --- */
-	--table-header-bg: var(--ink);
+	--table-header-bg: #2A2A2A;
 	--table-header-text: #FFFFFF;
 	--table-row-bg: #F4EEDA;
 	--table-shell-bg: #F4EEDA;
+	--table-body-bg: #F4EEDA;
 
 	/* --- Cards and containers --- */
 	--card-bg: #F4EEDA;
@@ -93,6 +95,21 @@
 	--line-shadow-soft: rgba(20, 17, 15, 0.14);
 	--line-faint: rgba(20, 17, 15, 0.07);
 	--chip-border-strong: rgba(20, 17, 15, 0.22);
+
+	/* --- Archetype chip backgrounds (muted, solid) --- */
+	--archetype-thinker-bg:    #DDBA6C;
+	--archetype-commander-bg:  #C57B72;
+	--archetype-creator-bg:    #7AAEC8;
+	--archetype-strategist-bg: #98AA68;
+	--archetype-text:          #111111;
+	--archetype-border:        #1a1a1a;
+
+	/* --- Round header (industrial divider) --- */
+	--round-header-bg:        #1C1C1C;
+	--round-header-bg-hover:  #282828;
+	--round-header-text:      #F0E8CE;
+	--round-header-muted:     rgba(240, 232, 206, 0.68);
+	--round-header-sep:       rgba(240, 232, 206, 0.28);
 }
 
 [data-theme="dark"] {
@@ -141,10 +158,11 @@
 	--card-bg: #272318;
 	--card-empty-bg: #2C2820;
 	--card-track-bg: #332E24;
-	--table-header-bg: #EDE0C4;
-	--table-header-text: #1E1A12;
+	--table-header-bg: #2A2420;
+	--table-header-text: #EDE0C4;
 	--table-row-bg: #272318;
 	--table-shell-bg: #272318;
+	--table-body-bg: var(--surface-0);
 
 	/* Chips */
 	--chip-bg: #2C2820;
@@ -156,34 +174,50 @@
 	--accent-icon: #CCA800;
 	--accent-on-dark: #FFFFFF;
 
-	/* Buttons - inverted in dark mode */
 	--ui-dark: #EDE0C4;
-	--btn-dark: #EDE0C4;
-	--btn-dark-text: #1E1A12;
 
 	/* Signal / warning */
 	--signal: #14B8A6;
 	--warning: #EF4444;
 
-	/* Agent identity colors — lightened for dark backgrounds */
-	--tone-0:  #2dd4bf;
-	--tone-1:  #f59e0b;
-	--tone-2:  #818cf8;
-	--tone-3:  #f472b6;
-	--tone-4:  #4ade80;
-	--tone-5:  #60a5fa;
-	--tone-6:  #a78bfa;
-	--tone-7:  #fb923c;
-	--tone-8:  #f87171;
-	--tone-9:  #22d3ee;
-	--tone-10: #d97706;
-	--tone-11: #a3e635;
-	--tone-12: #e879f9;
-	--tone-13: #93c5fd;
-	--tone-14: #34d399;
-	--tone-15: #fb7c4a;
+	/* Agent identity colors — archetype-aligned, lightened for dark bg */
+	/* Creators */
+	--tone-0:  #70A0C0;  /* Dali */
+	--tone-2:  #6090B0;  /* Jobs */
+	--tone-7:  #7AACC4;  /* Da Vinci */
+	--tone-14: #5888A4;  /* Marie Antoinette */
+	--tone-15: #80B0D0;  /* Kahlo */
+	/* Thinkers */
+	--tone-1:  #CCA050;  /* Socrates */
+	--tone-8:  #DDB858;  /* Ada Lovelace */
+	--tone-9:  #BA8842;  /* Curie */
+	--tone-12: #E0B85A;  /* Nietzsche */
+	--tone-13: #B07A3A;  /* Tesla */
+	/* Commanders */
+	--tone-4:  #C46860;  /* Napoleon */
+	--tone-5:  #AE5850;  /* Aurelius */
+	--tone-6:  #D47870;  /* Cleopatra */
+	/* Strategists */
+	--tone-3:  #8AB050;  /* Sun Tzu */
+	--tone-10: #7AA040;  /* Borges */
+	--tone-11: #98BC5E;  /* Trotsky */
 
 	/* Shadow uses var(--line) which is now light - correct for dark neobrutalism */
+
+	/* Archetype chip backgrounds — dark variants */
+	--archetype-thinker-bg:    #5C3E10;
+	--archetype-commander-bg:  #5C2822;
+	--archetype-creator-bg:    #1C3E58;
+	--archetype-strategist-bg: #2A3E14;
+	--archetype-text:          #EDE0C4;
+	--archetype-border:        rgba(237, 224, 196, 0.55);
+
+	/* Round header — inverted in dark mode for contrast */
+	--round-header-bg:        #DED8C8;
+	--round-header-bg-hover:  #CECAB8;
+	--round-header-text:      #1C1C1C;
+	--round-header-muted:     rgba(28, 28, 28, 0.68);
+	--round-header-sep:       rgba(28, 28, 28, 0.28);
 }
 
 * {
@@ -191,7 +225,11 @@
 }
 
 html {
-	background: var(--bg);
+	background: #F8F2E2;
+}
+
+html[data-theme="dark"] {
+	background: #181508;
 }
 
 body {
@@ -203,8 +241,16 @@ body {
 	background:
 		linear-gradient(var(--grid-color) 1px, transparent 1px),
 		linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
-		var(--bg);
-	background-size: 24px 24px;
+		linear-gradient(150deg, #FAF5E6 0%, #F0E8CE 45%, #E8D9AE 100%);
+	background-size: 24px 24px, 24px 24px, 100% 100%;
+}
+
+[data-theme="dark"] body {
+	background:
+		linear-gradient(var(--grid-color) 1px, transparent 1px),
+		linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+		linear-gradient(150deg, #272318 0%, #1C1810 45%, #181508 100%);
+	background-size: 24px 24px, 24px 24px, 100% 100%;
 }
 
 body.sidebarResizing {
@@ -242,7 +288,9 @@ select {
 	color: var(--muted);
 	font-size: 0.78rem;
 	text-align: center;
-	background: var(--bg-wash);
+	background:
+		radial-gradient(circle at top left, rgba(227, 177, 0, 0.12), transparent 28%),
+		linear-gradient(180deg, var(--surface-0) 0%, var(--surface-1) 100%);
 }
 
 .siteFooterLink {
@@ -299,8 +347,9 @@ select {
 .workspace {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(320px, 25vw);
+	grid-template-rows: 1fr;
 	gap: 16px;
-	align-items: start;
+	align-items: stretch;
 	flex: 1 1 auto;
 	min-height: 0;
 	padding: 0;
@@ -319,6 +368,7 @@ select {
 
 .chatColumn {
 	padding: 18px 0 0 18px;
+	align-self: start;
 }
 
 .telemetryColumn {
@@ -327,8 +377,9 @@ select {
 	padding: 18px 14px 0 18px;
 	overflow: visible;
 	isolation: isolate;
-	background: color-mix(in srgb, var(--bg) 82%, var(--bg-wash));
-	align-self: start;
+	background: color-mix(in srgb, var(--surface-0) 44%, transparent);
+	border-left: 1px solid var(--line-divider);
+	align-self: stretch;
 }
 
 .telemetryColumn > * {
@@ -366,11 +417,6 @@ select {
 	line-height: 1;
 }
 
-.stack {
-	display: grid;
-	gap: 12px;
-}
-
 .helper,
 .emptyState,
 .statusNote {
@@ -397,11 +443,11 @@ select {
 	flex: 0 1 auto;
 	min-height: 48px;
 	padding: 10px 12px;
-	border: 2px solid var(--line-medium);
+	border: 2px solid var(--archetype-border);
 	background: var(--surface-0);
 	color: var(--ink);
 	position: relative;
-	transition: border-color 120ms ease, background 120ms ease, opacity 120ms ease;
+	/* transition: border-color 120ms ease, background 120ms ease, opacity 120ms ease; */
 }
 
 .draftedChipAvailable {
@@ -438,84 +484,31 @@ select {
 	color: var(--ink);
 }
 
-.draftedChip[data-tone="0"] {
-	background: color-mix(in srgb, var(--tone-0) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-0) 58%, var(--line-medium));
+/* --- Archetype-based chip backgrounds (solid, muted, per-category) --- */
+.draftedChip[data-archetype="thinker"] {
+	background: var(--archetype-thinker-bg);
+	
 }
 
-.draftedChip[data-tone="1"] {
-	background: color-mix(in srgb, var(--tone-1) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-1) 58%, var(--line-medium));
+.draftedChip[data-archetype="commander"] {
+	background: var(--archetype-commander-bg);
+	/* border: 1px solid var(--archetype-border); */
 }
 
-.draftedChip[data-tone="2"] {
-	background: color-mix(in srgb, var(--tone-2) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-2) 58%, var(--line-medium));
+.draftedChip[data-archetype="creator"] {
+	background: var(--archetype-creator-bg);
+	/* border: 1px solid var(--archetype-border); */
 }
 
-.draftedChip[data-tone="3"] {
-	background: color-mix(in srgb, var(--tone-3) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-3) 58%, var(--line-medium));
+.draftedChip[data-archetype="strategist"] {
+	background: var(--archetype-strategist-bg);
+	/* border: 1px solid var(--archetype-border); */
 }
 
-.draftedChip[data-tone="4"] {
-	background: color-mix(in srgb, var(--tone-4) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-4) 58%, var(--line-medium));
-}
-
-.draftedChip[data-tone="5"] {
-	background: color-mix(in srgb, var(--tone-5) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-5) 58%, var(--line-medium));
-}
-
-.draftedChip[data-tone="6"] {
-	background: color-mix(in srgb, var(--tone-6) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-6) 58%, var(--line-medium));
-}
-
-.draftedChip[data-tone="7"] {
-	background: color-mix(in srgb, var(--tone-7) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-7) 58%, var(--line-medium));
-}
-
-.draftedChip[data-tone="8"] {
-	background: color-mix(in srgb, var(--tone-8) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-8) 58%, var(--line-medium));
-}
-
-.draftedChip[data-tone="9"] {
-	background: color-mix(in srgb, var(--tone-9) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-9) 58%, var(--line-medium));
-}
-
-.draftedChip[data-tone="10"] {
-	background: color-mix(in srgb, var(--tone-10) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-10) 58%, var(--line-medium));
-}
-
-.draftedChip[data-tone="11"] {
-	background: color-mix(in srgb, var(--tone-11) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-11) 58%, var(--line-medium));
-}
-
-.draftedChip[data-tone="12"] {
-	background: color-mix(in srgb, var(--tone-12) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-12) 58%, var(--line-medium));
-}
-
-.draftedChip[data-tone="13"] {
-	background: color-mix(in srgb, var(--tone-13) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-13) 58%, var(--line-medium));
-}
-
-.draftedChip[data-tone="14"] {
-	background: color-mix(in srgb, var(--tone-14) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-14) 58%, var(--line-medium));
-}
-
-.draftedChip[data-tone="15"] {
-	background: color-mix(in srgb, var(--tone-15) 24%, var(--surface-0));
-	border-color: color-mix(in srgb, var(--tone-15) 58%, var(--line-medium));
+/* Force charcoal text on all archetype cards */
+.draftedChip[data-archetype] .draftedChipLabel,
+.draftedChip[data-archetype] .draftedChipArchetype {
+	color: var(--archetype-text);
 }
 
 .draftedChipArchetype {
@@ -594,12 +587,6 @@ select {
 	box-shadow: none;
 }
 
-.actions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: var(--space-3);
-}
-
 .button,
 .buttonGhost,
 .buttonDanger {
@@ -625,8 +612,9 @@ select {
 
 .buttonGhost,
 .buttonDanger {
-	background: var(--btn-dark);
-	color: var(--btn-dark-text);
+	background: var(--surface-0);
+	border: 1.5px solid var(--ink);
+	color: var(--ink);
 }
 
 .button:hover,
@@ -644,8 +632,9 @@ select {
 
 .buttonGhost:hover,
 .buttonDanger:hover {
-	background: var(--btn-dark-hover);
-	color: #FFFFFF;
+	background: var(--ink);
+	border-color: var(--ink);
+	color: var(--surface-0);
 }
 
 .button:disabled,
@@ -712,8 +701,9 @@ select {
 }
 
 .topicEditorWrap {
-	width: 100%;
-	max-width: 75%;
+	display: inline-grid;
+	max-width: 66.666%;
+	min-width: 180px;
 	box-sizing: border-box;
 	border: 2px solid var(--line);
 	background: var(--surface-0);
@@ -724,6 +714,20 @@ select {
 	transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 
+.topicEditorWrap::after {
+	content: attr(data-replicated-value) " ";
+	visibility: hidden;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+	grid-area: 1 / 1;
+	font-family: var(--font-mono), monospace;
+	font-size: 1.08rem;
+	font-weight: 400;
+	line-height: 1.7;
+	pointer-events: none;
+}
+
 .topicEditorWrap:focus-within {
 	transform: translate(-1px, -1px);
 	box-shadow: 5px 5px 0 var(--line);
@@ -732,7 +736,7 @@ select {
 }
 
 .topicEditorField {
-	flex: 1 1 auto;
+	grid-area: 1 / 1;
 	min-width: 0;
 	width: 100%;
 	border: none;
@@ -741,6 +745,7 @@ select {
 	padding: 0;
 	overflow: hidden;
 	overflow-wrap: anywhere;
+	word-break: break-word;
 	font-family: inherit;
 	font-size: 1.08rem;
 	font-weight: 400;
@@ -985,6 +990,7 @@ select {
 
 	.topicEditorWrap {
 		max-width: 100%;
+		min-width: 0;
 	}
 
 	.speakerModalGrid {
@@ -1003,7 +1009,7 @@ select {
 		position: static;
 		top: auto;
 		padding: 22px 16px;
-		background: color-mix(in srgb, var(--bg) 82%, var(--bg-wash));
+		background: color-mix(in srgb, var(--surface-0) 14%, transparent);
 	}
 
 	.telemetryPanel .sidebarSectionGroup:last-child {
