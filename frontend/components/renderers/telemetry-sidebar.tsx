@@ -6,20 +6,10 @@ import type { RefObject } from "react";
 
 import type { ServiceStatus } from "@/lib/types";
 
-import type { AsyncViewState, TelemetryPanelViewModel } from "../types";
+import type { AsyncViewState, TelemetryPanelViewModel, TelemetryTableRow, VectorUsageRow } from "../types";
 import styles from "./telemetry-sidebar.module.css";
 
-// ─── Types ────────────────────────────────────────────────────────────────
-
-export type TelemetryTableRow = Record<string, string>;
-
-export type VectorUsageRow = {
-  speaker: string;
-  hits: string;
-  top: string;
-  context: string;
-  _tone?: string;
-};
+export type { TelemetryTableRow, VectorUsageRow };
 
 type TelemetryTableVariant = "plain" | "bordered" | "shadowed";
 

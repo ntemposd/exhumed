@@ -1,9 +1,10 @@
 // This hook centralizes telemetry derivation so the telemetry column can remain
 // a presentational renderer fed by a single, typed view model.
+import { useMemo } from "react";
+
 import type { ExecutionMetrics, ServiceStatus, VectorTelemetry } from "@/lib/types";
 
-import type { AsyncViewState, DebateMessage, TelemetryPanelViewModel } from "../types";
-import type { TelemetryTableRow, VectorUsageRow } from "../renderers/telemetry-sidebar";
+import type { AsyncViewState, DebateMessage, TelemetryPanelViewModel, TelemetryTableRow, VectorUsageRow } from "../types";
 import { getStyleIndex } from "../utils";
 
 type RoleBreakdownEntry = {
@@ -51,6 +52,8 @@ export function useTelemetryViewModel({
   onlineServices,
   serviceRows,
 }: UseTelemetryViewModelOptions): TelemetryPanelViewModel {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useMemo(() => {
   const metricsHistory = messages
     .map((message) => message.execution_metrics)
     .filter((metrics): metrics is ExecutionMetrics => Boolean(metrics));
@@ -210,4 +213,6 @@ export function useTelemetryViewModel({
     diversityLabel,
     vocalShareRows,
   };
+  // deps: all inputs — recompute only when telemetry data actually changes
+  }, [servicesState, sessionBurnUsd, transcriptTokenEstimate, messages, roleBreakdown, onlineServices, serviceRows]);
 }

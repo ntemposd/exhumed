@@ -34,25 +34,35 @@ async function proxy(
 
   const hasBody = request.method !== "GET" && request.method !== "HEAD";
 
-  const upstream = await fetch(targetUrl, {
-    method: request.method,
-    headers: outHeaders,
-    body: hasBody ? request.body : undefined,
-    signal: request.signal,
-    // Required by Node.js when passing a ReadableStream as the request body.
-    ...(hasBody ? { duplex: "half" } : {}),
-  } as RequestInit);
+  try {
+    const upstream = await fetch(targetUrl, {
+      method: request.method,
+      headers: outHeaders,
+      body: hasBody ? request.body : undefined,
+      signal: request.signal,
+      // Required by Node.js when passing a ReadableStream as the request body.
+      ...(hasBody ? { duplex: "half" } : {}),
+    } as RequestInit);
 
-  const respHeaders = new Headers();
-  for (const name of FORWARDED_RESPONSE_HEADERS) {
-    const value = upstream.headers.get(name);
-    if (value) respHeaders.set(name, value);
+    const respHeaders = new Headers();
+    for (const name of FORWARDED_RESPONSE_HEADERS) {
+      const value = upstream.headers.get(name);
+      if (value) respHeaders.set(name, value);
+    }
+
+    return new NextResponse(upstream.body, {
+      status: upstream.status,
+      headers: respHeaders,
+    });
+  } catch (err) {
+    // Client disconnected before the response was ready — normal for browser
+    // navigations, tab closes, and React StrictMode dev remounts. Return 499
+    // silently rather than letting the AbortError surface as a server error.
+    if (request.signal.aborted) {
+      return new NextResponse(null, { status: 499 });
+    }
+    throw err;
   }
-
-  return new NextResponse(upstream.body, {
-    status: upstream.status,
-    headers: respHeaders,
-  });
 }
 
 export const GET = proxy;

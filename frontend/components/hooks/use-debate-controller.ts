@@ -4,32 +4,24 @@ import { useEffect, useRef, useState } from "react";
 
 import { backendUrl } from "@/lib/config";
 
-const ENTROPY_PROFILES = [
-  { label: "Historical Overview", value: 0 },
-  { label: "Grounded Discussion", value: 0.375 },
-  { label: "Balanced Debate", value: 0.75 },
-  { label: "Philosophical Drift", value: 1.125 },
-  { label: "Creative Synthesis", value: 1.5 },
-] as const;
 import { apiFetch, getRequestFailureMessage, getResponseErrorMessage } from "@/lib/http";
 import type { Agent, ProcessTurnStreamEvent, ProcessTurnStreamFinal, ProcessTurnStreamStatus } from "@/lib/types";
 
 import type { DebateMessage } from "../types";
-import { clampNumber } from "../utils";
+import { ENTROPY_PROFILES, getStyleIndex } from "../utils";
 
 const STREAM_REVEAL_CHARS_PER_FRAME = 4;
 
-// Tone palette mirrors the CSS --tone-N variables for PDF export.
+// Tone palette for PDF export — index-aligned with the CSS --tone-N variables
+// so the same agent always gets the same color in both the UI and exported PDF.
 const TONE_COLORS = [
-  "#0f766e", "#b45309", "#3730a3", "#be185d", "#15803d",
-  "#1d4ed8", "#7c3aed", "#c2410c", "#991b1b", "#0e7490",
-  "#92400e", "#4d7c0f", "#86198f", "#1e40af", "#065f46", "#9a3412",
+  "#4A7A98", "#A07832", "#3A6A88", "#5E7830", "#9E4A40",
+  "#8A3D36", "#B0605A", "#5488A8", "#B28A3E", "#906825",
+  "#4E6826", "#6C8840", "#C49840", "#886020", "#306078", "#5C8EB4",
 ];
 
 function agentToneColor(agentId: string): string {
-  let hash = 0;
-  for (let i = 0; i < agentId.length; i++) hash = (hash * 31 + agentId.charCodeAt(i)) >>> 0;
-  return TONE_COLORS[hash % TONE_COLORS.length] ?? TONE_COLORS[0];
+  return TONE_COLORS[getStyleIndex(agentId)] ?? TONE_COLORS[0];
 }
 
 function esc(text: string): string {
@@ -158,7 +150,6 @@ export function useDebateController({
   const [discussionActive, setDiscussionActive] = useState(false);
   const [turnCount, setTurnCount] = useState(0);
   const [currentAgentIndex, setCurrentAgentIndex] = useState(0);
-  const [debateEntropy, setDebateEntropy] = useState<number | null>(null);
   const [statusNote, setStatusNote] = useState("Standby.");
   const [controlError, setControlError] = useState("");
   const [isWipingSession, setIsWipingSession] = useState(false);
@@ -256,7 +247,6 @@ export function useDebateController({
     setMessages([]);
     setTurnCount(0);
     setCurrentAgentIndex(0);
-    setDebateEntropy(null);
     setDiscussionActive(false);
     setRoundScrollKey(0);
     activeRoundNumberRef.current = 0;
@@ -552,7 +542,6 @@ export function useDebateController({
             }
 
             clearStreamRevealQueue(thinkingId);
-            setDebateEntropy(clampNumber(event.telemetry.entropy, 0, 1));
             setMessages((currentMessages) =>
               currentMessages.map((message) =>
                 message.id === thinkingId
@@ -639,7 +628,6 @@ export function useDebateController({
   return {
     messages,
     discussionActive,
-    debateEntropy,
     statusNote,
     controlError,
     isWipingSession,
@@ -648,9 +636,9 @@ export function useDebateController({
     startButtonLabel,
     roundScrollKey,
     wipeDebate,
-    renewSession,
     downloadTranscript,
     startDebate,
     haltDebate,
+    renewSession,
   };
 }

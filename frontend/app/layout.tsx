@@ -5,12 +5,7 @@ import { IBM_Plex_Mono } from "next/font/google";
 
 import "./globals.css";
 
-const displayFont = IBM_Plex_Mono({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["400", "500", "700"],
-});
-
+// Single load — --font-display is aliased to --font-mono in globals.css :root.
 const monoFont = IBM_Plex_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
@@ -22,10 +17,18 @@ export const metadata: Metadata = {
   description: "Next.js frontend prototype for the EXHUMED debate backend.",
 };
 
+// Runs synchronously before first paint: reads localStorage and stamps
+// data-theme on <html> before React hydrates, eliminating the light→dark
+// flash. Wrapped in try/catch so storage errors never break the page.
+const THEME_INIT_SCRIPT = `try{var t=localStorage.getItem('exhumed-theme');if(t==='dark')document.documentElement.dataset.theme='dark';}catch(e){}`;
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${displayFont.variable} ${monoFont.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
+      <body className={monoFont.variable}>
         {children}
         <Analytics />
       </body>

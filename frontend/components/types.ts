@@ -2,7 +2,18 @@
 // focused on rendering instead of re-declaring the same contracts locally.
 import type { ExecutionMetrics, TurnTelemetry } from "@/lib/types";
 import type { ServiceStatus } from "@/lib/types";
-import type { TelemetryTableRow, VectorUsageRow } from "./renderers/telemetry-sidebar";
+
+// Telemetry table row shapes — defined here so renderers and view-models share
+// a single source of truth without a renderer → types import inversion.
+export type TelemetryTableRow = Record<string, string>;
+
+export type VectorUsageRow = {
+  speaker: string;
+  hits: string;
+  top: string;
+  context: string;
+  _tone?: string;
+};
 
 export type LegendDetails = {
   agent_id: string;

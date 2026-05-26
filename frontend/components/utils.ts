@@ -36,6 +36,19 @@ const AGENT_ARCHETYPE_MAP: Record<string, AgentArchetype> = {
 export function getAgentArchetype(agentId: string): AgentArchetype {
   return AGENT_ARCHETYPE_MAP[agentId] ?? "thinker";
 }
+
+// Single source of truth for entropy profile definitions — shared by the
+// debate controller (API payload) and the discussion panel (UI selector).
+export const ENTROPY_PROFILES = [
+  { label: "Historical Overview", value: 0 },
+  { label: "Grounded Discussion", value: 0.375 },
+  { label: "Balanced Debate", value: 0.75 },
+  { label: "Philosophical Drift", value: 1.125 },
+  { label: "Creative Synthesis", value: 1.5 },
+] as const;
+
+export type EntropyProfile = (typeof ENTROPY_PROFILES)[number];
+
 const INPUT_USD_PER_MILLION = 0.05;
 const OUTPUT_USD_PER_MILLION = 0.08;
 const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -103,26 +116,6 @@ export function sanitizeDebateMessageText(text: string, displayName?: string) {
   }
 
   return cleaned;
-}
-
-export function formatMetricNumber(value?: number | null, suffix = "") {
-  if (typeof value !== "number" || Number.isNaN(value)) {
-    return "N/A";
-  }
-
-  return `${Math.round(value).toLocaleString()}${suffix}`;
-}
-
-export function formatFloat(value?: number | null, digits = 2, suffix = "") {
-  if (typeof value !== "number" || Number.isNaN(value)) {
-    return "N/A";
-  }
-
-  return `${value.toFixed(digits)}${suffix}`;
-}
-
-export function formatUsd(value: number) {
-  return `$${value.toFixed(value < 0.01 ? 4 : 2)}`;
 }
 
 export function estimateTokenCount(text: string) {

@@ -3,7 +3,7 @@
 import { type RefObject } from "react";
 
 import type { DebateMessage, LegendDetails, TranscriptViewState } from "../types";
-import { avatarUrlForAgent, getAgentArchetype } from "../utils";
+import { avatarUrlForAgent, ENTROPY_PROFILES, getAgentArchetype } from "../utils";
 import { DiscussionTranscript } from "./discussion-transcript";
 import styles from "./discussion-panel.module.css";
 
@@ -36,14 +36,6 @@ type DiscussionPanelProps = {
   onWipeDebate: () => void | Promise<void>;
   onDownloadTranscript: () => void | Promise<void>;
 };
-
-const ENTROPY_PROFILES = [
-  { label: "Historical Overview", value: 0 },
-  { label: "Grounded Discussion", value: 0.375 },
-  { label: "Balanced Debate", value: 0.75 },
-  { label: "Philosophical Drift", value: 1.125 },
-  { label: "Creative Synthesis", value: 1.5 },
-] as const;
 
 export function DiscussionPanel({
   topic,
@@ -241,27 +233,25 @@ export function DiscussionPanel({
           />
           {showTranscriptControls ? (
             <div className={styles.transcriptControlsBlock}>
-              <div className={styles.transcriptControls}>
-                <div className={styles.commandGrid}>
-                  <button
-                    className={`button ${styles.commandButton}`.trim()}
-                    type="button"
-                    onClick={discussionActive ? onHaltDebate : onStartDebate}
-                  >
-                    {discussionActive ? "Pause" : startButtonLabel}
-                  </button>
-                  <button className={`buttonDanger ${styles.commandButton}`.trim()} type="button" onClick={() => void onWipeDebate()} disabled={isWipingSession}>
-                    {isWipingSession ? "Wiping..." : "Wipe"}
-                  </button>
-                  <button
-                    className={`buttonGhost ${styles.commandButton}`.trim()}
-                    type="button"
-                    onClick={() => void onDownloadTranscript()}
-                    disabled={isDownloadingTranscript}
-                  >
-                    {isDownloadingTranscript ? "Preparing..." : "Export"}
-                  </button>
-                </div>
+              <div className={styles.commandGrid}>
+                <button
+                  className={`button ${styles.commandButton}`.trim()}
+                  type="button"
+                  onClick={discussionActive ? onHaltDebate : onStartDebate}
+                >
+                  {discussionActive ? "Pause" : startButtonLabel}
+                </button>
+                <button className={`buttonDanger ${styles.commandButton}`.trim()} type="button" onClick={() => void onWipeDebate()} disabled={isWipingSession}>
+                  {isWipingSession ? "Wiping..." : "Wipe"}
+                </button>
+                <button
+                  className={`buttonGhost ${styles.commandButton}`.trim()}
+                  type="button"
+                  onClick={() => void onDownloadTranscript()}
+                  disabled={isDownloadingTranscript}
+                >
+                  {isDownloadingTranscript ? "Preparing..." : "Export"}
+                </button>
               </div>
               {controlError ? <p className="statusNote">{controlError}</p> : null}
             </div>

@@ -5,15 +5,16 @@
 	--muted: #6b6560;
 	--line: #14110f;
 	--line-soft: rgba(20, 17, 15, 0.22);
-	--badge-text: #6b6560;
-	--badge-border: rgba(20, 17, 15, 0.25);
-	--badge-surface: #F4EEDA;
-	--badge-surface-speaker: #C5EDAA;
 	--accent: #FFCB00;
 	--accent-soft: #F5E880;
 	--grid-color: rgba(20, 17, 15, 0.07);
 	--signal: #0f766e;
 	--warning: #b91c1c;
+	--status-online:     #15803d;
+	--status-caution:    #b45309;
+	--accent-hover:      #E8B600;
+	--chip-add-bg:       rgba(220, 255, 200, 0.88);
+	--chip-action-glyph: #216e1b;
 	--space-2: 8px;
 	--space-3: 10px;
 	--space-4: 12px;
@@ -78,6 +79,9 @@
 	--archetype-text:          #111111;
 	--archetype-border:        #1a1a1a;
 
+	/* --font-display aliases the single IBM Plex Mono load (see layout.tsx) */
+	--font-display: var(--font-mono);
+
 	/* --- Round header (industrial divider) --- */
 	--round-header-bg:        #1C1C1C;
 	--round-header-bg-hover:  #282828;
@@ -106,11 +110,7 @@
 	--line-medium: rgba(237, 224, 196, 0.22);
 	--line-strong: rgba(237, 224, 196, 0.35);
 
-	/* Badges and chips */
-	--badge-surface: #2C2820;
-	--badge-surface-speaker: #1A3018;
-	--badge-text: #9A8A6A;
-	--badge-border: rgba(220, 180, 60, 0.22);
+
 
 	/* Surface scale */
 	--surface-0: #272318;
@@ -134,9 +134,14 @@
 	--accent: #FFE500;
 	--accent-soft: #3A3000;
 
-	/* Signal / warning */
+	/* Signal / warning / status */
 	--signal: #14B8A6;
 	--warning: #EF4444;
+	--status-online:     #22c55e;
+	--status-caution:    #f59e0b;
+	--accent-hover:      #D4BC00;
+	--chip-add-bg:       rgba(134, 239, 172, 0.10);
+	--chip-action-glyph: #4ade80;
 
 	/* Agent identity colors — archetype-aligned, lightened for dark bg */
 	/* Creators */
@@ -252,48 +257,6 @@ select {
 	text-underline-offset: 0.16em;
 }
 
-.sectionTitle {
-	margin: 0;
-	font-family: var(--font-display), sans-serif;
-	font-size: 1.8rem;
-	font-weight: 800;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	line-height: 0.95;
-}
-
-.sidebarToggle {
-	appearance: none;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	gap: var(--space-3);
-	min-height: 48px;
-	padding: 0 var(--space-5);
-	border: 3px solid var(--line);
-	background: linear-gradient(180deg, rgba(255, 250, 225, 0.98), rgba(255, 233, 151, 0.94));
-	color: var(--ink);
-	box-shadow: 5px 5px 0 var(--line);
-	cursor: pointer;
-	transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
-}
-
-.sidebarToggle:hover {
-	transform: translate(-2px, -2px);
-	box-shadow: 7px 7px 0 var(--line);
-}
-
-.sidebarToggleGlyph {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 22px;
-	font-family: var(--font-display), sans-serif;
-	font-size: 1.3rem;
-	font-weight: 700;
-	line-height: 1;
-}
-
 .workspace {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(320px, 25vw);
@@ -363,7 +326,6 @@ select {
 	line-height: 1;
 }
 
-.helper,
 .emptyState,
 .statusNote {
 	margin: 0 0 8px;
@@ -483,7 +445,7 @@ select {
 	height: 28px;
 	padding: 0;
 	border: 2px solid var(--line);
-	background: rgba(255, 255, 255, 0.82);
+	background: var(--surface-0);
 	box-shadow: 2px 2px 0 var(--line);
 	cursor: pointer;
 	transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
@@ -492,19 +454,19 @@ select {
 .draftedChipActionButton:hover {
 	transform: translate(-1px, -1px);
 	box-shadow: 3px 3px 0 var(--line);
-	background: rgba(255, 255, 255, 0.96);
+	background: var(--surface-1);
 }
 
 .draftedChipActionRemove .draftedChipActionGlyph {
-	color: #2f9410;
+	color: var(--chip-action-glyph);
 }
 
 .draftedChipActionAdd {
-	background: rgba(220, 255, 200, 0.9);
+	background: var(--chip-add-bg);
 }
 
 .draftedChipActionAdd .draftedChipActionGlyph {
-	color: #216e1b;
+	color: var(--chip-action-glyph);
 }
 
 .draftedChip[data-disabled="true"] {
@@ -556,7 +518,7 @@ select {
 }
 
 .button:hover {
-	background: #E8B600;
+	background: var(--accent-hover);
 	color: #111111;
 }
 
@@ -601,27 +563,6 @@ select {
 	font-family: var(--font-display), sans-serif;
 	font-size: 0.85rem;
 	font-weight: 700;
-}
-
-.progressTrack {
-	width: 100%;
-	height: 16px;
-	border: 2px solid var(--line);
-	background: var(--surface-1);
-	overflow: hidden;
-}
-
-.progressTrackSlim {
-	height: 12px;
-}
-
-.progressFill {
-	height: 100%;
-	background: var(--accent);
-}
-
-.progressFillSignal {
-	background: linear-gradient(90deg, var(--signal), #74d6cb);
 }
 
 .discussionPane {
@@ -690,7 +631,7 @@ select {
 	flex: 1 1 auto;
 	display: flex;
 	align-items: center;
-	color: #57534e;
+	color: var(--muted);
 	font-size: 0.82rem;
 	letter-spacing: 0.02em;
 }
@@ -758,16 +699,16 @@ select {
 }
 
 .telemetryStatusValueOnline {
-	color: #15803d;
+	color: var(--status-online);
 }
 
 .telemetryStatusValueDegraded,
 .telemetryStatusValueStandby {
-	color: #b45309;
+	color: var(--status-caution);
 }
 
 .telemetryStatusValueOffline {
-	color: #b91c1c;
+	color: var(--warning);
 }
 
 .telemetryStatusBody {
@@ -777,78 +718,9 @@ select {
 
 .telemetryNote {
 	margin: 0;
-	color: #57534e;
+	color: var(--muted);
 	font-size: 0.69rem;
 	line-height: 1.35;
-}
-
-.speakerModalRoot {
-	position: fixed;
-	inset: 0;
-	z-index: 80;
-	display: grid;
-	place-items: center;
-	padding: 20px;
-	opacity: 0;
-	pointer-events: none;
-	transition: opacity 180ms ease;
-}
-
-.speakerModalOpen {
-	opacity: 1;
-	pointer-events: auto;
-}
-
-.speakerModalScrim {
-	position: absolute;
-	inset: 0;
-	border: none;
-	background: rgba(20, 17, 15, 0.42);
-}
-
-.speakerModalPanel {
-	position: relative;
-	z-index: 1;
-	width: min(1120px, calc(100vw - 32px));
-	max-height: min(86vh, 920px);
-	overflow: auto;
-	padding: 22px;
-	border: 2px solid var(--line);
-	background: var(--panel);
-	box-shadow: none;
-	transform: translateY(14px) scale(0.98);
-	transition: transform 180ms ease;
-}
-
-.speakerModalOpen .speakerModalPanel {
-	transform: translateY(0) scale(1);
-}
-
-.speakerModalHeader,
-.speakerModalFooter {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: var(--space-6);
-}
-
-.speakerModalHeader {
-	margin-bottom: var(--space-7);
-}
-
-.speakerModalFooter {
-	margin-top: var(--space-7);
-}
-
-.speakerModalClose {
-	min-width: 48px;
-	padding: 0 var(--space-4);
-}
-
-.speakerModalGrid {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: var(--space-8) 20px;
 }
 
 @media (max-width: 767px) {
@@ -886,36 +758,18 @@ select {
 		padding-top: 0;
 	}
 
-	.sidebarToggle,
 	.button,
 	.buttonGhost,
 	.buttonDanger,
-	.topicEditorWrap,
-	.speakerModalPanel {
+	.topicEditorWrap {
 		box-shadow: 2px 2px 0 var(--line);
 	}
 
 	.button:hover,
 	.buttonGhost:hover,
-	.buttonDanger:hover,
-	.sidebarToggle:hover {
+	.buttonDanger:hover {
 		transform: none;
 		box-shadow: 2px 2px 0 var(--line);
-	}
-
-	.sectionTitle {
-		font-size: 1.35rem;
-	}
-
-	.speakerModalPanel {
-		width: calc(100vw - 20px);
-		padding: 16px;
-	}
-
-	.speakerModalHeader,
-	.speakerModalFooter {
-		align-items: flex-start;
-		flex-direction: column;
 	}
 
 	.topicEditorWrap {
@@ -923,19 +777,7 @@ select {
 		min-width: 0;
 	}
 
-	.speakerModalGrid {
-		grid-template-columns: minmax(0, 1fr);
-		gap: 14px;
-		align-items: start;
-	}
-
-	.speakerModalRoot {
-		place-items: start center;
-		padding: 12px;
-	}
-
 	.telemetryPanel {
-		--sidebar-section-gap: 18px;
 		position: static;
 		top: auto;
 		padding: 22px 16px;

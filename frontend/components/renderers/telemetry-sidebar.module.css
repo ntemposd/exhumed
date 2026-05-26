@@ -89,6 +89,7 @@
 
 .tableShellShadowed {
   border: 2px solid var(--line);
+  box-shadow: 3px 3px 0 var(--line);
 }
 
 /* ─── Table ──────────────────────────────────────────────────────────────── */

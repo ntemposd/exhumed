@@ -6,6 +6,14 @@ import type { DebateMessage } from "../types";
 import { getStyleIndex, sanitizeDebateMessageText } from "../utils";
 import styles from "./discussion-transcript.module.css";
 
+// Stable module-level constant — CSS Module class refs never change between renders.
+const BUBBLE_TONE_CLASSES = [
+  styles.bubbleTone0,  styles.bubbleTone1,  styles.bubbleTone2,  styles.bubbleTone3,
+  styles.bubbleTone4,  styles.bubbleTone5,  styles.bubbleTone6,  styles.bubbleTone7,
+  styles.bubbleTone8,  styles.bubbleTone9,  styles.bubbleTone10, styles.bubbleTone11,
+  styles.bubbleTone12, styles.bubbleTone13, styles.bubbleTone14, styles.bubbleTone15,
+];
+
 const MESSAGE_PREVIEW_LIMIT = 140;
 
 function injectSourceFootnotes(text: string, sources: string[]): React.ReactNode {
@@ -227,25 +235,6 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
     }));
   }
 
-  const bubbleToneClasses = [
-    styles.bubbleTone0,
-    styles.bubbleTone1,
-    styles.bubbleTone2,
-    styles.bubbleTone3,
-    styles.bubbleTone4,
-    styles.bubbleTone5,
-    styles.bubbleTone6,
-    styles.bubbleTone7,
-    styles.bubbleTone8,
-    styles.bubbleTone9,
-    styles.bubbleTone10,
-    styles.bubbleTone11,
-    styles.bubbleTone12,
-    styles.bubbleTone13,
-    styles.bubbleTone14,
-    styles.bubbleTone15,
-  ];
-
   const transcriptRounds = useMemo(() => messages.reduce<TranscriptRound[]>((rounds, message) => {
     const roundNumber = Math.max(1, message.round_number ?? Math.ceil(message.turn_number / normalizedRoundSize));
     const existingRound = rounds.at(-1);
@@ -391,7 +380,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                         className={[
                           styles.bubble,
                           styles.bubbleAssistant,
-                          bubbleToneClasses[bubbleToneIndex] ?? styles.bubbleTone0,
+                          BUBBLE_TONE_CLASSES[bubbleToneIndex] ?? styles.bubbleTone0,
                           message.isThinking ? styles.bubbleThinking : "",
                           message.failed ? styles.bubbleFailed : "",
                         ].filter(Boolean).join(" ")}

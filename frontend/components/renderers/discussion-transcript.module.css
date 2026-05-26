@@ -1,15 +1,10 @@
 .transcript {
   display: grid;
-  gap: 0;
-  padding: 0;
 }
 
 .roundSection {
   display: grid;
   gap: 14px;
-  padding: 0;
-  border: none;
-  background: transparent;
 }
 
 .roundSection + .roundSection {
@@ -73,26 +68,6 @@
   flex-wrap: wrap;
   flex-shrink: 0;
 }
-
-.roundSourceChip {
-  display: inline-block;
-  min-height: 22px;
-  padding: 2px 8px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface-1);
-  color: var(--ink);
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  line-height: 18px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
-  vertical-align: middle;
-}
-
 
 .roundTitle {
   margin: 0;
@@ -166,7 +141,6 @@
   max-width: 100%;
   padding: 16px 18px 16px 20px;
   border: 2px solid var(--line-soft);
-  border-radius: 0;
 }
 
 .bubbleAssistant {
@@ -427,12 +401,6 @@
 
   .roundHeader {
     padding: 8px 12px;
-  }
-
-  .roundSourceChip {
-    font-size: 0.60rem;
-    padding: 2px 6px;
-    max-width: 140px;
   }
 
   .bubble {

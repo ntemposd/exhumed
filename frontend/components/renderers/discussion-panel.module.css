@@ -1,31 +1,26 @@
 .discussionPane {
   --section-gap: 26px;
-  --main-heading-font-size: 0.72rem;
-  --main-heading-letter-spacing: 0.1em;
-  gap: 0;
   padding: 22px 18px 0 0;
 }
 
 .sectionLabel,
 .transcriptHeadingRow {
-  display: block;
   font-family: var(--font-display), sans-serif;
-  font-size: var(--main-heading-font-size);
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: var(--main-heading-letter-spacing);
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
 .sectionLabel {
+  display: block;
   user-select: none;
   margin-bottom: 6px;
 }
 
 .controlsDeck {
   display: grid;
-  gap: 0;
-  padding: 0;
 }
 
 .sectionGroup {
@@ -140,6 +135,7 @@
   font-size: 0.60rem;
   font-weight: 700;
   letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .commandGrid {
@@ -180,7 +176,6 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 0;
 }
 
 .transcriptHeadingRow {

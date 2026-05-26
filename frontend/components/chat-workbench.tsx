@@ -3,7 +3,7 @@
 // workbench surfaces.
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { AppNavbar, DiscussionPanel, TelemetryPanel } from "./renderers";
 import type { LegendDetails } from "./types";
@@ -83,6 +83,7 @@ export function ChatWorkbench() {
     downloadTranscript,
     startDebate,
     haltDebate,
+    // renewSession intentionally omitted — no UI surface for it yet
   } = debateController;
 
   useLayoutEffect(() => {
@@ -135,17 +136,24 @@ export function ChatWorkbench() {
     element.scrollTop = 0;
   }, [messages]);
 
-  const legendEntries = agents.map(getLegendDetails);
-  const selectedCouncil = effectiveSelectedAgents
-    .map((agentId) => legendEntries.find((legend) => legend.agent_id === agentId))
-    .filter((legend): legend is LegendDetails => Boolean(legend));
-  const transcriptTokenEstimate = estimateTokenCount(
-    messages.filter((message) => !message.isThinking).map((message) => message.message).join(" "),
+  const legendEntries = useMemo(() => agents.map(getLegendDetails), [agents]);
+  const selectedCouncil = useMemo(
+    () =>
+      effectiveSelectedAgents
+        .map((agentId) => legendEntries.find((legend) => legend.agent_id === agentId))
+        .filter((legend): legend is LegendDetails => Boolean(legend)),
+    [effectiveSelectedAgents, legendEntries],
   );
   const serviceRows = services?.services ?? [];
   const onlineServices = serviceRows.filter((service) => service.status?.toUpperCase() === "ONLINE").length;
-  const roleBreakdown = getRoleBreakdown(messages);
-  const sessionBurnUsd = calculateSessionBurnUsd(messages);
+  const transcriptTokenEstimate = useMemo(
+    () => estimateTokenCount(
+      messages.filter((message) => !message.isThinking).map((message) => message.message).join(" "),
+    ),
+    [messages],
+  );
+  const roleBreakdown = useMemo(() => getRoleBreakdown(messages), [messages]);
+  const sessionBurnUsd = useMemo(() => calculateSessionBurnUsd(messages), [messages]);
   const { legendCatalogState, servicesState, transcriptState } = useWorkbenchViewState({
     agents,
     agentsError,
