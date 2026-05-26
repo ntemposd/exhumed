@@ -17,12 +17,6 @@ export function TelemetryPanel({ viewModel, containerRef }: TelemetryPanelProps)
     onlineServices,
     serviceRows,
     performanceRows,
-    totalVectorHits,
-    uniqueVectorSources,
-    vectorRows,
-    displayedTotalTokens,
-    requestCount,
-    tokenTableRows,
     sessionBurnUsd,
     observedRatio,
     diversityValue,
@@ -41,12 +35,6 @@ export function TelemetryPanel({ viewModel, containerRef }: TelemetryPanelProps)
 
         <TelemetrySummarySections
           performanceRows={performanceRows}
-          totalVectorHits={totalVectorHits}
-          uniqueVectorSources={uniqueVectorSources}
-          vectorRows={vectorRows}
-          displayedTotalTokens={displayedTotalTokens}
-          requestCount={requestCount}
-          tokenTableRows={tokenTableRows}
           sessionBurnUsd={sessionBurnUsd}
           observedRatio={observedRatio}
           diversityValue={diversityValue}

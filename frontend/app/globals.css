@@ -1,26 +1,26 @@
 :root {
-	--bg: #FBF6E9;
-	--bg-wash: #EFE5C8;
-	--panel: #FFF9F0;
-	--panel-strong: #FFF9F0;
-	--box-surface: #FFF9F0;
-	--box-surface-soft: #FFF4E4;
-	--box-surface-strong: #FFEDCC;
+	--bg: #E8DCBA;
+	--bg-wash: #DDD0A4;
+	--panel: #F4EEDA;
+	--panel-strong: #EFDFC6;
+	--box-surface: #F4EEDA;
+	--box-surface-soft: #EBE1C4;
+	--box-surface-strong: #E0D4AB;
 	--ink: #14110f;
 	--muted: #6b6560;
 	--line: #14110f;
 	--line-soft: rgba(20, 17, 15, 0.22);
 	--badge-text: #6b6560;
 	--badge-border: rgba(20, 17, 15, 0.25);
-	--badge-surface: #FFF9F0;
+	--badge-surface: #F4EEDA;
 	--badge-surface-speaker: #C5EDAA;
 	--badge-surface-speaker-hover: #B2E090;
 	--badge-surface-entropy: #EAD9FF;
 	--badge-surface-entropy-strong: #D4B8F5;
 	--badge-shadow-soft: 2px 2px 0 rgba(20, 17, 15, 0.18);
 	--accent: #FFCB00;
-	--accent-soft: #FFF0A0;
-	--grid-color: rgba(20, 17, 15, 0.04);
+	--accent-soft: #F5E880;
+	--grid-color: rgba(20, 17, 15, 0.07);
 	--ui-dark: #2e3a4d;
 	--btn-dark: #1f2937;
 	--btn-dark-hover: #374151;
@@ -37,10 +37,10 @@
 	--space-8: 22px;
 
 	/* --- Surface scale --- */
-	--surface-0: #FFF9F0;
-	--surface-1: #FFF4E4;
-	--surface-2: #FDEEC8;
-	--surface-ghost: rgba(255, 249, 240, 0.7);
+	--surface-0: #F4EEDA;
+	--surface-1: #EBE1C4;
+	--surface-2: #E0D4AB;
+	--surface-ghost: rgba(244, 238, 218, 0.70);
 	--surface-error: #FDE8E6;
 
 	/* --- Border opacity scale --- */
@@ -49,12 +49,23 @@
 	--line-medium: rgba(20, 17, 15, 0.30);
 	--line-strong: rgba(20, 17, 15, 0.44);
 
-	/* --- Agent identity colors --- */
-	--tone-0: #0f766e;
-	--tone-1: #b45309;
-	--tone-2: #3730a3;
-	--tone-3: #be185d;
-	--tone-4: #15803d;
+	/* --- Agent identity colors (16 slots) --- */
+	--tone-0:  #0f766e;
+	--tone-1:  #b45309;
+	--tone-2:  #3730a3;
+	--tone-3:  #be185d;
+	--tone-4:  #15803d;
+	--tone-5:  #1d4ed8;
+	--tone-6:  #7c3aed;
+	--tone-7:  #c2410c;
+	--tone-8:  #991b1b;
+	--tone-9:  #0e7490;
+	--tone-10: #92400e;
+	--tone-11: #4d7c0f;
+	--tone-12: #86198f;
+	--tone-13: #1e40af;
+	--tone-14: #065f46;
+	--tone-15: #9a3412;
 
 	/* --- Accent variants --- */
 	--accent-icon: #8A6000;
@@ -63,24 +74,24 @@
 	/* --- Table --- */
 	--table-header-bg: var(--ink);
 	--table-header-text: #FFFFFF;
-	--table-row-bg: #FFF9F0;
-	--table-shell-bg: #FFF9F0;
+	--table-row-bg: #F4EEDA;
+	--table-shell-bg: #F4EEDA;
 
 	/* --- Cards and containers --- */
-	--card-bg: #FFF9F0;
-	--card-empty-bg: #FFF4E4;
-	--card-track-bg: #FDEEC8;
+	--card-bg: #F4EEDA;
+	--card-empty-bg: #EBE1C4;
+	--card-track-bg: #E0D4AB;
 
 	/* --- Chips --- */
-	--chip-bg: #FFF9F0;
+	--chip-bg: #F4EEDA;
 	--chip-border: rgba(20, 17, 15, 0.20);
 
 	/* --- Exact-value aliases for module refactors --- */
-	--surface-ghost-soft: rgba(255, 249, 240, 0.52);
-	--surface-ghost-muted: rgba(255, 249, 240, 0.58);
-	--surface-ghost-strong: rgba(255, 249, 240, 0.86);
+	--surface-ghost-soft: rgba(244, 238, 218, 0.52);
+	--surface-ghost-muted: rgba(244, 238, 218, 0.58);
+	--surface-ghost-strong: rgba(244, 238, 218, 0.86);
 	--line-shadow-soft: rgba(20, 17, 15, 0.14);
-	--line-faint: rgba(20, 17, 15, 0.04);
+	--line-faint: rgba(20, 17, 15, 0.07);
 	--chip-border-strong: rgba(20, 17, 15, 0.22);
 }
 
@@ -153,6 +164,24 @@
 	/* Signal / warning */
 	--signal: #14B8A6;
 	--warning: #EF4444;
+
+	/* Agent identity colors — lightened for dark backgrounds */
+	--tone-0:  #2dd4bf;
+	--tone-1:  #f59e0b;
+	--tone-2:  #818cf8;
+	--tone-3:  #f472b6;
+	--tone-4:  #4ade80;
+	--tone-5:  #60a5fa;
+	--tone-6:  #a78bfa;
+	--tone-7:  #fb923c;
+	--tone-8:  #f87171;
+	--tone-9:  #22d3ee;
+	--tone-10: #d97706;
+	--tone-11: #a3e635;
+	--tone-12: #e879f9;
+	--tone-13: #93c5fd;
+	--tone-14: #34d399;
+	--tone-15: #fb7c4a;
 
 	/* Shadow uses var(--line) which is now light - correct for dark neobrutalism */
 }
@@ -432,6 +461,61 @@ select {
 .draftedChip[data-tone="4"] {
 	background: color-mix(in srgb, var(--tone-4) 24%, var(--surface-0));
 	border-color: color-mix(in srgb, var(--tone-4) 58%, var(--line-medium));
+}
+
+.draftedChip[data-tone="5"] {
+	background: color-mix(in srgb, var(--tone-5) 24%, var(--surface-0));
+	border-color: color-mix(in srgb, var(--tone-5) 58%, var(--line-medium));
+}
+
+.draftedChip[data-tone="6"] {
+	background: color-mix(in srgb, var(--tone-6) 24%, var(--surface-0));
+	border-color: color-mix(in srgb, var(--tone-6) 58%, var(--line-medium));
+}
+
+.draftedChip[data-tone="7"] {
+	background: color-mix(in srgb, var(--tone-7) 24%, var(--surface-0));
+	border-color: color-mix(in srgb, var(--tone-7) 58%, var(--line-medium));
+}
+
+.draftedChip[data-tone="8"] {
+	background: color-mix(in srgb, var(--tone-8) 24%, var(--surface-0));
+	border-color: color-mix(in srgb, var(--tone-8) 58%, var(--line-medium));
+}
+
+.draftedChip[data-tone="9"] {
+	background: color-mix(in srgb, var(--tone-9) 24%, var(--surface-0));
+	border-color: color-mix(in srgb, var(--tone-9) 58%, var(--line-medium));
+}
+
+.draftedChip[data-tone="10"] {
+	background: color-mix(in srgb, var(--tone-10) 24%, var(--surface-0));
+	border-color: color-mix(in srgb, var(--tone-10) 58%, var(--line-medium));
+}
+
+.draftedChip[data-tone="11"] {
+	background: color-mix(in srgb, var(--tone-11) 24%, var(--surface-0));
+	border-color: color-mix(in srgb, var(--tone-11) 58%, var(--line-medium));
+}
+
+.draftedChip[data-tone="12"] {
+	background: color-mix(in srgb, var(--tone-12) 24%, var(--surface-0));
+	border-color: color-mix(in srgb, var(--tone-12) 58%, var(--line-medium));
+}
+
+.draftedChip[data-tone="13"] {
+	background: color-mix(in srgb, var(--tone-13) 24%, var(--surface-0));
+	border-color: color-mix(in srgb, var(--tone-13) 58%, var(--line-medium));
+}
+
+.draftedChip[data-tone="14"] {
+	background: color-mix(in srgb, var(--tone-14) 24%, var(--surface-0));
+	border-color: color-mix(in srgb, var(--tone-14) 58%, var(--line-medium));
+}
+
+.draftedChip[data-tone="15"] {
+	background: color-mix(in srgb, var(--tone-15) 24%, var(--surface-0));
+	border-color: color-mix(in srgb, var(--tone-15) 58%, var(--line-medium));
 }
 
 .draftedChipArchetype {

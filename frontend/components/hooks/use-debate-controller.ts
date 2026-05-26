@@ -19,6 +19,90 @@ import { clampNumber } from "../utils";
 
 const STREAM_REVEAL_CHARS_PER_FRAME = 4;
 
+// Tone palette mirrors the CSS --tone-N variables for PDF export.
+const TONE_COLORS = [
+  "#0f766e", "#b45309", "#3730a3", "#be185d", "#15803d",
+  "#1d4ed8", "#7c3aed", "#c2410c", "#991b1b", "#0e7490",
+  "#92400e", "#4d7c0f", "#86198f", "#1e40af", "#065f46", "#9a3412",
+];
+
+function agentToneColor(agentId: string): string {
+  let hash = 0;
+  for (let i = 0; i < agentId.length; i++) hash = (hash * 31 + agentId.charCodeAt(i)) >>> 0;
+  return TONE_COLORS[hash % TONE_COLORS.length] ?? TONE_COLORS[0];
+}
+
+function esc(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function buildPdfHtml(topic: string, messages: DebateMessage[], sessionId: string): string {
+  const date = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+  // Group by round number
+  const roundMap = new Map<number, DebateMessage[]>();
+  for (const msg of messages) {
+    const r = msg.round_number ?? 1;
+    if (!roundMap.has(r)) roundMap.set(r, []);
+    roundMap.get(r)!.push(msg);
+  }
+
+  const roundsHtml = [...roundMap.entries()].map(([roundNum, roundMessages]) => {
+    const turns = roundMessages.map((msg) => {
+      const color = agentToneColor(msg.agent_id);
+      return `
+        <article style="margin-bottom:12px;padding:12px 14px;border:1.5px solid rgba(20,17,15,0.22);border-left:4px solid ${color};background:#F4EEDA;page-break-inside:avoid;">
+          <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px;">
+            <span style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${color};">${esc(msg.display_name)}</span>
+            <span style="font-size:8px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#6b6560;">Turn ${msg.turn_number}</span>
+          </div>
+          <p style="margin:0;font-size:11px;line-height:1.65;color:#14110f;">${esc(msg.message)}</p>
+        </article>`;
+    }).join("");
+
+    return `
+      <section style="margin-bottom:24px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#6b6560;padding-bottom:6px;border-bottom:1px dashed rgba(20,17,15,0.28);margin-bottom:12px;">
+          Round ${String(roundNum).padStart(2, "0")} &middot; ${roundMessages.length} ${roundMessages.length === 1 ? "turn" : "turns"}
+        </div>
+        ${turns}
+      </section>`;
+  }).join("");
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Exhumed — ${esc(topic)}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'IBM Plex Mono', monospace;
+      background: #E8DCBA;
+      color: #14110f;
+      padding: 48px 52px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    @media print {
+      body { background: #E8DCBA; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+  <script>window.onload = function() { setTimeout(function() { window.print(); }, 600); };<\/script>
+</head>
+<body>
+  <header style="margin-bottom:32px;padding-bottom:14px;border-bottom:3px solid #14110f;">
+    <div style="font-size:18px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;">Exhumed</div>
+    <div style="font-size:12px;color:#6b6560;margin-top:6px;letter-spacing:0.04em;">${esc(topic)}</div>
+    <div style="font-size:9px;color:#6b6560;margin-top:4px;letter-spacing:0.1em;text-transform:uppercase;">${date} &middot; ${sessionId.slice(0, 8).toUpperCase()}</div>
+  </header>
+  ${roundsHtml}
+</body>
+</html>`;
+}
+
 // Vercel AI SDK data-stream lines have the form:  PREFIX:JSON\n
 //   0:"token"      → text chunk
 //   8:[{...}]      → message annotation (retry status)
@@ -224,44 +308,35 @@ export function useDebateController({
     });
   }
 
-  async function downloadTranscript() {
-    if (!sessionId) {
-      return;
-    }
-
+  function downloadTranscript() {
     if (!messages.some((message) => !message.isThinking)) {
       setControlError("No messages to export.");
       setStatusNote("No messages to export.");
       return;
     }
 
+    // Open window synchronously (before any async work) to avoid popup blockers.
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      setControlError("Popup blocked — allow popups and try again.");
+      setStatusNote("Popup blocked.");
+      return;
+    }
+
     setIsDownloadingTranscript(true);
     setControlError("");
-    setStatusNote("Generating transcript...");
+    setStatusNote("Preparing PDF...");
 
     try {
-      const exportTopic = topic.trim();
-      const exportUrl = exportTopic
-        ? `${backendUrl}/export-pdf/${sessionId}?topic=${encodeURIComponent(exportTopic)}`
-        : `${backendUrl}/export-pdf/${sessionId}`;
-      const response = await apiFetch(exportUrl);
-
-      if (!response.ok) {
-        throw new Error(await getResponseErrorMessage(response, "Transcript export failed"));
-      }
-
-      const pdfBlob = await response.blob();
-      const downloadUrl = window.URL.createObjectURL(pdfBlob);
-      const anchor = document.createElement("a");
-      anchor.href = downloadUrl;
-      anchor.download = `exhumed_${sessionId.slice(0, 8)}.pdf`;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.URL.revokeObjectURL(downloadUrl);
-      setStatusNote("Transcript ready.");
-    } catch (downloadError) {
-      const message = getRequestFailureMessage(downloadError, "Transcript export failed");
+      const visibleMessages = messages.filter((m) => !m.isThinking);
+      const exportTopic = topic.trim() || "Roundtable Session";
+      const html = buildPdfHtml(exportTopic, visibleMessages, sessionId);
+      printWindow.document.write(html);
+      printWindow.document.close();
+      setStatusNote("Print dialog opened.");
+    } catch (exportError) {
+      printWindow.close();
+      const message = getRequestFailureMessage(exportError, "Export failed");
       setControlError(message);
       setStatusNote(message);
     } finally {

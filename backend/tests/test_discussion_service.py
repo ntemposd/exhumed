@@ -43,7 +43,7 @@ class DiscussionServiceDebateFlowTests(unittest.IsolatedAsyncioTestCase):
             generate_response_model=lambda **kwargs: kwargs,
             streaming_response_factory=lambda *args, **kwargs: None,
             vector_telemetry_model=lambda **kwargs: kwargs,
-            logger=SimpleNamespace(info=lambda *args, **kwargs: None),
+            logger=SimpleNamespace(info=lambda *args, **kwargs: None, warning=lambda *args, **kwargs: None, error=lambda *args, **kwargs: None),
             utcnow=lambda: None,
         )
 
@@ -89,7 +89,7 @@ class DiscussionServiceDebateFlowTests(unittest.IsolatedAsyncioTestCase):
             generate_response_model=lambda **kwargs: kwargs,
             streaming_response_factory=lambda *args, **kwargs: None,
             vector_telemetry_model=lambda **kwargs: kwargs,
-            logger=SimpleNamespace(info=lambda *args, **kwargs: None),
+            logger=SimpleNamespace(info=lambda *args, **kwargs: None, warning=lambda *args, **kwargs: None, error=lambda *args, **kwargs: None),
             utcnow=lambda: None,
         )
 
@@ -102,7 +102,7 @@ class DiscussionServiceDebateFlowTests(unittest.IsolatedAsyncioTestCase):
         save_session_topic = AsyncMock()
         stream_messages = {}
 
-        async def fake_stream_llm_api(messages, agent_config, temperature_override=None, on_complete=None, on_retry=None):
+        async def fake_stream_llm_api(messages, agent_config, temperature_override=None, on_complete=None, on_retry=None, **kwargs):
             stream_messages["messages"] = messages
             if on_complete is not None:
                 await on_complete("Grounded answer.", {"duration": 1})
@@ -131,9 +131,9 @@ class DiscussionServiceDebateFlowTests(unittest.IsolatedAsyncioTestCase):
             process_turn_stream_status_model=_model_with_dump,
             process_turn_stream_final_model=_model_with_dump,
             generate_response_model=lambda **kwargs: kwargs,
-            streaming_response_factory=lambda iterator, media_type=None: iterator,
+            streaming_response_factory=lambda iterator, media_type=None, **kwargs: iterator,
             vector_telemetry_model=lambda **kwargs: kwargs,
-            logger=SimpleNamespace(info=lambda *args, **kwargs: None),
+            logger=SimpleNamespace(info=lambda *args, **kwargs: None, warning=lambda *args, **kwargs: None, error=lambda *args, **kwargs: None),
             utcnow=lambda: None,
         )
 

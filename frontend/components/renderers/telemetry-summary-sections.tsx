@@ -3,19 +3,13 @@
 import primitives from "./telemetry-primitives.module.css";
 
 import { SidebarSection } from "./sidebar-section";
-import { TelemetryTable, VectorUsageTable, type TelemetryTableRow, type VectorUsageRow } from "./telemetry-tables";
+import { TelemetryTable, type TelemetryTableRow } from "./telemetry-tables";
 
 const SESSION_COST_HELPER_TEXT = "Spend estimate based on token volume.";
 const DIVERSITY_HELPER_TEXT = "Diversity calculated as average pairwise Jaccard entropy between a response and the immediately preceding one.";
 
 type TelemetrySummarySectionsProps = {
   performanceRows: TelemetryTableRow[];
-  totalVectorHits: number;
-  uniqueVectorSources: number;
-  vectorRows: VectorUsageRow[];
-  displayedTotalTokens: number;
-  requestCount: number;
-  tokenTableRows: TelemetryTableRow[];
   sessionBurnUsd: number;
   observedRatio: number;
   diversityValue: string;
@@ -25,12 +19,6 @@ type TelemetrySummarySectionsProps = {
 
 export function TelemetrySummarySections({
   performanceRows,
-  totalVectorHits,
-  uniqueVectorSources,
-  vectorRows,
-  displayedTotalTokens,
-  requestCount,
-  tokenTableRows,
   sessionBurnUsd,
   observedRatio,
   diversityValue,
@@ -39,16 +27,6 @@ export function TelemetrySummarySections({
 }: TelemetrySummarySectionsProps) {
   return (
     <>
-      <SidebarSection title="VECTOR CALLS">
-        <div className={primitives.metricCardBare}>
-          {vectorRows.length > 0 ? <VectorUsageTable rows={vectorRows} /> : (
-            <div className={primitives.emptyState}>
-              <p className={primitives.emptyStateText}>Vector usage details  will appear here.</p>
-            </div>
-          )}
-        </div>
-      </SidebarSection>
-
       <SidebarSection title="DEBATE DIVERSITY">
         <div className={primitives.card}>
           <div className={primitives.entropyTopline}>
@@ -72,16 +50,6 @@ export function TelemetrySummarySections({
             <p className={primitives.emptyStateText}>No air-time data yet.</p>
           </div>
         )}
-      </SidebarSection>
-
-      <SidebarSection title="TOKENS USED">
-        <div className={primitives.metricCardBare}>
-          {tokenTableRows.length > 0 ? <TelemetryTable rows={tokenTableRows} variant="bordered" tableClassName="summaryTable" /> : (
-            <div className={primitives.emptyState}>
-              <p className={primitives.emptyStateText}>No request metrics yet. Each turn will be one model request.</p>
-            </div>
-          )}
-        </div>
       </SidebarSection>
 
       <SidebarSection title="SESSION COST">

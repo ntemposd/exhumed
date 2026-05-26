@@ -36,6 +36,10 @@ class FakePipeline:
         self.operations.append(("expire", key, ttl))
         return self
 
+    def ltrim(self, key, start, end):
+        self.operations.append(("ltrim", key, start, end))
+        return self
+
     def exec(self):
         for operation in self.operations:
             command = operation[0]
@@ -48,6 +52,14 @@ class FakePipeline:
             elif command == "expire":
                 _, key, ttl = operation
                 self.redis.expiry[key] = ttl
+            elif command == "ltrim":
+                _, key, start, end = operation
+                values = list(self.redis.storage.get(key, []))
+                length = len(values)
+                if length > 0:
+                    norm_start = max(length + start, 0) if start < 0 else start
+                    norm_end = (length + end) if end < 0 else min(end, length - 1)
+                    self.redis.storage[key] = values[norm_start:norm_end + 1] if norm_start <= norm_end else []
 
         self.redis.executed_pipelines.append(list(self.operations))
         return True
@@ -109,8 +121,8 @@ class DatabaseServiceHistoryTests(unittest.TestCase):
 
         pipeline_operations = service.redis.executed_pipelines
         self.assertEqual(len(pipeline_operations), 2)
-        self.assertEqual([operation[0] for operation in pipeline_operations[0]], ["rpush", "expire"])
-        self.assertEqual([operation[0] for operation in pipeline_operations[1]], ["rpush", "expire"])
+        self.assertEqual([operation[0] for operation in pipeline_operations[0]], ["rpush", "ltrim", "expire"])
+        self.assertEqual([operation[0] for operation in pipeline_operations[1]], ["rpush", "ltrim", "expire"])
         self.assertEqual(service.get_chat_history("session-1"), [first_message, second_message])
 
     def test_append_chat_message_preserves_existing_return_shape(self):

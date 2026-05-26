@@ -1,6 +1,6 @@
 .transcript {
   display: grid;
-  gap: 18px;
+  gap: 0;
   padding: 0;
 }
 
@@ -12,19 +12,25 @@
   background: transparent;
 }
 
+.roundSection + .roundSection {
+  margin-top: 32px;
+}
+
 .roundHeader {
   display: flex;
-  flex-direction: column;
-  gap: 7px;
-  padding: 0 0 12px;
-  border-bottom: 1px dashed var(--line-subtle);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface-1);
+  border: 2px solid var(--line);
 }
 
 .roundHeaderMain {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: flex-start;
+  gap: 14px;
   flex-wrap: wrap;
 }
 
@@ -62,20 +68,16 @@
   vertical-align: middle;
 }
 
-.roundControls {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: -6px;
-}
 
 .roundTitle {
   margin: 0;
   font-family: var(--font-display), sans-serif;
-  font-size: 1.35rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  line-height: 0.95;
+  letter-spacing: 0.1em;
+  line-height: 1;
   text-transform: uppercase;
+  color: var(--ink);
 }
 
 .roundMeta {
@@ -108,24 +110,25 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 0;
-  border: none;
-  border-bottom: 1px dashed var(--line-subtle);
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--line-medium);
   background: transparent;
   box-shadow: none;
   color: var(--muted);
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   font-weight: 800;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   line-height: 1;
   text-transform: uppercase;
   cursor: pointer;
-  transition: color 120ms ease, border-color 120ms ease;
+  transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
 }
 
 .roundToggleButton:hover {
   color: var(--ink);
-  border-bottom-color: var(--line);
+  border-color: var(--line);
+  background: var(--surface-2);
 }
 
 .roundTimeline {
@@ -245,6 +248,39 @@
   color: var(--tone-4);
 }
 
+.bubbleTone5 { border-left: 4px solid var(--tone-5); }
+.bubbleTone5 .bubbleName { color: var(--tone-5); }
+
+.bubbleTone6 { border-left: 4px solid var(--tone-6); }
+.bubbleTone6 .bubbleName { color: var(--tone-6); }
+
+.bubbleTone7 { border-left: 4px solid var(--tone-7); }
+.bubbleTone7 .bubbleName { color: var(--tone-7); }
+
+.bubbleTone8 { border-left: 4px solid var(--tone-8); }
+.bubbleTone8 .bubbleName { color: var(--tone-8); }
+
+.bubbleTone9 { border-left: 4px solid var(--tone-9); }
+.bubbleTone9 .bubbleName { color: var(--tone-9); }
+
+.bubbleTone10 { border-left: 4px solid var(--tone-10); }
+.bubbleTone10 .bubbleName { color: var(--tone-10); }
+
+.bubbleTone11 { border-left: 4px solid var(--tone-11); }
+.bubbleTone11 .bubbleName { color: var(--tone-11); }
+
+.bubbleTone12 { border-left: 4px solid var(--tone-12); }
+.bubbleTone12 .bubbleName { color: var(--tone-12); }
+
+.bubbleTone13 { border-left: 4px solid var(--tone-13); }
+.bubbleTone13 .bubbleName { color: var(--tone-13); }
+
+.bubbleTone14 { border-left: 4px solid var(--tone-14); }
+.bubbleTone14 .bubbleName { color: var(--tone-14); }
+
+.bubbleTone15 { border-left: 4px solid var(--tone-15); }
+.bubbleTone15 .bubbleName { color: var(--tone-15); }
+
 .bubbleHeader {
   display: flex;
   align-items: flex-start;
@@ -253,9 +289,11 @@
 }
 
 .bubbleIdentity {
-  display: grid;
-  gap: 2px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .bubbleName {
@@ -266,6 +304,16 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  line-height: 1.05;
+}
+
+.bubbleTurn {
+  flex: 0 0 auto;
+  font-size: 0.60rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
   line-height: 1.05;
 }
 
@@ -293,13 +341,19 @@
   border: none;
   padding: 0;
   background: transparent;
-  color: var(--ink);
-  font: inherit;
+  color: var(--muted);
+  font-size: 0.72rem;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   text-decoration: underline;
   text-underline-offset: 0.14em;
   cursor: pointer;
+  vertical-align: middle;
+}
+
+.bubbleInlineToggle:hover {
+  color: var(--ink);
 }
 
 .bubbleThinkingState {
@@ -341,6 +395,32 @@
   color: var(--muted);
 }
 
+.bubbleMeta {
+  padding-top: 8px;
+  margin-top: 2px;
+  border-top: 1px dashed var(--line-subtle);
+  line-height: 1.8;
+}
+
+.bubbleMetaItem {
+  display: inline;
+  font-size: 0.60rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.bubbleMetaItem::after {
+  content: " · ";
+  color: var(--line-strong);
+  letter-spacing: 0;
+}
+
+.bubbleMetaItem:last-child::after {
+  content: "";
+}
+
 .bubbleSources {
   display: flex;
   flex-wrap: wrap;
@@ -376,6 +456,14 @@
     padding: 0;
   }
 
+  .roundSection + .roundSection {
+    margin-top: 24px;
+  }
+
+  .roundHeader {
+    padding: 8px 12px;
+  }
+
   .roundSourceRow {
     gap: 4px;
   }
@@ -386,18 +474,31 @@
     max-width: 140px;
   }
 
-  .roundControls {
-    justify-content: flex-start;
-    margin-top: -2px;
-  }
-
   .turnRow {
     width: 100%;
   }
 
   .bubble {
     max-width: 100%;
-    padding: 14px 14px 14px 16px;
+    padding: 12px 12px 12px 14px;
+  }
+
+  .bubbleText {
+    font-size: 0.96rem;
+    line-height: 1.65;
+  }
+
+  .bubbleMeta {
+    padding-top: 6px;
+  }
+
+  .bubbleMetaItem {
+    font-size: 0.56rem;
+    letter-spacing: 0.08em;
+  }
+
+  .bubbleInlineToggle {
+    font-size: 0.64rem;
   }
 
   .bubbleThinkingState {

@@ -102,6 +102,7 @@ class ObservabilityServiceTests(unittest.IsolatedAsyncioTestCase):
                 llm_api_base_url="https://example-llm.test",
                 llm_api_key="test-key",
                 logger=self.logger,
+                prompt_capture_backend="file",
                 prompt_capture_log_path=capture_path,
                 http_client_factory=lambda **kwargs: FakeHttpClient(),
                 perf_counter=lambda: 10.0,

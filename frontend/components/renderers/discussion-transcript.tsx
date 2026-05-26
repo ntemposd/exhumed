@@ -233,6 +233,17 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
     styles.bubbleTone2,
     styles.bubbleTone3,
     styles.bubbleTone4,
+    styles.bubbleTone5,
+    styles.bubbleTone6,
+    styles.bubbleTone7,
+    styles.bubbleTone8,
+    styles.bubbleTone9,
+    styles.bubbleTone10,
+    styles.bubbleTone11,
+    styles.bubbleTone12,
+    styles.bubbleTone13,
+    styles.bubbleTone14,
+    styles.bubbleTone15,
   ];
 
   const transcriptRounds = messages.reduce<TranscriptRound[]>((rounds, message) => {
@@ -328,12 +339,9 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                 </div>
               </div>
 
-            </div>
-
-            <div className={styles.roundControls}>
               <button type="button" className={styles.roundToggleButton} onClick={() => toggleRound(round.roundNumber)}>
-                <span className={styles.roundToggle} aria-hidden="true">{isCollapsed ? "+" : "-"}</span>
-                <span>{isCollapsed ? "Expand round" : "Collapse round"}</span>
+                <span className={styles.roundToggle} aria-hidden="true">{isCollapsed ? "+" : "−"}</span>
+                <span>{isCollapsed ? "Expand" : "Collapse"}</span>
               </button>
             </div>
 
@@ -356,6 +364,12 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                   const showRetrySkull = message.isThinking && !visibleMessage && isThrottledThinkingStatus(message.thinkingStatus);
                   const messageSources = message.telemetry?.vector?.sources ?? [];
                   const showSources = messageSources.length > 0 && (isExpanded || !shouldTruncate);
+                  const showBubbleMeta = !message.isThinking && (
+                    typeof message.telemetry?.entropy === "number" ||
+                    typeof message.telemetry?.vector?.top_score === "number" ||
+                    typeof message.execution_metrics?.total_tokens === "number" ||
+                    typeof message.telemetry?.latency_ms === "number"
+                  );
 
                   return (
                     <div key={message.id} className={styles.turnRow}>
@@ -374,6 +388,9 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                         <div className={styles.bubbleHeader}>
                           <div className={styles.bubbleIdentity}>
                             <p className={styles.bubbleName}>{message.display_name}</p>
+                            {message.turn_number ? (
+                              <span className={styles.bubbleTurn}>Turn {message.turn_number}</span>
+                            ) : null}
                           </div>
                         </div>
                         {thinkingStatus ? <p className={styles.bubbleStatus}>{thinkingStatus.toUpperCase()}</p> : null}
@@ -403,6 +420,45 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                             ))}
                           </div>
                         )}
+                        {showBubbleMeta && (
+                          <div className={styles.bubbleMeta}>
+                            {typeof message.telemetry?.entropy === "number" && (
+                              <span className={styles.bubbleMetaItem}>
+                                {Math.round(message.telemetry.entropy * 100)}% div
+                              </span>
+                            )}
+                            {typeof message.telemetry?.vector?.match_count === "number" && (
+                              <span className={styles.bubbleMetaItem}>
+                                {message.telemetry.vector.match_count} hits
+                              </span>
+                            )}
+                            {typeof message.telemetry?.vector?.context_chars === "number" && (
+                              <span className={styles.bubbleMetaItem}>
+                                {message.telemetry.vector.context_chars.toLocaleString()} chars
+                              </span>
+                            )}
+                            {typeof message.telemetry?.vector?.top_score === "number" && (
+                              <span className={styles.bubbleMetaItem}>
+                                {message.telemetry.vector.top_score.toFixed(2)} top
+                              </span>
+                            )}
+                            {typeof message.execution_metrics?.prompt_tokens === "number" && (
+                              <span className={styles.bubbleMetaItem}>
+                                {message.execution_metrics.prompt_tokens.toLocaleString()}q
+                              </span>
+                            )}
+                            {typeof message.execution_metrics?.completion_tokens === "number" && (
+                              <span className={styles.bubbleMetaItem}>
+                                {message.execution_metrics.completion_tokens.toLocaleString()}a
+                              </span>
+                            )}
+                            {typeof message.telemetry?.latency_ms === "number" && (
+                              <span className={styles.bubbleMetaItem}>
+                                {(message.telemetry.latency_ms / 1000).toFixed(1)}s
+                              </span>
+                            )}
+                          </div>
+                        )}
                         {showRetrySkull ? (
                           <div className={styles.bubbleThinkingState} aria-hidden="true">
                             <img className={styles.bubbleThinkingIcon} src="/waiting-skull.svg" alt="" />
@@ -414,6 +470,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                 })}
               </div>
             ) : null}
+
           </section>
         );
       })}

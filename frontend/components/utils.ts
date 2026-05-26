@@ -41,9 +41,9 @@ export function avatarUrlForAgent(agentId: string) {
 
 export function getStyleIndex(agentId: string) {
   try {
-    return Math.abs(Number.parseInt(String(agentId).split("_").at(-1) ?? "0", 10)) % 5;
+    return Math.abs(Number.parseInt(String(agentId).split("_").at(-1) ?? "0", 10)) % 16;
   } catch {
-    return Math.abs(agentId.split("").reduce((sum, character) => sum + character.charCodeAt(0), 0)) % 5;
+    return Math.abs(agentId.split("").reduce((sum, character) => sum + character.charCodeAt(0), 0)) % 16;
   }
 }
 

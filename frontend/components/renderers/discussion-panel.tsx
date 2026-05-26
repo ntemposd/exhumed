@@ -88,7 +88,6 @@ export function DiscussionPanel({
           <section className={styles.sectionGroup}>
             <div className={styles.topicSectionLayout}>
               <div className={styles.topicSection}>
-                <span className={styles.sectionLabel}>Theme</span>
                 <div className="topicEditorWrap">
                   {hasHydratedTopic ? (
                     <textarea
@@ -111,7 +110,6 @@ export function DiscussionPanel({
                     </span>
                   )}
                 </div>
-                <span className={styles.sectionLabel}>Type</span>
                 <div className={styles.entropyOptions} role="radiogroup" aria-label="Logic entropy selector">
                   {ENTROPY_PROFILES.map((profile) => {
                     const isSelected = profile.value === selectedEntropyValue.value;

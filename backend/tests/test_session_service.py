@@ -95,7 +95,7 @@ class SessionServicePromptTests(unittest.TestCase):
             agent_context_matches=None,
         )
 
-        self.assertIn("Recent discussion context (latest turns):", prompt)
+        self.assertIn("Recent discussion context (for awareness only — do NOT echo or mirror):", prompt)
         self.assertIn("Turn 2, Plato: Justice orders the soul.", prompt)
         self.assertNotIn("Speak as Socrates.", prompt)
 
