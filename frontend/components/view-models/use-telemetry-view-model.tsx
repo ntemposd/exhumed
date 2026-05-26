@@ -142,7 +142,7 @@ export function useTelemetryViewModel({
       Value: averagePromptMs !== null ? `${Math.round(averagePromptMs)}ms` : "N/A",
     },
     {
-      Average: "TTF",
+      Average: "TTFT",
       Value: averageTtftMs !== null ? `${Math.round(averageTtftMs)}ms` : "N/A",
     },
     {

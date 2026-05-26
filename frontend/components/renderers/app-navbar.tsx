@@ -12,19 +12,18 @@ export function AppNavbar() {
         <img className={styles.logo} src={logoUrl()} alt="Exhumed logo" />
         <div className={styles.brandCopy}>
           <span className={styles.brandTitle}>EXHUMED</span>
-          <span className={styles.brandSubtitle}>Historical Logic Engine</span>
+          <span className={styles.brandSubtitle}>Historical Convo Engine</span>
         </div>
       </div>
       <div className={styles.navbarActions}>
-        <span className={styles.betaBadge}>Beta</span>
+        <span className={styles.betaBadge}>v0</span>
         <button
           type="button"
-          className="button"
+          className={styles.themeToggle}
           onClick={toggleTheme}
           aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-          style={{ minHeight: "32px", padding: "0 12px", fontSize: "0.72rem", letterSpacing: "0.08em" }}
         >
-          {isDark ? "◑ LIGHT" : "◐ DARK"}
+          {isDark ? "☀" : "🌙"}
         </button>
       </div>
     </header>

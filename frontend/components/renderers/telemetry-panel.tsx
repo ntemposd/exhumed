@@ -33,9 +33,11 @@ export function TelemetryPanel({ viewModel, containerRef }: TelemetryPanelProps)
   return (
     <aside className="telemetryColumn" ref={containerRef}>
       <div className="panel telemetryPanel">
-        <div className="telemetryHero">
-          <h2 className="sectionTitle columnTitle telemetryHeroTitle">TELEMETRY</h2>
-        </div>
+        <TelemetryServiceStatus
+          servicesState={servicesState}
+          onlineServices={onlineServices}
+          serviceRows={serviceRows}
+        />
 
         <TelemetrySummarySections
           performanceRows={performanceRows}
@@ -50,12 +52,6 @@ export function TelemetryPanel({ viewModel, containerRef }: TelemetryPanelProps)
           diversityValue={diversityValue}
           diversityLabel={diversityLabel}
           vocalShareRows={vocalShareRows}
-        />
-
-        <TelemetryServiceStatus
-          servicesState={servicesState}
-          onlineServices={onlineServices}
-          serviceRows={serviceRows}
         />
       </div>
     </aside>

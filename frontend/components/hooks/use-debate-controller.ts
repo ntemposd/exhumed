@@ -3,6 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 
 import { backendUrl } from "@/lib/config";
+
+const ENTROPY_PROFILES = [
+  { label: "Historical Overview", value: 0 },
+  { label: "Grounded Discussion", value: 0.375 },
+  { label: "Balanced Debate", value: 0.75 },
+  { label: "Philosophical Drift", value: 1.125 },
+  { label: "Creative Synthesis", value: 1.5 },
+] as const;
 import { apiFetch, getRequestFailureMessage, getResponseErrorMessage } from "@/lib/http";
 import type { Agent, ProcessTurnStreamEvent, ProcessTurnStreamFinal, ProcessTurnStreamStatus } from "@/lib/types";
 
@@ -84,7 +92,7 @@ export function useDebateController({
   const streamRevealFrameRef = useRef<number | null>(null);
 
   const hasMessages = messages.some((message) => !message.isThinking);
-  const startButtonLabel = isDebatePaused ? "⏵ Resume Debate" : hasMessages ? "🏁 Advance" : "🏁 Start";
+  const startButtonLabel = isDebatePaused ? "Resume" : hasMessages ? "Advance" : "Start Convo";
 
   function clearStreamRevealQueue(messageId?: string) {
     // The streaming renderer buffers partial chunks and reveals them on the
@@ -401,6 +409,7 @@ export function useDebateController({
             topic: topic.trim(),
             agent_id: currentAgentId,
             temperature: targetEntropy,
+            entropy_profile: ENTROPY_PROFILES.find((p) => p.value === targetEntropy)?.label ?? "Balanced Debate",
             turn_number: currentTurnNumber,
           }),
         });
@@ -450,6 +459,9 @@ export function useDebateController({
             }
 
             if (event.type === "status") {
+              if (event.stage === "error") {
+                throw new Error(event.message || "Turn execution failed");
+              }
               setStatusNote(event.message);
               setMessages((currentMessages) =>
                 currentMessages.map((message) =>

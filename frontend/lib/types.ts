@@ -73,10 +73,10 @@ export type ProcessTurnStreamChunk = {
 
 export type ProcessTurnStreamStatus = {
   type: "status";
-  stage: "retrying";
+  stage: "retrying" | "error";
   message: string;
-  retry_after_seconds: number;
-  attempt_number: number;
+  retry_after_seconds?: number | null;
+  attempt_number?: number | null;
 };
 
 export type ProcessTurnStreamFinal = {

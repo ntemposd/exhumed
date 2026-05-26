@@ -292,6 +292,7 @@ class DiscussionService:
                         ],
                         agent_config,
                         temperature_override=request.temperature,
+                        entropy_profile=getattr(request, "entropy_profile", None),
                         on_complete=handle_stream_completion,
                         on_retry=handle_stream_retry,
                     ):
@@ -312,6 +313,24 @@ class DiscussionService:
                             completion_tokens=completion_tokens,
                         )
                     )
+                except Exception as exc:
+                    self._logger.error(
+                        "Stream producer failed: session=%s agent=%s error=%s",
+                        getattr(request, "session_id", "unknown"),
+                        getattr(request, "agent_id", "unknown"),
+                        exc,
+                    )
+                    error_detail = str(getattr(exc, "detail", None) or exc)
+                    status_model = self._process_turn_stream_status_model(
+                        type="status",
+                        stage="error",
+                        message=error_detail,
+                        retry_after_seconds=None,
+                        attempt_number=None,
+                    )
+                    annotation = json.loads(status_model.model_dump_json())
+                    await event_queue.put(self._ai_annotation_part(annotation))
+                    await event_queue.put(self._ai_finish_part(finish_reason="error"))
                 finally:
                     await event_queue.put(None)
 
@@ -431,6 +450,7 @@ class DiscussionService:
                 llm_messages,
                 agent_config,
                 temperature_override=request.temperature,
+                entropy_profile=getattr(request, "entropy_profile", None),
                 on_complete=handle_stream_completion,
             ):
                 if chunk:

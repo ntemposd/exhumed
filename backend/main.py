@@ -105,6 +105,7 @@ class ProcessTurnRequest(BaseModel):
     topic: str = Field(..., min_length=1, max_length=255, description="Discussion topic")
     agent_id: str = Field(..., description="Agent to process turn for")
     temperature: Optional[float] = Field(default=None, ge=0.0, le=1.5, description="Optional runtime temperature override from the UI")
+    entropy_profile: Optional[str] = Field(default=None, description="Named entropy profile selected by the user (e.g. 'Balanced Debate')")
     turn_number: Optional[int] = Field(default=None, ge=1, description="Turn number if already known")
 
 
@@ -126,10 +127,10 @@ class ProcessTurnStreamChunk(BaseModel):
 
 class ProcessTurnStreamStatus(BaseModel):
     type: Literal["status"]
-    stage: Literal["retrying"]
+    stage: Literal["retrying", "error"]
     message: str
-    retry_after_seconds: float
-    attempt_number: int
+    retry_after_seconds: Optional[float] = None
+    attempt_number: Optional[int] = None
 
 
 class ProcessTurnStreamFinal(BaseModel):

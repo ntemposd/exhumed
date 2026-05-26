@@ -1,13 +1,13 @@
 .transcript {
   display: grid;
-  gap: 20px;
+  gap: 18px;
   padding: 0;
 }
 
 .roundSection {
   display: grid;
   gap: 14px;
-  padding: 16px 14px 18px;
+  padding: 0;
   border: none;
   background: transparent;
 }
@@ -15,52 +15,25 @@
 .roundHeader {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 7px;
   padding: 0 0 12px;
-  border-bottom: 2px solid var(--line-divider);
+  border-bottom: 1px dashed var(--line-subtle);
 }
 
 .roundHeaderMain {
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  justify-content: space-between;
   gap: 12px;
-}
-
-.roundIdBlock {
-  flex-shrink: 0;
-}
-
-.roundSpeakerInfo {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-}
-
-.roundAvatarRow {
-  display: flex;
-  align-items: center;
-  gap: 4px;
   flex-wrap: wrap;
-}
-
-.roundAvatar {
-  width: 28px;
-  height: 28px;
-  border: 2px solid var(--line-medium);
-  border-radius: 999px;
-  object-fit: cover;
-  background: var(--surface-0);
 }
 
 .roundMetaRow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
   flex-wrap: wrap;
   flex-shrink: 0;
-  margin-left: auto;
 }
 
 .roundSourceRow {
@@ -74,9 +47,9 @@
   display: inline-block;
   min-height: 22px;
   padding: 2px 8px;
-  border: 1px solid var(--line-medium);
-  background: var(--surface-ghost);
-  color: var(--muted);
+  border: 1px solid var(--line-strong);
+  background: var(--surface-1);
+  color: var(--ink);
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -95,55 +68,29 @@
   margin-top: -6px;
 }
 
-.roundKicker {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.66rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
 .roundTitle {
-  margin: 4px 0 0;
+  margin: 0;
   font-family: var(--font-display), sans-serif;
-  font-size: 1.6rem;
+  font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   line-height: 0.95;
+  text-transform: uppercase;
 }
 
 .roundMeta {
   margin: 0;
-  color: var(--ink);
+  color: var(--muted);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
 
-.roundSpeakerSummary {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  text-align: left;
-}
-
-.roundTelemetryBadge {
-  display: inline-flex;
-  align-items: center;
-  min-height: 20px;
+.roundMeta + .roundMeta::before {
+  content: "·";
   padding: 0 8px;
-  border: 2px solid var(--line-strong);
-  background: var(--surface-ghost);
-  color: var(--ink);
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  color: var(--line-strong);
 }
 
 .roundToggle {
@@ -187,22 +134,7 @@
 }
 
 .turnRow {
-  display: grid;
-  grid-template-columns: 54px minmax(0, 1fr);
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.turnRail {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-}
-
-.turnInfoRow {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
+  display: block;
   width: 100%;
 }
 
@@ -220,13 +152,6 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-align: center;
-}
-
-.turnConnector {
-  width: 2px;
-  min-height: 100%;
-  align-self: stretch;
-  background: linear-gradient(180deg, var(--line-soft), var(--line-faint));
 }
 
 .emptyState {
@@ -327,21 +252,6 @@
   gap: 10px;
 }
 
-.avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  flex: 0 0 48px;
-  overflow: hidden;
-  border: 2px solid var(--line-medium);
-  border-radius: 999px;
-  background: var(--surface-0);
-  font-weight: 700;
-  object-fit: cover;
-}
-
 .bubbleIdentity {
   display: grid;
   gap: 2px;
@@ -423,6 +333,39 @@
   }
 }
 
+.footnoteMarker {
+  font-size: 0.65em;
+  font-weight: 800;
+  vertical-align: super;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+
+.bubbleSources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 8px;
+  margin-top: 4px;
+  border-top: 1px dashed var(--line-subtle);
+}
+
+.bubbleSourceChip {
+  display: inline-block;
+  font-size: 0.60rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 2px 8px;
+  border: 1px solid var(--line-medium);
+  background: var(--surface-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
 
 @media (max-width: 767px) {
   .transcript {
@@ -430,12 +373,7 @@
   }
 
   .roundSection {
-    padding: 14px 12px 16px;
-  }
-
-  /* On mobile, hide the long dash-separated speaker text — avatars alone are enough */
-  .roundSpeakerSummary {
-    display: none;
+    padding: 0;
   }
 
   .roundSourceRow {
@@ -454,34 +392,12 @@
   }
 
   .turnRow {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
-  }
-
-  .turnRail {
-    justify-items: stretch;
-  }
-
-  .turnInfoRow {
-    grid-template-columns: 40px auto;
-    justify-content: flex-start;
-    justify-items: start;
-    align-items: center;
-  }
-
-  .turnConnector {
-    display: none;
+    width: 100%;
   }
 
   .bubble {
     max-width: 100%;
     padding: 14px 14px 14px 16px;
-  }
-
-  .avatar {
-    width: 40px;
-    height: 40px;
-    flex-basis: 40px;
   }
 
   .bubbleThinkingState {

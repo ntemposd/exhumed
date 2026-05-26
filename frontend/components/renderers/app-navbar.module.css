@@ -5,10 +5,10 @@
   gap: 12px;
   width: 100%;
   padding: 20px 28px 18px;
-  border-bottom: 2px solid rgba(20, 17, 15, 0.12);
+  border-bottom: 2px solid var(--line-divider);
   background:
-    radial-gradient(circle at top left, rgba(227, 177, 0, 0.15), transparent 28%),
-    linear-gradient(180deg, rgba(255, 249, 240, 0.98), rgba(246, 235, 214, 0.94));
+    radial-gradient(circle at top left, rgba(227, 177, 0, 0.12), transparent 28%),
+    linear-gradient(180deg, var(--surface-0) 0%, var(--surface-1) 100%);
 }
 
 .brandMark {
@@ -36,6 +36,7 @@
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  color: var(--ink);
 }
 
 .brandSubtitle {
@@ -59,6 +60,26 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+.themeToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.themeToggle:hover {
+  background: var(--surface-1);
 }
 
 @media (max-width: 767px) {

@@ -1,9 +1,9 @@
 // DiscussionPanel frames the transcript stage and now owns the primary debate
 // controls so the main column is the single operator surface.
-import { useEffect, useRef, type RefObject } from "react";
+import { type RefObject } from "react";
 
 import type { DebateMessage, LegendDetails, TranscriptViewState } from "../types";
-import { avatarUrlForAgent } from "../utils";
+import { avatarUrlForAgent, getStyleIndex } from "../utils";
 import { DiscussionTranscript } from "./discussion-transcript";
 import styles from "./discussion-panel.module.css";
 
@@ -37,15 +37,13 @@ type DiscussionPanelProps = {
   onDownloadTranscript: () => void | Promise<void>;
 };
 
-const ENTROPY_OPTIONS = [0, 0.375, 0.75, 1.125, 1.5];
-
-function formatEntropyValue(value: number) {
-  if (value === 0 || value === 1.5) {
-    return value.toFixed(value === 0 ? 0 : 1);
-  }
-
-  return value.toFixed(3).replace(/0+$/, "").replace(/\.$/, "");
-}
+const ENTROPY_PROFILES = [
+  { label: "Historical Overview", value: 0 },
+  { label: "Grounded Discussion", value: 0.375 },
+  { label: "Balanced Debate", value: 0.75 },
+  { label: "Philosophical Drift", value: 1.125 },
+  { label: "Creative Synthesis", value: 1.5 },
+] as const;
 
 export function DiscussionPanel({
   topic,
@@ -75,74 +73,66 @@ export function DiscussionPanel({
   onWipeDebate,
   onDownloadTranscript,
 }: DiscussionPanelProps) {
-  const entropyTooltipRef = useRef<HTMLDetailsElement | null>(null);
-  const selectedEntropyValue = ENTROPY_OPTIONS.reduce((closestValue, option) => {
-    const currentDistance = Math.abs(option - targetEntropy);
-    const closestDistance = Math.abs(closestValue - targetEntropy);
-    return currentDistance < closestDistance ? option : closestValue;
-  }, ENTROPY_OPTIONS[0]);
+  const selectedEntropyValue = ENTROPY_PROFILES.reduce((closest, profile) => {
+    return Math.abs(profile.value - targetEntropy) < Math.abs(closest.value - targetEntropy) ? profile : closest;
+  }, ENTROPY_PROFILES[0]);
   const hasTranscriptHistory = messages.some((message) => !message.isThinking);
   const showTranscriptControls = discussionActive || hasTranscriptHistory;
   const selectedAgentIds = new Set(selectedCouncil.map((legend) => legend.agent_id));
   const availableCouncil = legendEntries.filter((legend) => !selectedAgentIds.has(legend.agent_id));
 
-  useEffect(() => {
-    function handlePointerDown(event: PointerEvent) {
-      const tooltipElement = entropyTooltipRef.current;
-      if (!tooltipElement?.open) {
-        return;
-      }
-
-      if (event.target instanceof Node && !tooltipElement.contains(event.target)) {
-        tooltipElement.open = false;
-      }
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && entropyTooltipRef.current?.open) {
-        entropyTooltipRef.current.open = false;
-      }
-    }
-
-    window.addEventListener("pointerdown", handlePointerDown);
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("pointerdown", handlePointerDown);
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
   return (
     <section className="chatColumn">
       <div className={`discussionPane ${styles.discussionPane}`.trim()}>
-        <header className={styles.header}>
-          <div className={styles.titleRow}>
-            <h2 className={`sectionTitle columnTitle ${styles.title}`.trim()}>DEBATE TOPIC</h2>
-          </div>
-        </header>
-
         <div className={styles.controlsDeck}>
           <section className={styles.sectionGroup}>
             <div className={styles.topicSectionLayout}>
               <div className={styles.topicSection}>
-                {hasHydratedTopic ? (
-                  <textarea
-                    ref={topicEditorRef}
-                    className="topicEditor"
-                    value={topic}
-                    rows={1}
-                    onChange={(event) => onTopicChange(event.target.value)}
-                    placeholder="Set the frame for the debate"
-                    disabled={discussionActive}
-                  />
-                ) : (
-                  <div className="topicEditor topicEditorLoading" aria-live="polite">
-                    Loading saved topic...
-                  </div>
-                )}
+                <span className={styles.sectionLabel}>Theme</span>
+                <div className="topicEditorWrap">
+                  {hasHydratedTopic ? (
+                    <textarea
+                      ref={topicEditorRef}
+                      className="topicEditorField"
+                      value={topic}
+                      rows={1}
+                      onChange={(event) => onTopicChange(event.target.value)}
+                      onInput={(event) => {
+                        const el = event.currentTarget;
+                        el.style.height = "auto";
+                        el.style.height = `${el.scrollHeight}px`;
+                      }}
+                      placeholder="The future of AI in society"
+                      disabled={discussionActive}
+                    />
+                  ) : (
+                    <span className="topicEditorLoading" aria-live="polite">
+                      Loading saved topic...
+                    </span>
+                  )}
+                </div>
+                <span className={styles.sectionLabel}>Type</span>
+                <div className={styles.entropyOptions} role="radiogroup" aria-label="Logic entropy selector">
+                  {ENTROPY_PROFILES.map((profile) => {
+                    const isSelected = profile.value === selectedEntropyValue.value;
+
+                    return (
+                      <button
+                        key={profile.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={isSelected}
+                        className={`${styles.entropyOption} ${isSelected ? styles.entropyOptionActive : ""}`.trim()}
+                        onClick={() => onTargetEntropyChange(profile.value)}
+                        disabled={discussionActive}
+                      >
+                        <span className={styles.entropyOptionValue}>{profile.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
                 {!showTranscriptControls && (
-                  <button className={`button ${styles.commandButton}`.trim()} type="button" onClick={onStartDebate}>
+                  <button className={`button ${styles.commandButton} ${styles.startConvoButton}`.trim()} type="button" onClick={onStartDebate}>
                     {startButtonLabel}
                   </button>
                 )}
@@ -152,26 +142,25 @@ export function DiscussionPanel({
           </section>
 
           <section className={`${styles.sectionGroup} ${styles.dividedSection}`.trim()}>
-            <div className={`${styles.sectionHeading} ${styles.councilHeading}`.trim()}>
-              <span className={styles.councilHeadingLabel}>COUNCIL</span>
-              <span className={styles.councilCountInline}>{selectedCouncil.length} Speakers</span>
-            </div>
+            <span className={styles.sectionLabel}>Participants</span>
             <div className={`draftedCouncil ${styles.councilChips}`.trim()}>
               {selectedCouncil.map((legend) => (
                 <div
                   key={legend.agent_id}
                   className="draftedChip"
+                  data-tone={getStyleIndex(legend.agent_id)}
                   data-disabled={discussionActive ? "true" : "false"}
                 >
                   <div className="draftedChipMain" title={legend.display_name}>
-                    <span className="draftedChipAvatarWrap">
-                      <img
-                        className="draftedChipAvatar"
-                        src={avatarUrlForAgent(legend.agent_id)}
-                        alt=""
-                      />
+                    <img
+                      className="draftedChipAvatar"
+                      src={avatarUrlForAgent(legend.agent_id)}
+                      alt=""
+                    />
+                    <span className="draftedChipText">
+                      <span className="draftedChipLabel">{legend.display_name}</span>
+                      <span className="draftedChipArchetype">{legend.archetype}</span>
                     </span>
-                    <span className="draftedChipLabel">{legend.display_name}</span>
                   </div>
                   {isCouncilEditing ? (
                     <button
@@ -199,16 +188,22 @@ export function DiscussionPanel({
               </button>
 
               {isCouncilEditing ? availableCouncil.map((legend) => (
-                <div key={legend.agent_id} className="draftedChip draftedChipAvailable" data-disabled={discussionActive ? "true" : "false"}>
+                <div
+                  key={legend.agent_id}
+                  className="draftedChip draftedChipAvailable"
+                  data-tone={getStyleIndex(legend.agent_id)}
+                  data-disabled={discussionActive ? "true" : "false"}
+                >
                   <div className="draftedChipMain" title={legend.display_name}>
-                    <span className="draftedChipAvatarWrap">
-                      <img
-                        className="draftedChipAvatar"
-                        src={avatarUrlForAgent(legend.agent_id)}
-                        alt=""
-                      />
+                    <img
+                      className="draftedChipAvatar"
+                      src={avatarUrlForAgent(legend.agent_id)}
+                      alt=""
+                    />
+                    <span className="draftedChipText">
+                      <span className="draftedChipLabel">{legend.display_name}</span>
+                      <span className="draftedChipArchetype">{legend.archetype}</span>
                     </span>
-                    <span className="draftedChipLabel">{legend.display_name}</span>
                   </div>
                   <button
                     type="button"
@@ -224,47 +219,12 @@ export function DiscussionPanel({
               )) : null}
             </div>
           </section>
-
-          <section className={`${styles.sectionGroup} ${styles.dividedSection}`.trim()}>
-            <div className={`${styles.sectionHeading} ${styles.entropyHeadingRow}`.trim()}>
-              <span>LOGIC ENTROPY</span>
-              <details className={styles.tooltipDetails} ref={entropyTooltipRef}>
-                <summary className={styles.tooltipButton} aria-label="What is logic entropy?">
-                  ?
-                </summary>
-                <div className={styles.tooltipCard} role="note">
-                  Adjust between rigid logic (0) and creative unpredictability (1.5).
-                </div>
-              </details>
-            </div>
-            <div className={styles.entropyPanel}>
-              <div className={styles.entropyOptions} role="radiogroup" aria-label="Logic entropy selector">
-                {ENTROPY_OPTIONS.map((option) => {
-                  const isSelected = option === selectedEntropyValue;
-
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      role="radio"
-                      aria-checked={isSelected}
-                      className={`${styles.entropyOption} ${isSelected ? styles.entropyOptionActive : ""}`.trim()}
-                      onClick={() => onTargetEntropyChange(option)}
-                      disabled={discussionActive}
-                    >
-                      <span className={styles.entropyOptionValue}>{formatEntropyValue(option)}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
         </div>
 
         <div className={`${styles.transcriptShell} ${styles.dividedSection}`.trim()}>
           <div className={styles.transcriptHeading}>
-            <div className={`${styles.sectionHeading} ${styles.transcriptHeadingRow}`.trim()}>
-              <span>LIVE TRANSCRIPT</span>
+            <div className={styles.transcriptHeadingRow}>
+              <span>Live Transcript</span>
               <span className={styles.status}>[{transcriptState.statusLabel.toUpperCase()}]</span>
             </div>
           </div>
@@ -285,7 +245,7 @@ export function DiscussionPanel({
                     type="button"
                     onClick={discussionActive ? onHaltDebate : onStartDebate}
                   >
-                    {discussionActive ? "⏸ Pause" : startButtonLabel}
+                    {discussionActive ? "Pause" : startButtonLabel}
                   </button>
                   <button className={`buttonDanger ${styles.commandButton}`.trim()} type="button" onClick={() => void onWipeDebate()} disabled={isWipingSession}>
                     {isWipingSession ? "Wiping..." : "Wipe"}
@@ -299,9 +259,6 @@ export function DiscussionPanel({
                     {isDownloadingTranscript ? "Preparing..." : "Export"}
                   </button>
                 </div>
-              </div>
-              <div className={styles.commandFooter}>
-                <div className={styles.commandMetaActions} />
               </div>
               {controlError ? <p className="statusNote">{controlError}</p> : null}
             </div>

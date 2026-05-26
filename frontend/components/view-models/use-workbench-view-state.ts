@@ -129,7 +129,7 @@ export function useWorkbenchViewState({
       return {
         phase: "idle",
         statusLabel: statusNote,
-        emptyMessage: "Draft the council, set the topic, and start the debate. Each selected legend will answer in sequence.",
+        emptyMessage: "Draft the council, set the theme, and start a convo.",
       };
     }
 

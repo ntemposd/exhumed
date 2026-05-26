@@ -39,17 +39,11 @@ export function TelemetrySummarySections({
 }: TelemetrySummarySectionsProps) {
   return (
     <>
-      <SidebarSection>
+      <SidebarSection title="VECTOR CALLS">
         <div className={primitives.metricCardBare}>
-          <div className={primitives.tokenHeader}>
-            <div className={primitives.topline}>
-              <div className={primitives.metricHeading}>{totalVectorHits.toLocaleString()} Vector {totalVectorHits === 1 ? "Call" : "Calls"}</div>
-              <span className={primitives.badge}>{uniqueVectorSources} {uniqueVectorSources === 1 ? "Source" : "Sources"}</span>
-            </div>
-          </div>
           {vectorRows.length > 0 ? <VectorUsageTable rows={vectorRows} /> : (
             <div className={primitives.emptyState}>
-              <p className={primitives.emptyStateText}>Vector usage details, and historical sources will appear here.</p>
+              <p className={primitives.emptyStateText}>Vector usage details  will appear here.</p>
             </div>
           )}
         </div>
@@ -80,14 +74,8 @@ export function TelemetrySummarySections({
         )}
       </SidebarSection>
 
-      <SidebarSection>
+      <SidebarSection title="TOKENS USED">
         <div className={primitives.metricCardBare}>
-          <div className={primitives.tokenHeader}>
-            <div className={primitives.topline}>
-              <div className={primitives.metricHeading}>{displayedTotalTokens.toLocaleString()} Tokens Used</div>
-              <span className={primitives.badge}>{requestCount} {requestCount === 1 ? "Request" : "Requests"}</span>
-            </div>
-          </div>
           {tokenTableRows.length > 0 ? <TelemetryTable rows={tokenTableRows} variant="bordered" tableClassName="summaryTable" /> : (
             <div className={primitives.emptyState}>
               <p className={primitives.emptyStateText}>No request metrics yet. Each turn will be one model request.</p>

@@ -10,6 +10,14 @@ from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional
 import httpx
 from fastapi import HTTPException
 
+ENTROPY_PROFILE_MAP: Dict[str, float] = {
+    "Historical Overview": 0.0,
+    "Grounded Discussion": 0.375,
+    "Balanced Debate": 0.75,
+    "Philosophical Drift": 1.125,
+    "Creative Synthesis": 1.5,
+}
+
 
 class LLMService:
     """Own outbound provider calls, retry policy, and streaming behavior."""
@@ -184,6 +192,7 @@ class LLMService:
         messages: List[Dict[str, str]],
         agent_config: Any,
         temperature_override: Optional[float] = None,
+        entropy_profile: Optional[str] = None,
         on_complete: Optional[Callable[[str, Any], Awaitable[None]]] = None,
         on_retry: Optional[Callable[[float, int], Awaitable[None]]] = None,
     ) -> AsyncIterator[str]:
@@ -202,6 +211,13 @@ class LLMService:
             try:
                 await self._wait_for_provider_slot()
                 request_started = self._perf_counter()
+
+                self._logger.debug(
+                    "[LLM CALL AUDIT] Agent: %s | Selected Profile: %s | Active LLM Temperature: %s",
+                    getattr(agent_config, "agent_id", "unknown"),
+                    entropy_profile or "default",
+                    payload["temperature"],
+                )
 
                 client_context = self._http_client_context(timeout=httpx.Timeout(90.0, read=90.0))
                 async with client_context as client:

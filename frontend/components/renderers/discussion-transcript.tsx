@@ -3,10 +3,33 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 
 import type { DebateMessage } from "../types";
-import { avatarUrlForAgent, getStyleIndex, sanitizeDebateMessageText } from "../utils";
+import { getStyleIndex, sanitizeDebateMessageText } from "../utils";
 import styles from "./discussion-transcript.module.css";
 
 const MESSAGE_PREVIEW_LIMIT = 140;
+
+function injectSourceFootnotes(text: string, sources: string[]): React.ReactNode {
+  const eligible = sources.filter((s) => s.length >= 4);
+  if (!eligible.length) return text;
+
+  const sorted = [...eligible].sort((a, b) => b.length - a.length);
+  const indexMap = new Map(sorted.map((s, i) => [s.toLowerCase(), i + 1]));
+  const escaped = sorted.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const pattern = new RegExp(`(${escaped.join("|")})`, "gi");
+  const parts = text.split(pattern);
+
+  if (parts.length === 1) return text;
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (i % 2 === 0) return part || null;
+        const num = indexMap.get(part.toLowerCase());
+        return num ? <span key={i}>{part}<sup className={styles.footnoteMarker}>[{num}]</sup></span> : part;
+      })}
+    </>
+  );
+}
 
 type DiscussionTranscriptProps = {
   emptyStateMessage: string;
@@ -273,10 +296,6 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
       ) : null}
       {transcriptRounds.map((round) => {
         const isCollapsed = collapsedRounds[round.roundNumber] ?? false;
-        const roundSpeakers = Array.from(
-          new Map(round.messages.map((m) => [m.agent_id, m.display_name])).entries(),
-        ).map(([agentId, displayName]) => ({ agentId, displayName }));
-        const roundSpeakerNames = roundSpeakers.map((s) => s.displayName);
         const roundEntropyValues = round.messages
           .filter((m) => typeof m.telemetry?.entropy === "number")
           .map((m) => m.telemetry!.entropy as number);
@@ -289,62 +308,26 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
         const roundAvgRagScore = roundTopScoreValues.length > 0
           ? (roundTopScoreValues.reduce((s, v) => s + v, 0) / roundTopScoreValues.length).toFixed(2)
           : null;
-        const roundSources = Array.from(
-          new Set(
-            round.messages.flatMap((m) => m.telemetry?.vector?.sources ?? []),
-          ),
-        ).filter(Boolean);
 
         return (
           <section key={`round-${round.roundNumber}`} className={styles.roundSection} aria-label={`Round ${round.roundNumber}`}>
             <div className={styles.roundHeader}>
               <div className={styles.roundHeaderMain}>
-                <div className={styles.roundIdBlock}>
-                  <p className={styles.roundKicker}>ROUND</p>
-                  <h3 className={styles.roundTitle}>{String(round.roundNumber).padStart(2, "0")}</h3>
-                </div>
-
-                {isCollapsed && roundSpeakers.length > 0 && (
-                  <div className={styles.roundSpeakerInfo}>
-                    <div className={styles.roundAvatarRow}>
-                      {roundSpeakers.map((speaker) => (
-                        <img
-                          key={speaker.agentId}
-                          className={styles.roundAvatar}
-                          src={avatarUrlForAgent(speaker.agentId)}
-                          alt={speaker.displayName}
-                          title={speaker.displayName}
-                        />
-                      ))}
-                    </div>
-                    <p className={styles.roundSpeakerSummary}>
-                      {roundSpeakerNames.join(" · ")}
-                    </p>
-                  </div>
-                )}
+                <h3 className={styles.roundTitle}>ROUND {String(round.roundNumber).padStart(2, "0")}</h3>
 
                 <div className={styles.roundMetaRow}>
                   <span className={styles.roundMeta}>
                     {round.messages.length} {round.messages.length === 1 ? "turn" : "turns"}
                   </span>
                   {roundAvgEntropy !== null && (
-                    <span className={styles.roundTelemetryBadge}>{roundAvgEntropy}% div</span>
+                    <span className={styles.roundMeta}>{roundAvgEntropy}% div</span>
                   )}
                   {roundAvgRagScore !== null && (
-                    <span className={styles.roundTelemetryBadge}>{roundAvgRagScore} sim</span>
+                    <span className={styles.roundMeta}>{roundAvgRagScore} sim</span>
                   )}
                 </div>
               </div>
 
-              {roundSources.length > 0 && (
-                <div className={styles.roundSourceRow}>
-                  {roundSources.map((source) => (
-                    <span key={source} className={styles.roundSourceChip} title={source}>
-                      {source}
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
 
             <div className={styles.roundControls}>
@@ -371,19 +354,11 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                     ? previewMessage
                     : sanitizedMessage;
                   const showRetrySkull = message.isThinking && !visibleMessage && isThrottledThinkingStatus(message.thinkingStatus);
+                  const messageSources = message.telemetry?.vector?.sources ?? [];
+                  const showSources = messageSources.length > 0 && (isExpanded || !shouldTruncate);
 
                   return (
                     <div key={message.id} className={styles.turnRow}>
-                      <div className={styles.turnRail}>
-                        <div className={styles.turnInfoRow}>
-                          <img
-                            className={styles.avatar}
-                            src={avatarUrlForAgent(message.agent_id)}
-                            alt={`${message.display_name} portrait`}
-                          />
-                        </div>
-                        <div className={styles.turnConnector} aria-hidden="true" />
-                      </div>
                       <article
                         data-message-id={message.id}
                         data-turn-number={message.turn_number}
@@ -404,7 +379,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                         {thinkingStatus ? <p className={styles.bubbleStatus}>{thinkingStatus.toUpperCase()}</p> : null}
                         {visibleMessage ? (
                           <p className={styles.bubbleText}>
-                            {visibleMessage}
+                            {injectSourceFootnotes(visibleMessage, messageSources)}
                             {shouldTruncate ? (
                               <>
                                 {!isExpanded ? "... " : " "}
@@ -419,6 +394,15 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                             ) : null}
                           </p>
                         ) : null}
+                        {showSources && (
+                          <div className={styles.bubbleSources}>
+                            {messageSources.map((source, idx) => (
+                              <span key={source} className={styles.bubbleSourceChip}>
+                                [{idx + 1}] {source}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                         {showRetrySkull ? (
                           <div className={styles.bubbleThinkingState} aria-hidden="true">
                             <img className={styles.bubbleThinkingIcon} src="/waiting-skull.svg" alt="" />
