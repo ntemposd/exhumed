@@ -1,11 +1,6 @@
 :root {
-	--bg: #F0E8CE;
-	--bg-wash: #E6D9B2;
 	--panel: #FAF4E4;
 	--panel-strong: #F4ECDA;
-	--box-surface: #F4EEDA;
-	--box-surface-soft: #EBE1C4;
-	--box-surface-strong: #E0D4AB;
 	--ink: #14110f;
 	--muted: #6b6560;
 	--line: #14110f;
@@ -14,17 +9,11 @@
 	--badge-border: rgba(20, 17, 15, 0.25);
 	--badge-surface: #F4EEDA;
 	--badge-surface-speaker: #C5EDAA;
-	--badge-surface-speaker-hover: #B2E090;
-	--badge-surface-entropy: #EAD9FF;
-	--badge-surface-entropy-strong: #D4B8F5;
-	--badge-shadow-soft: 2px 2px 0 rgba(20, 17, 15, 0.18);
 	--accent: #FFCB00;
 	--accent-soft: #F5E880;
 	--grid-color: rgba(20, 17, 15, 0.07);
-	--ui-dark: #2e3a4d;
 	--signal: #0f766e;
 	--warning: #b91c1c;
-	--shadow: 5px 5px 0 var(--line);
 	--space-2: 8px;
 	--space-3: 10px;
 	--space-4: 12px;
@@ -37,7 +26,6 @@
 	--surface-0: #FAF4E4;
 	--surface-1: #F0E8D0;
 	--surface-2: #E6DABC;
-	--surface-ghost: rgba(244, 238, 218, 0.70);
 	--surface-error: #FDE8E6;
 
 	/* --- Border opacity scale --- */
@@ -68,15 +56,9 @@
 	--tone-10: #4E6826;  /* Borges */
 	--tone-11: #6C8840;  /* Trotsky */
 
-	/* --- Accent variants --- */
-	--accent-icon: #8A6000;
-	--accent-on-dark: #FFFFFF;
-
 	/* --- Table --- */
 	--table-header-bg: #2A2A2A;
 	--table-header-text: #FFFFFF;
-	--table-row-bg: #F4EEDA;
-	--table-shell-bg: #F4EEDA;
 	--table-body-bg: #F4EEDA;
 
 	/* --- Cards and containers --- */
@@ -87,14 +69,6 @@
 	/* --- Chips --- */
 	--chip-bg: #F4EEDA;
 	--chip-border: rgba(20, 17, 15, 0.20);
-
-	/* --- Exact-value aliases for module refactors --- */
-	--surface-ghost-soft: rgba(244, 238, 218, 0.52);
-	--surface-ghost-muted: rgba(244, 238, 218, 0.58);
-	--surface-ghost-strong: rgba(244, 238, 218, 0.86);
-	--line-shadow-soft: rgba(20, 17, 15, 0.14);
-	--line-faint: rgba(20, 17, 15, 0.07);
-	--chip-border-strong: rgba(20, 17, 15, 0.22);
 
 	/* --- Archetype chip backgrounds (muted, solid) --- */
 	--archetype-thinker-bg:    #DDBA6C;
@@ -114,16 +88,11 @@
 
 [data-theme="dark"] {
 	/* Backgrounds */
-	--bg: #1C1810;
-	--bg-wash: #181508;
 	--grid-color: rgba(237, 224, 196, 0.05);
 
 	/* Panels */
 	--panel: #272318;
 	--panel-strong: #2C2820;
-	--box-surface: #272318;
-	--box-surface-soft: #2C2820;
-	--box-surface-strong: #332E24;
 
 	/* Text */
 	--ink: #EDE0C4;
@@ -140,18 +109,13 @@
 	/* Badges and chips */
 	--badge-surface: #2C2820;
 	--badge-surface-speaker: #1A3018;
-	--badge-surface-speaker-hover: #243822;
-	--badge-surface-entropy: #2A2040;
-	--badge-surface-entropy-strong: #3A2A58;
 	--badge-text: #9A8A6A;
 	--badge-border: rgba(220, 180, 60, 0.22);
-	--badge-shadow-soft: 2px 2px 0 rgba(237, 224, 196, 0.12);
 
 	/* Surface scale */
 	--surface-0: #272318;
 	--surface-1: #2C2820;
 	--surface-2: #332E24;
-	--surface-ghost: rgba(30, 26, 18, 0.75);
 	--surface-error: #3A1810;
 
 	/* Tables and cards */
@@ -160,8 +124,6 @@
 	--card-track-bg: #332E24;
 	--table-header-bg: #2A2420;
 	--table-header-text: #EDE0C4;
-	--table-row-bg: #272318;
-	--table-shell-bg: #272318;
 	--table-body-bg: var(--surface-0);
 
 	/* Chips */
@@ -171,10 +133,6 @@
 	/* Accent - vivid yellow reads well on dark */
 	--accent: #FFE500;
 	--accent-soft: #3A3000;
-	--accent-icon: #CCA800;
-	--accent-on-dark: #FFFFFF;
-
-	--ui-dark: #EDE0C4;
 
 	/* Signal / warning */
 	--signal: #14B8A6;
@@ -253,11 +211,6 @@ body {
 	background-size: 24px 24px, 24px 24px, 100% 100%;
 }
 
-body.sidebarResizing {
-	cursor: col-resize;
-	user-select: none;
-}
-
 a {
 	color: inherit;
 }
@@ -311,9 +264,6 @@ select {
 
 .sidebarToggle {
 	appearance: none;
-}
-
-.sidebarToggle {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -359,10 +309,6 @@ select {
 .chatColumn,
 .telemetryColumn {
 	min-width: 0;
-}
-
-.chatColumn,
-.telemetryColumn {
 	width: 100%;
 }
 
@@ -447,7 +393,6 @@ select {
 	background: var(--surface-0);
 	color: var(--ink);
 	position: relative;
-	/* transition: border-color 120ms ease, background 120ms ease, opacity 120ms ease; */
 }
 
 .draftedChipAvailable {
@@ -485,25 +430,10 @@ select {
 }
 
 /* --- Archetype-based chip backgrounds (solid, muted, per-category) --- */
-.draftedChip[data-archetype="thinker"] {
-	background: var(--archetype-thinker-bg);
-	
-}
-
-.draftedChip[data-archetype="commander"] {
-	background: var(--archetype-commander-bg);
-	/* border: 1px solid var(--archetype-border); */
-}
-
-.draftedChip[data-archetype="creator"] {
-	background: var(--archetype-creator-bg);
-	/* border: 1px solid var(--archetype-border); */
-}
-
-.draftedChip[data-archetype="strategist"] {
-	background: var(--archetype-strategist-bg);
-	/* border: 1px solid var(--archetype-border); */
-}
+.draftedChip[data-archetype="thinker"]    { background: var(--archetype-thinker-bg); }
+.draftedChip[data-archetype="commander"]  { background: var(--archetype-commander-bg); }
+.draftedChip[data-archetype="creator"]    { background: var(--archetype-creator-bg); }
+.draftedChip[data-archetype="strategist"] { background: var(--archetype-strategist-bg); }
 
 /* Force charcoal text on all archetype cards */
 .draftedChip[data-archetype] .draftedChipLabel,

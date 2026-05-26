@@ -169,25 +169,13 @@
   border-radius: 0;
 }
 
-.bubbleAssistant,
-.bubbleTone0,
-.bubbleTone1,
-.bubbleTone2,
-.bubbleTone3,
-.bubbleTone4 {
-  background: var(--surface-0);
-}
-
 .bubbleAssistant {
+  background: var(--surface-0);
   justify-self: stretch;
 }
 
 .bubbleThinking {
   position: relative;
-}
-
-.bubbleThinking::after {
-  display: none;
 }
 
 .bubbleFailed {
@@ -433,14 +421,6 @@
 
 
 @media (max-width: 767px) {
-  .transcript {
-    padding: 0;
-  }
-
-  .roundSection {
-    padding: 0;
-  }
-
   .roundSection + .roundSection {
     margin-top: 14px;
   }
@@ -449,18 +429,10 @@
     padding: 8px 12px;
   }
 
-  .roundSourceRow {
-    gap: 4px;
-  }
-
   .roundSourceChip {
     font-size: 0.60rem;
     padding: 2px 6px;
     max-width: 140px;
-  }
-
-  .turnRow {
-    width: 100%;
   }
 
   .bubble {

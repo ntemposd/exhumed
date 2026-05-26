@@ -22,11 +22,6 @@
   margin-bottom: 6px;
 }
 
-.topicSection > .sectionLabel:not(:first-child) {
-  margin-top: 16px;
-}
-
-
 .controlsDeck {
   display: grid;
   gap: 0;
@@ -68,7 +63,6 @@
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 6px;
-  padding-right: 0;
 }
 
 .editCouncilButton {
@@ -206,10 +200,6 @@
   line-height: 1.4;
 }
 
-.transcriptControls {
-  margin-top: 0;
-}
-
 .transcriptControlsBlock {
   display: grid;
   gap: 10px;
@@ -225,27 +215,8 @@
     padding: 32px 0 0;
   }
 
-  .controlsDeck {
-    gap: 0;
-  }
-
-  .controlsDeck,
-  .transcriptHeading {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .topicSection {
-    padding: 0;
-    box-shadow: none;
-  }
-
   .sectionGroup {
     gap: 12px;
-  }
-
-  .dividedSection {
-    padding-top: 0;
   }
 
   .topicSectionLayout {
@@ -276,7 +247,6 @@
 
   .councilChips {
     gap: 6px;
-    padding-right: 0;
   }
 
   .transcriptHeadingRow {

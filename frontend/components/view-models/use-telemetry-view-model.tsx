@@ -3,7 +3,7 @@
 import type { ExecutionMetrics, ServiceStatus, VectorTelemetry } from "@/lib/types";
 
 import type { AsyncViewState, DebateMessage, TelemetryPanelViewModel } from "../types";
-import type { TelemetryTableRow, VectorUsageRow } from "../renderers/telemetry-tables";
+import type { TelemetryTableRow, VectorUsageRow } from "../renderers/telemetry-sidebar";
 import { getStyleIndex } from "../utils";
 
 type RoleBreakdownEntry = {

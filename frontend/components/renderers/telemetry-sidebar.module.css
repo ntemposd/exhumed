@@ -1,3 +1,5 @@
+/* ─── Primitive cards & tracks ──────────────────────────────────────────── */
+
 .card {
   border: 2px solid var(--line);
   background: color-mix(in srgb, var(--card-bg) 88%, transparent);
@@ -73,6 +75,8 @@
   text-transform: uppercase;
 }
 
+/* ─── Table shell ────────────────────────────────────────────────────────── */
+
 .tableShell {
   width: 100%;
   overflow-x: auto;
@@ -87,6 +91,8 @@
   border: 2px solid var(--line);
 }
 
+/* ─── Table ──────────────────────────────────────────────────────────────── */
+
 .table {
   width: 100%;
   min-width: 100%;
@@ -94,8 +100,7 @@
   background: transparent;
 }
 
-/* tbody carries the solid cream — this prevents the shell bg from bleeding
-   below the last row. td is transparent so tr tints (vocal share) show through. */
+/* tbody carries the solid surface — prevents shell bg from bleeding below last row */
 .table tbody {
   background: var(--table-body-bg);
 }
@@ -133,7 +138,7 @@
   border-bottom: none;
 }
 
-/* Agent tone - row background tint (all 16 slots) */
+/* Agent tone — row background tint (all 16 slots) */
 .table tbody tr[data-tone="0"]  { background: color-mix(in srgb, var(--tone-0)  10%, transparent); }
 .table tbody tr[data-tone="1"]  { background: color-mix(in srgb, var(--tone-1)  10%, transparent); }
 .table tbody tr[data-tone="2"]  { background: color-mix(in srgb, var(--tone-2)  10%, transparent); }
@@ -151,7 +156,7 @@
 .table tbody tr[data-tone="14"] { background: color-mix(in srgb, var(--tone-14) 10%, transparent); }
 .table tbody tr[data-tone="15"] { background: color-mix(in srgb, var(--tone-15) 10%, transparent); }
 
-/* Agent tone - first cell text color (all 16 slots) */
+/* Agent tone — first cell text color (all 16 slots) */
 .table tbody tr[data-tone="0"]  td:first-child { color: var(--tone-0);  font-weight: 800; }
 .table tbody tr[data-tone="1"]  td:first-child { color: var(--tone-1);  font-weight: 800; }
 .table tbody tr[data-tone="2"]  td:first-child { color: var(--tone-2);  font-weight: 800; }
@@ -171,4 +176,55 @@
 
 .table tbody tr[data-tone] td {
   background: transparent;
+}
+
+/* ─── Vector usage table overrides ──────────────────────────────────────── */
+
+.vectorUsageTableShell {
+  width: 100%;
+  margin-top: 0.2rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.vectorUsageTableInner {
+  display: block;
+  width: max-content;
+  min-width: 100%;
+}
+
+.vectorUsageTable {
+  width: max-content;
+  min-width: 100%;
+}
+
+.vectorUsageTable th,
+.vectorUsageTable td {
+  vertical-align: top;
+}
+
+.summaryTable th:first-child,
+.summaryTable td:first-child {
+  white-space: nowrap;
+}
+
+.summaryTable th:not(:first-child),
+.summaryTable td:not(:first-child) {
+  text-align: right;
+}
+
+.speakerCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.24rem;
+}
+
+.speakerMarker {
+  font-size: 0.52rem;
+  line-height: 1;
+}
+
+.totalRow td {
+  font-weight: 800;
 }

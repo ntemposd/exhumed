@@ -2,7 +2,7 @@
 // focused on rendering instead of re-declaring the same contracts locally.
 import type { ExecutionMetrics, TurnTelemetry } from "@/lib/types";
 import type { ServiceStatus } from "@/lib/types";
-import type { TelemetryTableRow, VectorUsageRow } from "./renderers/telemetry-tables";
+import type { TelemetryTableRow, VectorUsageRow } from "./renderers/telemetry-sidebar";
 
 export type LegendDetails = {
   agent_id: string;
