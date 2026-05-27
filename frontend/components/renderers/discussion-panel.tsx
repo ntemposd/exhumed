@@ -1,6 +1,7 @@
 // DiscussionPanel frames the transcript stage and now owns the primary debate
 // controls so the main column is the single operator surface.
 import { type RefObject } from "react";
+import Image from "next/image";
 
 import type { DebateMessage, LegendDetails, TranscriptViewState } from "../types";
 import { avatarUrlForAgent, ENTROPY_PROFILES, getAgentArchetype } from "../utils";
@@ -123,10 +124,12 @@ export function DiscussionPanel({
                   data-disabled={discussionActive ? "true" : "false"}
                 >
                   <div className="draftedChipMain" title={legend.display_name}>
-                    <img
+                    <Image
                       className="draftedChipAvatar"
                       src={avatarUrlForAgent(legend.agent_id)}
                       alt=""
+                      width={32}
+                      height={32}
                     />
                     <span className="draftedChipText">
                       <span className="draftedChipLabel">{legend.display_name}</span>
@@ -166,10 +169,12 @@ export function DiscussionPanel({
                   data-disabled={discussionActive ? "true" : "false"}
                 >
                   <div className="draftedChipMain" title={legend.display_name}>
-                    <img
+                    <Image
                       className="draftedChipAvatar"
                       src={avatarUrlForAgent(legend.agent_id)}
                       alt=""
+                      width={32}
+                      height={32}
                     />
                     <span className="draftedChipText">
                       <span className="draftedChipLabel">{legend.display_name}</span>

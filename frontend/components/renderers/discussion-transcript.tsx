@@ -1,6 +1,7 @@
 // DiscussionTranscript owns transcript-only interaction state such as message
 // expansion and animated thinking indicators.
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import Image from "next/image";
 
 import type { DebateMessage } from "../types";
 import { avatarUrlForAgent, getAgentArchetype, sanitizeDebateMessageText } from "../utils";
@@ -373,10 +374,12 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                       >
                         <div className={styles.bubbleHeader}>
                           <div className={styles.bubbleIdentity}>
-                            <img
+                            <Image
                               className={styles.bubbleAvatar}
                               src={avatarUrlForAgent(message.agent_id)}
                               alt=""
+                              width={26}
+                              height={26}
                             />
                             <p className={styles.bubbleName}>{message.display_name}</p>
                           </div>

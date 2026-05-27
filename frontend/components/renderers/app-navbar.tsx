@@ -1,7 +1,8 @@
+import Image from "next/image";
+
 import styles from "./app-navbar.module.css";
 
 import { useTheme } from "../hooks";
-import { logoUrl } from "../utils";
 
 function SunIcon() {
   return (
@@ -33,7 +34,7 @@ export function AppNavbar() {
   return (
     <header className={styles.navbar}>
       <div className={styles.brandMark}>
-        <img className={styles.logo} src={logoUrl()} alt="Exhumed logo" />
+        <Image className={styles.logo} src="/logo.png" alt="Exhumed logo" width={48} height={48} priority />
         <div className={styles.brandCopy}>
           <div className={styles.brandTitleRow}>
             <span className={styles.brandTitle}>EXHUMED</span>
