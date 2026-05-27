@@ -37,10 +37,10 @@ export function AppNavbar() {
         <Image className={styles.logo} src="/logo.png" alt="Exhumed logo" width={48} height={48} priority />
         <div className={styles.brandCopy}>
           <div className={styles.brandTitleRow}>
-            <h1 className={styles.brandTitle}>EXHUMED</h1>
-            <span className={styles.betaBadge}>v1.0.0-beta.2</span>
+            <span className={styles.brandTitle}>EXHUMED</span>
+            <span className={styles.betaBadge}>v1.0.0-beta.3</span>
           </div>
-          <span className={styles.brandSubtitle}>Historical Convo Engine</span>
+          <h1 className={styles.brandSubtitle}>Historical Convo Engine</h1>
         </div>
       </div>
       <button

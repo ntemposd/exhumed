@@ -47,6 +47,7 @@
 }
 
 .brandSubtitle {
+  margin: 0;
   color: var(--muted);
   font-size: 0.72rem;
   font-weight: 700;

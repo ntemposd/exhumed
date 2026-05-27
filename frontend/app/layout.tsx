@@ -13,8 +13,23 @@ const monoFont = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EXHUMED Front",
-  description: "Next.js frontend prototype for the EXHUMED debate backend.",
+  metadataBase: new URL("https://exhumed.ntemposd.me"),
+  title: "EXHUMED – Historical Convo Engine",
+  description: "Historical Convo Engine",
+  openGraph: {
+    title: "EXHUMED – Historical Convo Engine",
+    description: "Historical Convo Engine",
+    url: "https://exhumed.ntemposd.me",
+    siteName: "EXHUMED",
+    images: [{ url: "/logo.png", alt: "EXHUMED" }],
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "EXHUMED – Historical Convo Engine",
+    description: "Historical Convo Engine",
+    images: ["/logo.png"],
+  },
 };
 
 // Runs synchronously before first paint: reads localStorage and stamps
