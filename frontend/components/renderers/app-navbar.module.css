@@ -37,6 +37,7 @@
 }
 
 .brandTitle {
+  margin: 0;
   font-family: var(--font-display), sans-serif;
   font-size: 1.15rem;
   font-weight: 800;

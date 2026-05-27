@@ -1,7 +1,7 @@
 /* ─── Primitive cards & tracks ──────────────────────────────────────────── */
 
 .card {
-  border: 2px solid var(--line);
+  border: 2px solid var(--line-strong);
   background: color-mix(in srgb, var(--card-bg) 88%, transparent);
   padding: 0.8rem 0.85rem 0.75rem;
 }
@@ -9,10 +9,10 @@
 .costValue {
   font-family: var(--font-display), sans-serif;
   font-size: 1.15rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.05;
   padding-bottom: 0.45rem;
-  border-bottom: 2px solid var(--line);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .caption {
@@ -26,7 +26,7 @@
   display: grid;
   gap: 8px;
   padding: 18px 20px;
-  border: 2px dashed var(--line-strong);
+  border: 1px dashed var(--line-strong);
   background: color-mix(in srgb, var(--card-empty-bg) 88%, transparent);
 }
 
@@ -44,7 +44,7 @@
 .track {
   width: 100%;
   height: 16px;
-  border: 2px solid var(--line);
+  border: 2px solid var(--line-strong);
   background: var(--surface-2);
   overflow: hidden;
 }
@@ -65,7 +65,7 @@
 .entropyValue {
   font-family: var(--font-display), sans-serif;
   font-size: 1.2rem;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .entropyStatus {
@@ -84,11 +84,11 @@
 }
 
 .tableShellBordered {
-  border: 2px solid var(--line);
+  border: 2px solid var(--line-strong);
 }
 
 .tableShellShadowed {
-  border: 2px solid var(--line);
+  border: 2px solid var(--line-strong);
 }
 
 /* ─── Table ──────────────────────────────────────────────────────────────── */
@@ -108,7 +108,7 @@
 .table th,
 .table td {
   padding: 8px 12px;
-  border-bottom: 1px solid var(--line-subtle);
+  border-bottom: 1px solid var(--line-medium);
   text-align: left;
   font-size: 0.76rem;
 }
@@ -126,7 +126,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   background: var(--table-header-bg);
-  border-bottom: 2px solid var(--line);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .table td {

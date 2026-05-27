@@ -287,8 +287,16 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
         const roundTopScoreValues = round.messages
           .filter((m) => typeof m.telemetry?.vector?.top_score === "number")
           .map((m) => m.telemetry!.vector!.top_score as number);
-        const roundAvgRagScore = roundTopScoreValues.length > 0
-          ? (roundTopScoreValues.reduce((s, v) => s + v, 0) / roundTopScoreValues.length).toFixed(2)
+        const roundSimRange = roundTopScoreValues.length > 0
+          ? {
+              min: Math.min(...roundTopScoreValues).toFixed(2),
+              max: Math.max(...roundTopScoreValues).toFixed(2),
+            }
+          : null;
+        const roundTotalTokens = round.messages.some((m) =>
+          typeof m.execution_metrics?.prompt_tokens === "number" || typeof m.execution_metrics?.completion_tokens === "number"
+        )
+          ? round.messages.reduce((sum, m) => sum + (m.execution_metrics?.prompt_tokens ?? 0) + (m.execution_metrics?.completion_tokens ?? 0), 0)
           : null;
 
         return (
@@ -317,7 +325,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
 
             {!isCollapsed ? (
               <>
-                {(roundAvgEntropy !== null || roundAvgRagScore !== null) && (
+                {(roundAvgEntropy !== null || roundSimRange !== null || roundTotalTokens !== null) && (
                   <div className={styles.roundStats}>
                     {roundAvgEntropy !== null && (
                       <div className={styles.roundStatItem}>
@@ -325,10 +333,20 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                         <span className={styles.roundStatValue}>{roundAvgEntropy}%</span>
                       </div>
                     )}
-                    {roundAvgRagScore !== null && (
+                    {roundSimRange !== null && (
                       <div className={styles.roundStatItem}>
-                        <span className={styles.roundStatLabel}>Similarity</span>
-                        <span className={styles.roundStatValue}>{roundAvgRagScore}</span>
+                        <span className={styles.roundStatLabel}>Similarity Range</span>
+                        <span className={styles.roundStatValue}>
+                          {roundSimRange.min === roundSimRange.max
+                            ? roundSimRange.max
+                            : `${roundSimRange.min} – ${roundSimRange.max}`}
+                        </span>
+                      </div>
+                    )}
+                    {roundTotalTokens !== null && (
+                      <div className={styles.roundStatItem}>
+                        <span className={styles.roundStatLabel}>Usage</span>
+                        <span className={styles.roundStatValue}>{roundTotalTokens.toLocaleString()} tokens</span>
                       </div>
                     )}
                   </div>
@@ -351,11 +369,14 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                   const showRetrySkull = message.isThinking && !visibleMessage && isThrottledThinkingStatus(message.thinkingStatus);
                   const messageSources = message.telemetry?.vector?.sources ?? [];
                   const showSources = messageSources.length > 0 && (isExpanded || !shouldTruncate);
+                  const hasVectorMeta = typeof message.telemetry?.vector?.match_count === "number" ||
+                    typeof message.telemetry?.vector?.context_chars === "number" ||
+                    typeof message.telemetry?.vector?.top_score === "number";
+                  const hasLlmMeta = typeof message.execution_metrics?.prompt_tokens === "number" ||
+                    typeof message.execution_metrics?.completion_tokens === "number" ||
+                    typeof message.telemetry?.latency_ms === "number";
                   const showBubbleMeta = !message.isThinking && (isExpanded || !shouldTruncate) && (
-                    typeof message.telemetry?.entropy === "number" ||
-                    typeof message.telemetry?.vector?.top_score === "number" ||
-                    typeof message.execution_metrics?.total_tokens === "number" ||
-                    typeof message.telemetry?.latency_ms === "number"
+                    typeof message.telemetry?.entropy === "number" || hasVectorMeta || hasLlmMeta
                   );
 
                   return (
@@ -405,73 +426,71 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                             ) : null}
                           </p>
                         ) : null}
-                        {showSources && (
-                          <div className={styles.bubbleSources}>
-                            {messageSources.map((source, idx) => (
-                              <span key={source} className={styles.bubbleSourceChip}>
-                                [{idx + 1}] {source}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {showBubbleMeta && (
-                          <div className={styles.bubbleMeta}>
-                            {/* Diversity group */}
-                            {typeof message.telemetry?.entropy === "number" && (
-                              <span className={styles.bubbleMetaGroup}>
-                                <span className={styles.bubbleMetaGroupLabel}>div</span>
-                                <span className={styles.bubbleMetaItem}>
-                                  {Math.round(message.telemetry.entropy * 100)}%
-                                </span>
-                              </span>
+                        {(showSources || showBubbleMeta) && (
+                          <div className={styles.bubbleFooter}>
+                            {showSources && (
+                              <div className={styles.bubbleSources}>
+                                {messageSources.map((source, idx) => (
+                                  <span key={source} className={styles.bubbleSourceChip}>
+                                    [{idx + 1}] {source}
+                                  </span>
+                                ))}
+                              </div>
                             )}
-
-                            {/* Vector group: hits · chars · top */}
-                            {(typeof message.telemetry?.vector?.match_count === "number" ||
-                              typeof message.telemetry?.vector?.context_chars === "number" ||
-                              typeof message.telemetry?.vector?.top_score === "number") && (
-                              <span className={styles.bubbleMetaGroup}>
-                                <span className={styles.bubbleMetaGroupLabel}>Vector</span>
-                                {typeof message.telemetry.vector?.match_count === "number" && (
-                                  <span className={styles.bubbleMetaItem}>
-                                    {message.telemetry.vector.match_count} hits
+                            {showBubbleMeta && (
+                              <div className={styles.bubbleMeta}>
+                                {/* Diversity */}
+                                {typeof message.telemetry?.entropy === "number" && (
+                                  <span className={styles.bubbleMetaGroup}>
+                                    <span className={styles.bubbleMetaGroupLabel}>Diversity</span>
+                                    <span className={styles.bubbleMetaItem}>
+                                      {Math.round(message.telemetry.entropy * 100)}%
+                                    </span>
                                   </span>
                                 )}
-                                {typeof message.telemetry.vector?.context_chars === "number" && (
-                                  <span className={styles.bubbleMetaItem}>
-                                    {message.telemetry.vector.context_chars.toLocaleString()} chars
+                                {/* Vector: hits · chars · top */}
+                                {hasVectorMeta && (
+                                  <span className={styles.bubbleMetaGroup}>
+                                    <span className={styles.bubbleMetaGroupLabel}>Vector</span>
+                                    {typeof message.telemetry?.vector?.match_count === "number" && (
+                                      <span className={styles.bubbleMetaItem}>
+                                        {message.telemetry.vector.match_count} hits
+                                      </span>
+                                    )}
+                                    {typeof message.telemetry?.vector?.context_chars === "number" && (
+                                      <span className={styles.bubbleMetaItem}>
+                                        {message.telemetry.vector.context_chars.toLocaleString()} chars
+                                      </span>
+                                    )}
+                                    {typeof message.telemetry?.vector?.top_score === "number" && (
+                                      <span className={styles.bubbleMetaItem}>
+                                        {message.telemetry.vector.top_score.toFixed(2)} top
+                                      </span>
+                                    )}
                                   </span>
                                 )}
-                                {typeof message.telemetry.vector?.top_score === "number" && (
-                                  <span className={styles.bubbleMetaItem}>
-                                    {message.telemetry.vector.top_score.toFixed(2)} top
+                                {/* LLM Usage: prompt · completion · latency */}
+                                {hasLlmMeta && (
+                                  <span className={styles.bubbleMetaGroup}>
+                                    <span className={styles.bubbleMetaGroupLabel}>LLM Usage</span>
+                                    {typeof message.execution_metrics?.prompt_tokens === "number" && (
+                                      <span className={styles.bubbleMetaItem}>
+                                        {message.execution_metrics.prompt_tokens.toLocaleString()}q
+                                      </span>
+                                    )}
+                                    {typeof message.execution_metrics?.completion_tokens === "number" && (
+                                      <span className={styles.bubbleMetaItem}>
+                                        {message.execution_metrics.completion_tokens.toLocaleString()}a
+                                      </span>
+                                    )}
+                                    {typeof message.telemetry?.latency_ms === "number" && (
+                                      <span className={styles.bubbleMetaItem}>
+                                        {(message.telemetry.latency_ms / 1000).toFixed(1)}s
+                                      </span>
+                                    )}
                                   </span>
                                 )}
-                              </span>
-                            )}
-
-                            {/* Perf group: tokens · latency */}
-                            {(typeof message.execution_metrics?.prompt_tokens === "number" ||
-                              typeof message.execution_metrics?.completion_tokens === "number" ||
-                              typeof message.telemetry?.latency_ms === "number") && (
-                              <span className={styles.bubbleMetaGroup}>
-                                <span className={styles.bubbleMetaGroupLabel}>LLM Usage</span>
-                                {typeof message.execution_metrics?.prompt_tokens === "number" && (
-                                  <span className={styles.bubbleMetaItem}>
-                                    {message.execution_metrics.prompt_tokens.toLocaleString()}q
-                                  </span>
-                                )}
-                                {typeof message.execution_metrics?.completion_tokens === "number" && (
-                                  <span className={styles.bubbleMetaItem}>
-                                    {message.execution_metrics.completion_tokens.toLocaleString()}a
-                                  </span>
-                                )}
-                                {typeof message.telemetry?.latency_ms === "number" && (
-                                  <span className={styles.bubbleMetaItem}>
-                                    {(message.telemetry.latency_ms / 1000).toFixed(1)}s
-                                  </span>
-                                )}
-                              </span>
+                              </div>
                             )}
                           </div>
                         )}

@@ -320,15 +320,19 @@
   color: var(--muted);
 }
 
+.bubbleFooter {
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--line-subtle);
+}
+
 .bubbleMeta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   column-gap: 14px;
-  row-gap: 3px;
-  padding-top: 10px;
-  /* margin-top: 2px; */
-  border-top: 1px dashed var(--line-subtle);
+  row-gap: 4px;
 }
 
 .bubbleMetaItem {
@@ -375,9 +379,11 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding-top: 8px;
-  margin-top: 4px;
+}
+
+.bubbleSources + .bubbleMeta {
   border-top: 1px dashed var(--line-subtle);
+  padding-top: 8px;
 }
 
 .bubbleSourceChip {
@@ -406,6 +412,17 @@
     padding: 8px 12px;
   }
 
+  .roundStats {
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+
+  .roundStatItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1px;
+  }
+
   .bubble {
     max-width: 100%;
     padding: 12px 12px 12px 14px;
@@ -416,9 +433,18 @@
     line-height: 1.6;
   }
 
-  .bubbleMeta {
+  .bubbleFooter {
+    gap: 6px;
+    padding-top: 8px;
+  }
+
+  .bubbleSources + .bubbleMeta {
     padding-top: 6px;
+  }
+
+  .bubbleMeta {
     column-gap: 10px;
+    row-gap: 4px;
   }
 
   .bubbleMetaItem {

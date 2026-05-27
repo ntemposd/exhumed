@@ -75,7 +75,7 @@ export function DiscussionPanel({
     <section className="convoColumn">
       <div className={styles.convoPane}>
         <section className={styles.themeSection}>
-            <span className={"sectionHeading"}>Theme</span>
+            <h2 className={"sectionHeading"}>Theme</h2>
             <div className={styles.topicSectionLayout}>
               <div className={styles.topicSection}>
                 <div className="topicEditorWrap" data-replicated-value={topic || "The future of AI in society"}>
@@ -99,7 +99,7 @@ export function DiscussionPanel({
         </section>
 
         <section className={styles.participantsSection}>
-            <span className={"sectionHeading"}>Participants</span>
+            <h2 className={"sectionHeading"}>Participants</h2>
             <div className={`draftedCouncil ${styles.councilChips}`.trim()}>
               {selectedCouncil.map((legend) => (
                 <div
@@ -182,7 +182,7 @@ export function DiscussionPanel({
         </section>
 
         <section className={styles.typeSection}>
-            <span className={"sectionHeading"}>Type</span>
+            <h2 className={"sectionHeading"}>Type</h2>
             <div className={styles.entropyOptions} role="radiogroup" aria-label="Logic entropy selector">
               {ENTROPY_PROFILES.map((profile) => {
                 const isSelected = profile.value === selectedEntropyValue.value;
@@ -206,7 +206,7 @@ export function DiscussionPanel({
 
         <section className={styles.transcriptSection}>
           <div className={styles.transcriptHeader}>
-            <span className={"sectionHeading"}>Live Transcript</span>
+            <h2 className={"sectionHeading"}>Live Transcript</h2>
             <p className={styles.transcriptStatusMessage}>{transcriptState.statusLabel}</p>
           </div>
           <DiscussionTranscript

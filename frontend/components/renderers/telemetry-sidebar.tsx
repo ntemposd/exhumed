@@ -24,7 +24,7 @@ type SidebarSectionProps = {
 function SidebarSection({ title, children, panelClassName }: SidebarSectionProps) {
   return (
     <section className="sidebarSectionGroup">
-      {title ? <h3 className="sectionHeading">{title}</h3> : null}
+      {title ? <h2 className="sectionHeading">{title}</h2> : null}
       <div className={`sidebarSectionBody ${panelClassName ?? ""}`.trim()}>{children}</div>
     </section>
   );

@@ -58,8 +58,8 @@
 	--tone-11: #6C8840;  /* Trotsky */
 
 	/* --- Table --- */
-	--table-header-bg: #2A2A2A;
-	--table-header-text: #FFFFFF;
+	--table-header-bg: #EFEBE0;
+	--table-header-text: #1A1A1A;
 	--table-body-bg: #F4EEDA;
 
 	/* --- Cards and containers --- */
@@ -122,8 +122,8 @@
 	--card-bg: #272318;
 	--card-empty-bg: #2C2820;
 	--card-track-bg: #332E24;
-	--table-header-bg: #2A2420;
-	--table-header-text: #EDE0C4;
+	--table-header-bg: #332E24;
+	--table-header-text: var(--muted);
 	--table-body-bg: var(--surface-0);
 
 	/* Chips */
@@ -631,7 +631,9 @@ select {
 }
 
 .telemetryPanel .sidebarSectionGroup + .sidebarSectionGroup {
-	margin-top: var(--sidebar-section-gap);
+	margin-top: 14px;
+	border-top: 1px solid var(--line-subtle);
+	padding-top: 12px;
 }
 
 .telemetryPanel .sidebarSectionGroup:last-child {
