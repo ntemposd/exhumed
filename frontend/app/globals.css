@@ -261,7 +261,7 @@ select {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(320px, 25vw);
 	grid-template-rows: 1fr;
-	gap: 16px;
+	gap: 28px;
 	align-items: stretch;
 	flex: 1 1 auto;
 	min-height: 0;
@@ -269,21 +269,21 @@ select {
 	transition: grid-template-columns 180ms ease;
 }
 
-.chatColumn,
+.convoColumn,
 .telemetryColumn {
 	min-width: 0;
 	width: 100%;
 }
 
-.chatColumn {
-	padding: 18px 0 0 18px;
+.convoColumn {
+	padding: 0 0 0 28px;
 	align-self: start;
 }
 
 .telemetryColumn {
 	position: relative;
 	min-height: 0;
-	padding: 18px 14px 0 18px;
+	padding: 0 14px 0 18px;
 	overflow: visible;
 	isolation: isolate;
 	background: color-mix(in srgb, var(--surface-0) 44%, transparent);
@@ -312,18 +312,17 @@ select {
 	min-width: 0;
 }
 
-.sidebarSectionHeading {
-	display: flex;
-	align-items: center;
-	gap: 10px;
+.sectionHeading {
+	display: block;
 	margin: 0;
-	color: var(--muted);
 	font-family: var(--font-display), sans-serif;
 	font-size: 0.72rem;
 	font-weight: 800;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
+	color: var(--muted);
 	line-height: 1;
+	user-select: none;
 }
 
 .emptyState,
@@ -351,7 +350,6 @@ select {
 	flex: 0 1 auto;
 	min-height: 48px;
 	padding: 10px 12px;
-	border: 2px solid var(--archetype-border);
 	background: var(--surface-0);
 	color: var(--ink);
 	position: relative;
@@ -479,96 +477,66 @@ select {
 	box-shadow: none;
 }
 
-.button,
-.buttonGhost,
-.buttonDanger {
+/* ─── Button base ─────────────────────────────────────────────── */
+
+.buttonPrimary,
+.buttonGhost {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	min-height: 40px;
 	border: 2px solid var(--line);
 	border-radius: 0;
-	padding: 11px var(--space-5);
+	padding: 8px 18px;
+	font-size: 0.76rem;
 	font-weight: 800;
-	letter-spacing: 0.05em;
+	letter-spacing: 0.07em;
 	text-transform: uppercase;
-	box-shadow: 4px 4px 0 var(--line);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	box-shadow: 3px 3px 0 var(--line);
 	cursor: pointer;
 	transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 
-.button {
-	min-height: 48px;
+/* Primary — yellow accent */
+.buttonPrimary {
 	background: var(--accent);
 	color: #111111;
 }
 
-.buttonGhost,
-.buttonDanger {
+/* Ghost — transparent, inverts on hover */
+.buttonGhost {
 	background: var(--surface-0);
-	border: 1.5px solid var(--ink);
 	color: var(--ink);
 }
 
-.button:hover,
-.buttonGhost:hover,
-.buttonDanger:hover {
+.buttonPrimary:hover,
+.buttonGhost:hover {
 	transform: translate(-1px, -1px);
-	box-shadow: 5px 5px 0 var(--line);
+	box-shadow: 4px 4px 0 var(--line);
 	border-color: var(--line);
 }
 
-.button:hover {
+.buttonPrimary:hover {
 	background: var(--accent-hover);
 	color: #111111;
 }
 
-.buttonGhost:hover,
-.buttonDanger:hover {
+.buttonGhost:hover {
 	background: var(--ink);
 	border-color: var(--ink);
 	color: var(--surface-0);
 }
 
-.button:disabled,
-.buttonGhost:disabled,
-.buttonDanger:disabled {
+.buttonPrimary:disabled,
+.buttonGhost:disabled {
 	cursor: not-allowed;
 	opacity: 0.55;
 	transform: none;
-	box-shadow: 4px 4px 0 var(--line);
-}
-
-.sessionInline {
-	display: flex;
-	align-items: baseline;
-	gap: var(--space-2);
-	min-width: 0;
-}
-
-.sessionInlineLabel {
-	flex: 0 0 auto;
-	color: var(--muted);
-	font-size: 0.7rem;
-	font-weight: 800;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-}
-
-.sessionInlineValue {
-	min-width: 0;
-	flex: 1 1 auto;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	font-family: var(--font-display), sans-serif;
-	font-size: 0.85rem;
-	font-weight: 700;
-}
-
-.discussionPane {
-	display: grid;
-	gap: 0;
-	min-width: 0;
+	box-shadow: 3px 3px 0 var(--line);
 }
 
 .topicEditorWrap {
@@ -647,7 +615,7 @@ select {
 	gap: 0;
 	min-width: 0;
 	width: 100%;
-	padding-top: 14px;
+	padding-top: 18px;
 	position: sticky;
 	top: 18px;
 }
@@ -670,31 +638,11 @@ select {
 	margin-bottom: 28px;
 }
 
-.telemetryPanel .sidebarSectionHeading {
-	margin: 0;
-}
-
-.telemetryStatusHeading {
-	gap: 0;
-}
-
-.telemetryStatusSummary {
-	display: inline-flex;
-	align-items: baseline;
-	gap: 8px;
-	min-width: 0;
-	width: 100%;
-}
-
-.telemetryStatusLabel {
-	flex: 0 0 auto;
-	font: inherit;
-	letter-spacing: inherit;
-}
-
 .telemetryStatusValue {
-	flex: 1 1 auto;
-	min-width: 0;
+	font-size: 0.72rem;
+	font-weight: 800;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 	line-height: 1;
 }
 
@@ -753,21 +701,18 @@ select {
 		background: transparent;
 	}
 
-	.chatColumn {
+	.convoColumn {
 		padding-left: 0;
-		padding-top: 0;
 	}
 
-	.button,
+	.buttonPrimary,
 	.buttonGhost,
-	.buttonDanger,
 	.topicEditorWrap {
 		box-shadow: 2px 2px 0 var(--line);
 	}
 
-	.button:hover,
-	.buttonGhost:hover,
-	.buttonDanger:hover {
+	.buttonPrimary:hover,
+	.buttonGhost:hover {
 		transform: none;
 		box-shadow: 2px 2px 0 var(--line);
 	}

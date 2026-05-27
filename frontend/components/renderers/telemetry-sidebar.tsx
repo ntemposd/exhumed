@@ -16,21 +16,15 @@ type TelemetryTableVariant = "plain" | "bordered" | "shadowed";
 // ─── SidebarSection ───────────────────────────────────────────────────────
 
 type SidebarSectionProps = {
-  title?: string;
-  heading?: React.ReactNode;
+  title?: React.ReactNode;
   children: React.ReactNode;
   panelClassName?: string;
-  headingClassName?: string;
 };
 
-function SidebarSection({ title, heading, children, panelClassName, headingClassName }: SidebarSectionProps) {
-  const resolvedHeading = heading ?? title;
-
+function SidebarSection({ title, children, panelClassName }: SidebarSectionProps) {
   return (
     <section className="sidebarSectionGroup">
-      {resolvedHeading
-        ? <h3 className={`sidebarSectionHeading ${headingClassName ?? ""}`.trim()}>{resolvedHeading}</h3>
-        : null}
+      {title ? <h3 className="sectionHeading">{title}</h3> : null}
       <div className={`sidebarSectionBody ${panelClassName ?? ""}`.trim()}>{children}</div>
     </section>
   );
@@ -174,20 +168,14 @@ function TelemetryServiceStatus({ servicesState, onlineServices, serviceRows }: 
       : onlineServices === serviceRows.length
         ? "online"
         : "degraded";
-  const heading = (
-    <span className="telemetryStatusSummary sessionInline">
-      <span className="sessionInlineLabel telemetryStatusLabel">System Status:</span>
-      <span className={`sessionInlineValue telemetryStatusValue telemetryStatusValue${slug.charAt(0).toUpperCase()}${slug.slice(1)}`}>
-        {slug.toUpperCase()}
-      </span>
-    </span>
-  );
+
+  const statusClass = `telemetryStatusValue telemetryStatusValue${slug.charAt(0).toUpperCase()}${slug.slice(1)}`;
 
   return (
-    <SidebarSection heading={heading} headingClassName="telemetryStatusHeading">
+    <SidebarSection title={<>SYSTEM STATUS: <span className={statusClass}>{slug.toUpperCase()}</span></>}>
       <div className="telemetryStatusBody">
         {serviceTableRows.length > 0
-          ? <TelemetryTable rows={serviceTableRows} variant="bordered" />
+          ? <TelemetryTable rows={serviceTableRows} variant="shadowed" />
           : <p className="statusNote">{servicesState.summary}</p>}
         {servicesState.phase === "refreshing" && servicesState.detail
           ? <p className="telemetryNote">{servicesState.detail}</p>

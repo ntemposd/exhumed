@@ -50,10 +50,6 @@ export async function getResponseErrorMessage(response: Response, fallbackMessag
 
 
 export function getRequestFailureMessage(error: unknown, fallbackMessage: string) {
-  if (error instanceof DOMException && error.name === "AbortError") {
-    return "The request took too long and was canceled. Check backend latency and try again.";
-  }
-
   if (error instanceof TypeError) {
     return "Could not reach the backend. Check NEXT_PUBLIC_BACKEND_URL, CORS, and backend availability.";
   }

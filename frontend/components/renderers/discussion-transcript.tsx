@@ -3,16 +3,9 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 
 import type { DebateMessage } from "../types";
-import { getStyleIndex, sanitizeDebateMessageText } from "../utils";
+import { avatarUrlForAgent, getAgentArchetype, sanitizeDebateMessageText } from "../utils";
 import styles from "./discussion-transcript.module.css";
 
-// Stable module-level constant — CSS Module class refs never change between renders.
-const BUBBLE_TONE_CLASSES = [
-  styles.bubbleTone0,  styles.bubbleTone1,  styles.bubbleTone2,  styles.bubbleTone3,
-  styles.bubbleTone4,  styles.bubbleTone5,  styles.bubbleTone6,  styles.bubbleTone7,
-  styles.bubbleTone8,  styles.bubbleTone9,  styles.bubbleTone10, styles.bubbleTone11,
-  styles.bubbleTone12, styles.bubbleTone13, styles.bubbleTone14, styles.bubbleTone15,
-];
 
 const MESSAGE_PREVIEW_LIMIT = 140;
 
@@ -57,37 +50,41 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
   const [expandedMessageIds, setExpandedMessageIds] = useState<Record<string, boolean>>({});
   const [collapsedRounds, setCollapsedRounds] = useState<Record<number, boolean>>({});
   const [retryCountdownTick, setRetryCountdownTick] = useState(0);
-  const lastMessageStateRef = useRef<{ agentId: string; turnNumber: number; isThinking: boolean } | null>(null);
-  const lastScrolledRoundKeyRef = useRef(0);
   const lastAutoCollapsedRoundRef = useRef(0);
   const retryCountdownsRef = useRef<Record<string, { initialSeconds: number; startedAtMs: number; status: string }>>({});
   const normalizedRoundSize = Math.max(roundSize, 1);
 
   useEffect(() => {
-    if (roundScrollKey < lastScrolledRoundKeyRef.current) {
-      lastScrolledRoundKeyRef.current = roundScrollKey;
-    }
-
     if (roundScrollKey === 0) {
-      lastScrolledRoundKeyRef.current = 0;
       lastAutoCollapsedRoundRef.current = 0;
-      lastMessageStateRef.current = null;
       setCollapsedRounds({});
       setExpandedMessageIds({});
     }
   }, [roundScrollKey]);
 
-  function scrollBubbleToViewportTop(targetBubble: HTMLElement) {
-    const targetTop = Math.max(window.scrollY + targetBubble.getBoundingClientRect().top, 0);
-    const startTop = window.scrollY;
-    const travel = targetTop - startTop;
+  // Scroll so the bottom of the latest bubble sits just above the sticky controls bar.
+  // CONTROLS_CLEARANCE matches the sticky .transcriptControlsBlock height (padding + button + gap).
+  const CONTROLS_CLEARANCE = 96;
 
-    if (Math.abs(travel) < 2) {
-      window.scrollTo({ top: targetTop, behavior: "auto" });
+  function scrollToLatestBubble(targetBubble: HTMLElement) {
+    const bubbleBottomInViewport = targetBubble.getBoundingClientRect().bottom;
+    const availableHeight = window.innerHeight - CONTROLS_CLEARANCE;
+
+    // Already fully visible above the controls — nothing to do.
+    if (bubbleBottomInViewport <= availableHeight) {
       return;
     }
 
-    const durationMs = 440;
+    const targetScrollTop = window.scrollY + bubbleBottomInViewport - availableHeight;
+    const startTop = window.scrollY;
+    const travel = targetScrollTop - startTop;
+
+    if (Math.abs(travel) < 2) {
+      window.scrollTo({ top: targetScrollTop, behavior: "auto" });
+      return;
+    }
+
+    const durationMs = 380;
     const startTime = window.performance.now();
 
     const step = (currentTime: number) => {
@@ -95,17 +92,11 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
       const progress = Math.min(elapsed / durationMs, 1);
       const easedProgress = 1 - Math.pow(1 - progress, 3);
 
-      window.scrollTo({
-        top: startTop + travel * easedProgress,
-        behavior: "auto",
-      });
+      window.scrollTo({ top: startTop + travel * easedProgress, behavior: "auto" });
 
       if (progress < 1) {
         window.requestAnimationFrame(step);
-        return;
       }
-
-      window.scrollTo({ top: targetTop, behavior: "auto" });
     };
 
     window.requestAnimationFrame(step);
@@ -162,45 +153,29 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
     };
   }, [hasActiveRetryCountdown]);
 
+  // Scroll to each new bubble as it arrives so the latest content is always
+  // visible just above the sticky controls bar — chat-style bottom-anchored scroll.
+  const lastMessageId = messages.at(-1)?.id;
   useEffect(() => {
-    // Scroll only when the round-opening speaker finishes after an explicit Start/Advance intent.
-    const lastMessage = messages.at(-1);
-    if (!lastMessage) {
+    if (!lastMessageId) {
       return;
     }
 
     const animationFrameId = window.requestAnimationFrame(() => {
-      const previousMessageState = lastMessageStateRef.current;
-      const isFirstAnswerOfRound = Boolean(
-        !lastMessage.isThinking
-        && previousMessageState?.agentId === lastMessage.agent_id
-        && previousMessageState?.turnNumber === lastMessage.turn_number
-        && previousMessageState.isThinking,
-      );
-      const isRoundOpeningAnswer = !roundStartAgentId || lastMessage.agent_id === roundStartAgentId;
+      const targetBubble = transcriptRef.current?.querySelector(
+        `article[data-message-id="${lastMessageId}"]`,
+      ) as HTMLElement | null;
 
-      if (isFirstAnswerOfRound && isRoundOpeningAnswer && roundScrollKey > lastScrolledRoundKeyRef.current) {
-        const targetBubble = transcriptRef.current?.querySelector(
-          `article[data-message-id="${lastMessage.id}"]`,
-        ) as HTMLElement | null;
-
-        if (targetBubble) {
-          lastScrolledRoundKeyRef.current = roundScrollKey;
-          scrollBubbleToViewportTop(targetBubble);
-        }
+      if (targetBubble) {
+        scrollToLatestBubble(targetBubble);
       }
-
-      lastMessageStateRef.current = {
-        agentId: lastMessage.agent_id,
-        turnNumber: lastMessage.turn_number,
-        isThinking: Boolean(lastMessage.isThinking),
-      };
     });
 
     return () => {
       window.cancelAnimationFrame(animationFrameId);
     };
-  }, [messages, transcriptRef]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastMessageId, transcriptRef]);
 
   function getThinkingStatus(messageId: string, explicitStatus?: string): string {
     if (explicitStatus) {
@@ -331,14 +306,8 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
 
                 <div className={styles.roundMetaRow}>
                   <span className={styles.roundMeta}>
-                    {round.messages.length} {round.messages.length === 1 ? "turn" : "turns"}
+                    {round.messages.length} {round.messages.length === 1 ? "speaker" : "speakers"}
                   </span>
-                  {roundAvgEntropy !== null && (
-                    <span className={styles.roundMeta}>{roundAvgEntropy}% div</span>
-                  )}
-                  {roundAvgRagScore !== null && (
-                    <span className={styles.roundMeta}>{roundAvgRagScore} sim</span>
-                  )}
                 </div>
               </div>
 
@@ -346,12 +315,29 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
             </div>
 
             {!isCollapsed ? (
-              <div className={styles.roundTimeline}>
+              <>
+                {(roundAvgEntropy !== null || roundAvgRagScore !== null) && (
+                  <div className={styles.roundStats}>
+                    {roundAvgEntropy !== null && (
+                      <div className={styles.roundStatItem}>
+                        <span className={styles.roundStatLabel}>Diversity</span>
+                        <span className={styles.roundStatValue}>{roundAvgEntropy}%</span>
+                      </div>
+                    )}
+                    {roundAvgRagScore !== null && (
+                      <div className={styles.roundStatItem}>
+                        <span className={styles.roundStatLabel}>Similarity</span>
+                        <span className={styles.roundStatValue}>{roundAvgRagScore}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className={styles.roundTimeline}>
                 {round.messages.map((message) => {
                   const isExpanded = expandedMessageIds[message.id] ?? false;
                   const sanitizedMessage = sanitizeDebateMessageText(message.message, message.display_name);
                   const shouldTruncate = sanitizedMessage.length > MESSAGE_PREVIEW_LIMIT;
-                  const bubbleToneIndex = getStyleIndex(message.agent_id);
+                  const agentArchetype = getAgentArchetype(message.agent_id);
                   const thinkingStatus = message.isThinking
                     ? getThinkingStatus(message.id, message.thinkingStatus)
                     : "";
@@ -364,7 +350,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                   const showRetrySkull = message.isThinking && !visibleMessage && isThrottledThinkingStatus(message.thinkingStatus);
                   const messageSources = message.telemetry?.vector?.sources ?? [];
                   const showSources = messageSources.length > 0 && (isExpanded || !shouldTruncate);
-                  const showBubbleMeta = !message.isThinking && (
+                  const showBubbleMeta = !message.isThinking && (isExpanded || !shouldTruncate) && (
                     typeof message.telemetry?.entropy === "number" ||
                     typeof message.telemetry?.vector?.top_score === "number" ||
                     typeof message.execution_metrics?.total_tokens === "number" ||
@@ -377,23 +363,28 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                         data-message-id={message.id}
                         data-turn-number={message.turn_number}
                         data-thinking={message.isThinking ? "true" : "false"}
+                        data-archetype={agentArchetype}
                         className={[
                           styles.bubble,
                           styles.bubbleAssistant,
-                          BUBBLE_TONE_CLASSES[bubbleToneIndex] ?? styles.bubbleTone0,
                           message.isThinking ? styles.bubbleThinking : "",
                           message.failed ? styles.bubbleFailed : "",
                         ].filter(Boolean).join(" ")}
                       >
                         <div className={styles.bubbleHeader}>
                           <div className={styles.bubbleIdentity}>
+                            <img
+                              className={styles.bubbleAvatar}
+                              src={avatarUrlForAgent(message.agent_id)}
+                              alt=""
+                            />
                             <p className={styles.bubbleName}>{message.display_name}</p>
                           </div>
                           {message.turn_number ? (
                             <span className={styles.bubbleTurn}>Turn {message.turn_number}</span>
                           ) : null}
                         </div>
-                        {thinkingStatus ? <p className={styles.bubbleStatus}>{thinkingStatus.toUpperCase()}</p> : null}
+                        {thinkingStatus ? <p className={styles.bubbleStatus}>{thinkingStatus}</p> : null}
                         {visibleMessage ? (
                           <p className={styles.bubbleText}>
                             {injectSourceFootnotes(visibleMessage, messageSources)}
@@ -422,39 +413,61 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                         )}
                         {showBubbleMeta && (
                           <div className={styles.bubbleMeta}>
+                            {/* Diversity group */}
                             {typeof message.telemetry?.entropy === "number" && (
-                              <span className={styles.bubbleMetaItem}>
-                                {Math.round(message.telemetry.entropy * 100)}% div
+                              <span className={styles.bubbleMetaGroup}>
+                                <span className={styles.bubbleMetaGroupLabel}>div</span>
+                                <span className={styles.bubbleMetaItem}>
+                                  {Math.round(message.telemetry.entropy * 100)}%
+                                </span>
                               </span>
                             )}
-                            {typeof message.telemetry?.vector?.match_count === "number" && (
-                              <span className={styles.bubbleMetaItem}>
-                                {message.telemetry.vector.match_count} hits
+
+                            {/* Vector group: hits · chars · top */}
+                            {(typeof message.telemetry?.vector?.match_count === "number" ||
+                              typeof message.telemetry?.vector?.context_chars === "number" ||
+                              typeof message.telemetry?.vector?.top_score === "number") && (
+                              <span className={styles.bubbleMetaGroup}>
+                                <span className={styles.bubbleMetaGroupLabel}>Vector</span>
+                                {typeof message.telemetry.vector?.match_count === "number" && (
+                                  <span className={styles.bubbleMetaItem}>
+                                    {message.telemetry.vector.match_count} hits
+                                  </span>
+                                )}
+                                {typeof message.telemetry.vector?.context_chars === "number" && (
+                                  <span className={styles.bubbleMetaItem}>
+                                    {message.telemetry.vector.context_chars.toLocaleString()} chars
+                                  </span>
+                                )}
+                                {typeof message.telemetry.vector?.top_score === "number" && (
+                                  <span className={styles.bubbleMetaItem}>
+                                    {message.telemetry.vector.top_score.toFixed(2)} top
+                                  </span>
+                                )}
                               </span>
                             )}
-                            {typeof message.telemetry?.vector?.context_chars === "number" && (
-                              <span className={styles.bubbleMetaItem}>
-                                {message.telemetry.vector.context_chars.toLocaleString()} chars
-                              </span>
-                            )}
-                            {typeof message.telemetry?.vector?.top_score === "number" && (
-                              <span className={styles.bubbleMetaItem}>
-                                {message.telemetry.vector.top_score.toFixed(2)} top
-                              </span>
-                            )}
-                            {typeof message.execution_metrics?.prompt_tokens === "number" && (
-                              <span className={styles.bubbleMetaItem}>
-                                {message.execution_metrics.prompt_tokens.toLocaleString()}q
-                              </span>
-                            )}
-                            {typeof message.execution_metrics?.completion_tokens === "number" && (
-                              <span className={styles.bubbleMetaItem}>
-                                {message.execution_metrics.completion_tokens.toLocaleString()}a
-                              </span>
-                            )}
-                            {typeof message.telemetry?.latency_ms === "number" && (
-                              <span className={styles.bubbleMetaItem}>
-                                {(message.telemetry.latency_ms / 1000).toFixed(1)}s
+
+                            {/* Perf group: tokens · latency */}
+                            {(typeof message.execution_metrics?.prompt_tokens === "number" ||
+                              typeof message.execution_metrics?.completion_tokens === "number" ||
+                              typeof message.telemetry?.latency_ms === "number") && (
+                              <span className={styles.bubbleMetaGroup}>
+                                <span className={styles.bubbleMetaGroupLabel}>LLM Usage</span>
+                                {typeof message.execution_metrics?.prompt_tokens === "number" && (
+                                  <span className={styles.bubbleMetaItem}>
+                                    {message.execution_metrics.prompt_tokens.toLocaleString()}q
+                                  </span>
+                                )}
+                                {typeof message.execution_metrics?.completion_tokens === "number" && (
+                                  <span className={styles.bubbleMetaItem}>
+                                    {message.execution_metrics.completion_tokens.toLocaleString()}a
+                                  </span>
+                                )}
+                                {typeof message.telemetry?.latency_ms === "number" && (
+                                  <span className={styles.bubbleMetaItem}>
+                                    {(message.telemetry.latency_ms / 1000).toFixed(1)}s
+                                  </span>
+                                )}
                               </span>
                             )}
                           </div>
@@ -469,6 +482,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                   );
                 })}
               </div>
+              </>
             ) : null}
 
           </section>

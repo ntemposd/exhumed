@@ -67,6 +67,8 @@
   gap: 0;
   flex-wrap: wrap;
   flex-shrink: 0;
+  border-left: 1.5px solid var(--round-header-sep);
+  padding-left: 10px;
 }
 
 .roundTitle {
@@ -89,11 +91,6 @@
   text-transform: uppercase;
 }
 
-.roundMeta + .roundMeta::before {
-  content: "·";
-  padding: 0 8px;
-  color: var(--line-strong);
-}
 
 .roundToggle {
   flex-shrink: 0;
@@ -107,6 +104,38 @@
   font-weight: 700;
   line-height: 1;
   color: var(--muted);
+}
+
+.roundStats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 7px 14px;
+  background: var(--surface-1);
+  border: 2px solid var(--line);
+}
+
+.roundStatItem {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.roundStatLabel {
+  font-size: 0.60rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.roundStatValue {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
 .roundTimeline {
@@ -157,103 +186,53 @@
   border-left: 4px solid var(--warning);
 }
 
-.bubbleTone0 {
-  border-left: 4px solid var(--tone-0);
-}
+/* ─── Archetype accent — border + name badge background ──────── */
 
-.bubbleTone0 .bubbleName {
-  color: var(--tone-0);
-}
+.bubble[data-archetype="creator"]    { border-left: 4px solid var(--archetype-creator-bg);    }
+.bubble[data-archetype="commander"]  { border-left: 4px solid var(--archetype-commander-bg);  }
+.bubble[data-archetype="thinker"]    { border-left: 4px solid var(--archetype-thinker-bg);    }
+.bubble[data-archetype="strategist"] { border-left: 4px solid var(--archetype-strategist-bg); }
 
-.bubbleTone1 {
-  border-left: 4px solid var(--tone-1);
-}
-
-.bubbleTone1 .bubbleName {
-  color: var(--tone-1);
-}
-
-.bubbleTone2 {
-  border-left: 4px solid var(--tone-2);
-}
-
-.bubbleTone2 .bubbleName {
-  color: var(--tone-2);
-}
-
-.bubbleTone3 {
-  border-left: 4px solid var(--tone-3);
-}
-
-.bubbleTone3 .bubbleName {
-  color: var(--tone-3);
-}
-
-.bubbleTone4 {
-  border-left: 4px solid var(--tone-4);
-}
-
-.bubbleTone4 .bubbleName {
-  color: var(--tone-4);
-}
-
-.bubbleTone5 { border-left: 4px solid var(--tone-5); }
-.bubbleTone5 .bubbleName { color: var(--tone-5); }
-
-.bubbleTone6 { border-left: 4px solid var(--tone-6); }
-.bubbleTone6 .bubbleName { color: var(--tone-6); }
-
-.bubbleTone7 { border-left: 4px solid var(--tone-7); }
-.bubbleTone7 .bubbleName { color: var(--tone-7); }
-
-.bubbleTone8 { border-left: 4px solid var(--tone-8); }
-.bubbleTone8 .bubbleName { color: var(--tone-8); }
-
-.bubbleTone9 { border-left: 4px solid var(--tone-9); }
-.bubbleTone9 .bubbleName { color: var(--tone-9); }
-
-.bubbleTone10 { border-left: 4px solid var(--tone-10); }
-.bubbleTone10 .bubbleName { color: var(--tone-10); }
-
-.bubbleTone11 { border-left: 4px solid var(--tone-11); }
-.bubbleTone11 .bubbleName { color: var(--tone-11); }
-
-.bubbleTone12 { border-left: 4px solid var(--tone-12); }
-.bubbleTone12 .bubbleName { color: var(--tone-12); }
-
-.bubbleTone13 { border-left: 4px solid var(--tone-13); }
-.bubbleTone13 .bubbleName { color: var(--tone-13); }
-
-.bubbleTone14 { border-left: 4px solid var(--tone-14); }
-.bubbleTone14 .bubbleName { color: var(--tone-14); }
-
-.bubbleTone15 { border-left: 4px solid var(--tone-15); }
-.bubbleTone15 .bubbleName { color: var(--tone-15); }
+.bubble[data-archetype="creator"]    .bubbleName { background: var(--archetype-creator-bg);    }
+.bubble[data-archetype="commander"]  .bubbleName { background: var(--archetype-commander-bg);  }
+.bubble[data-archetype="thinker"]    .bubbleName { background: var(--archetype-thinker-bg);    }
+.bubble[data-archetype="strategist"] .bubbleName { background: var(--archetype-strategist-bg); }
 
 .bubbleHeader {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
 
 .bubbleIdentity {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   min-width: 0;
-  flex-wrap: wrap;
+}
+
+.bubbleAvatar {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid var(--line-medium);
+  background: var(--surface-1);
 }
 
 .bubbleName {
   margin: 0;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  font-size: 0.98rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  line-height: 1.05;
+  line-height: 1.4;
+  color: var(--archetype-text);
 }
 
 .bubbleTurn {
@@ -268,21 +247,20 @@
 
 .bubbleStatus {
   margin: 0;
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
   color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-style: italic;
   line-height: 1.4;
   overflow-wrap: anywhere;
-  padding-left: 0;
 }
 
 .bubbleText {
   margin: 0;
   white-space: pre-wrap;
-  font-size: 1.08rem;
-  line-height: 1.7;
+  font-size: 1rem;
+  line-height: 1.65;
 }
 
 .bubbleInlineToggle {
@@ -343,29 +321,54 @@
 }
 
 .bubbleMeta {
-  padding-top: 8px;
-  margin-top: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 14px;
+  row-gap: 3px;
+  padding-top: 10px;
+  /* margin-top: 2px; */
   border-top: 1px dashed var(--line-subtle);
-  line-height: 1.8;
 }
 
 .bubbleMetaItem {
-  display: inline;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   font-size: 0.60rem;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
+  white-space: nowrap;
 }
 
-.bubbleMetaItem::after {
-  content: " · ";
+.bubbleMetaGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 2px 6px 2px 5px;
+  background: var(--surface-1);
+  border: 1px solid var(--line-subtle);
+}
+
+.bubbleMetaGroupLabel {
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--line-strong);
-  letter-spacing: 0;
+  padding-right: 6px;
+  margin-right: 6px;
+  border-right: 1px solid var(--line-medium);
 }
 
-.bubbleMetaItem:last-child::after {
-  content: "";
+/* Dot separator between items within a group */
+.bubbleMetaGroup .bubbleMetaItem + .bubbleMetaItem::before {
+  content: "·";
+  padding: 0 5px;
+  color: var(--line-strong);
+  font-weight: 400;
 }
 
 .bubbleSources {
@@ -409,12 +412,13 @@
   }
 
   .bubbleText {
-    font-size: 0.96rem;
-    line-height: 1.65;
+    font-size: 0.92rem;
+    line-height: 1.6;
   }
 
   .bubbleMeta {
     padding-top: 6px;
+    column-gap: 10px;
   }
 
   .bubbleMetaItem {

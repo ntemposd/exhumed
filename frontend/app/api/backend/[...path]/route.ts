@@ -55,12 +55,22 @@ async function proxy(
       headers: respHeaders,
     });
   } catch (err) {
-    // Client disconnected before the response was ready — normal for browser
-    // navigations, tab closes, and React StrictMode dev remounts. Return 499
-    // silently rather than letting the AbortError surface as a server error.
+    // Client disconnected — browser navigation, tab close, or React StrictMode
+    // dev remount. Return 499 silently rather than logging a server error.
     if (request.signal.aborted) {
       return new NextResponse(null, { status: 499 });
     }
+
+    // Network-level failure: ECONNREFUSED, DNS error, backend unreachable.
+    // Return a structured 503 so the client gets a readable error instead of
+    // a raw 500 with a Node.js stack trace in the server logs.
+    if (err instanceof TypeError) {
+      return NextResponse.json(
+        { detail: `Backend unreachable at ${targetUrl}. Is the server running and is BACKEND_URL correct?` },
+        { status: 503 },
+      );
+    }
+
     throw err;
   }
 }

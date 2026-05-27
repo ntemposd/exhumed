@@ -133,24 +133,24 @@ export function useTelemetryViewModel({
 
   const performanceRows: TelemetryTableRow[] = [
     {
-      Average: "GEN TIME",
+      Metric: "Generation Time",
       Value: averageGenerationMs !== null ? `${Math.round(averageGenerationMs)}ms` : "IDLE",
     },
     {
-      Average: "QUEUE",
+      Metric: "Queue Wait",
       Value: averageQueueMs !== null ? `${Math.round(averageQueueMs)}ms` : "N/A",
     },
     {
-      Average: "PROMPT",
+      Metric: "Prompt Processing",
       Value: averagePromptMs !== null ? `${Math.round(averagePromptMs)}ms` : "N/A",
     },
     {
-      Average: "TTFT",
+      Metric: "Time to First Token",
       Value: averageTtftMs !== null ? `${Math.round(averageTtftMs)}ms` : "N/A",
     },
     {
-      Average: "SESSION TPS",
-      Value: sessionTps !== null ? `${sessionTps.toFixed(2)} TPS` : "N/A",
+      Metric: "Session Throughput",
+      Value: sessionTps !== null ? `${sessionTps.toFixed(2)} tok/s` : "N/A",
     },
   ];
 

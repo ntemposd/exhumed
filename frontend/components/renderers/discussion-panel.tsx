@@ -74,11 +74,10 @@ export function DiscussionPanel({
   const availableCouncil = legendEntries.filter((legend) => !selectedAgentIds.has(legend.agent_id));
 
   return (
-    <section className="chatColumn">
-      <div className={`discussionPane ${styles.discussionPane}`.trim()}>
-        <div className={styles.controlsDeck}>
-          <section className={styles.sectionGroup}>
-            <span className={styles.sectionLabel}>Theme</span>
+    <section className="convoColumn">
+      <div className={styles.convoPane}>
+        <section className={styles.themeSection}>
+            <span className={"sectionHeading"}>Theme</span>
             <div className={styles.topicSectionLayout}>
               <div className={styles.topicSection}>
                 <div className="topicEditorWrap" data-replicated-value={topic || "The future of AI in society"}>
@@ -104,17 +103,17 @@ export function DiscussionPanel({
                   )}
                 </div>
                 {!showTranscriptControls && (
-                  <button className={`button ${styles.commandButton} ${styles.startConvoButton}`.trim()} type="button" onClick={onStartDebate}>
+                  <button className="buttonPrimary" type="button" onClick={onStartDebate}>
                     {startButtonLabel}
                   </button>
                 )}
               </div>
             </div>
             {!showTranscriptControls && controlError ? <p className="statusNote">{controlError}</p> : null}
-          </section>
+        </section>
 
-          <section className={`${styles.sectionGroup} ${styles.dividedSection}`.trim()}>
-            <span className={styles.sectionLabel}>Participants</span>
+        <section className={styles.participantsSection}>
+            <span className={"sectionHeading"}>Participants</span>
             <div className={`draftedCouncil ${styles.councilChips}`.trim()}>
               {selectedCouncil.map((legend) => (
                 <div
@@ -150,7 +149,7 @@ export function DiscussionPanel({
               ))}
 
               <button
-                className={`button ${styles.editCouncilButton}`.trim()}
+                className="buttonPrimary"
                 type="button"
                 onClick={onToggleCouncilEdit}
                 aria-pressed={isCouncilEditing}
@@ -190,10 +189,10 @@ export function DiscussionPanel({
                 </div>
               )) : null}
             </div>
-          </section>
+        </section>
 
-          <section className={`${styles.sectionGroup} ${styles.dividedSection}`.trim()}>
-            <span className={styles.sectionLabel}>Type</span>
+        <section className={styles.typeSection}>
+            <span className={"sectionHeading"}>Type</span>
             <div className={styles.entropyOptions} role="radiogroup" aria-label="Logic entropy selector">
               {ENTROPY_PROFILES.map((profile) => {
                 const isSelected = profile.value === selectedEntropyValue.value;
@@ -213,14 +212,11 @@ export function DiscussionPanel({
                 );
               })}
             </div>
-          </section>
-        </div>
+        </section>
 
-        <div className={`${styles.transcriptShell} ${styles.dividedSection}`.trim()}>
-          <div className={styles.transcriptHeading}>
-            <div className={styles.transcriptHeadingRow}>
-              <span>Live Transcript</span>
-            </div>
+        <section className={styles.transcriptSection}>
+          <div className={styles.transcriptHeader}>
+            <span className={"sectionHeading"}>Live Transcript</span>
             <p className={styles.transcriptStatusMessage}>{transcriptState.statusLabel}</p>
           </div>
           <DiscussionTranscript
@@ -235,28 +231,21 @@ export function DiscussionPanel({
             <div className={styles.transcriptControlsBlock}>
               <div className={styles.commandGrid}>
                 <button
-                  className={`button ${styles.commandButton}`.trim()}
+                  className="buttonPrimary"
                   type="button"
                   onClick={discussionActive ? onHaltDebate : onStartDebate}
                 >
                   {discussionActive ? "Pause" : startButtonLabel}
                 </button>
-                <button className={`buttonDanger ${styles.commandButton}`.trim()} type="button" onClick={() => void onWipeDebate()} disabled={isWipingSession}>
+                <button className="buttonGhost" type="button" onClick={() => void onWipeDebate()} disabled={isWipingSession || discussionActive}>
                   {isWipingSession ? "Wiping..." : "Wipe"}
                 </button>
-                <button
-                  className={`buttonGhost ${styles.commandButton}`.trim()}
-                  type="button"
-                  onClick={() => void onDownloadTranscript()}
-                  disabled={isDownloadingTranscript}
-                >
-                  {isDownloadingTranscript ? "Preparing..." : "Export"}
-                </button>
+                {/* Export hidden for launch — feature ready, not needed yet */}
               </div>
               {controlError ? <p className="statusNote">{controlError}</p> : null}
             </div>
           ) : null}
-        </div>
+        </section>
       </div>
     </section>
   );

@@ -1,37 +1,33 @@
-.discussionPane {
+/* ─── Conversation pane root ─────────────────────────────────── */
+
+.convoPane {
   --section-gap: 26px;
-  padding: 22px 18px 0 0;
-}
-
-.sectionLabel,
-.transcriptHeadingRow {
-  font-family: var(--font-display), sans-serif;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.sectionLabel {
-  display: block;
-  user-select: none;
-  margin-bottom: 6px;
-}
-
-.controlsDeck {
   display: grid;
+  min-width: 0;
+  padding: 18px 0 0 0;
 }
 
-.sectionGroup {
+/* ─── Individual section containers ──────────────────────────── */
+
+.themeSection,
+.participantsSection,
+.typeSection,
+.transcriptSection {
   display: grid;
-  gap: 10px;
+  gap: 6px;
 }
 
-.dividedSection {
+.participantsSection,
+.typeSection,
+.transcriptSection {
   margin-top: var(--section-gap);
-  padding-top: 0;
 }
+
+.transcriptSection {
+  gap: 14px;
+}
+
+/* ─── Theme section ───────────────────────────────────────────── */
 
 .topicSectionLayout {
   display: grid;
@@ -48,10 +44,12 @@
 .topicSection {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
   min-height: 0;
   align-items: flex-start;
 }
+
+/* ─── Participants section ────────────────────────────────────── */
 
 .councilChips {
   display: flex;
@@ -60,29 +58,7 @@
   gap: 6px;
 }
 
-.editCouncilButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-height: 32px;
-  padding: 4px 14px;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-  background: var(--accent);
-  border-color: var(--line);
-  color: #111111;
-  box-shadow: 3px 3px 0 var(--line);
-}
-
-.editCouncilButton:hover {
-  background: var(--accent-soft);
-  border-color: var(--line);
-  color: #111111;
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--line);
-}
+/* ─── Type section ────────────────────────────────────────────── */
 
 .entropyOptions {
   display: flex;
@@ -102,7 +78,7 @@
   padding: 3px 10px;
   border: 2px solid var(--line-medium);
   background: color-mix(in srgb, var(--accent) 22%, var(--surface-0));
-  box-shadow: 2px 2px 0 var(--line-medium);
+  box-shadow: 1px 1px 0 var(--line-medium);
   color: var(--muted);
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease;
@@ -110,7 +86,7 @@
 
 .entropyOption:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 var(--line);
+  box-shadow: 1px 1px 0 var(--line);
   border-color: var(--line);
   background: color-mix(in srgb, var(--accent) 55%, var(--surface-0));
   color: var(--ink);
@@ -118,7 +94,7 @@
 
 .entropyOptionActive {
   background: var(--accent-soft);
-  box-shadow: 3px 3px 0 var(--line);
+  box-shadow: 2px 2px 0 var(--line);
   border-color: var(--line);
   color: var(--ink);
 }
@@ -138,51 +114,12 @@
   text-transform: uppercase;
 }
 
-.commandGrid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-}
+/* ─── Transcript section ──────────────────────────────────────── */
 
-.commandButton {
-  min-height: 52px;
-  padding: 12px 16px;
-  box-shadow: 3px 3px 0 var(--line);
-  font-size: 0.76rem;
-  letter-spacing: 0.06em;
-}
-
-.startConvoButton {
-  margin-top: 10px;
-  min-height: 54px;
-  padding: 12px 22px;
-  border-width: 3px;
-  box-shadow: 6px 6px 0 var(--line);
-  font-size: 0.86rem;
-  letter-spacing: 0.07em;
-}
-
-.startConvoButton:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 8px 8px 0 var(--line);
-}
-
-.transcriptShell {
-  display: grid;
-  gap: 14px;
-}
-
-.transcriptHeading {
+.transcriptHeader {
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.transcriptHeadingRow {
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-start;
-  gap: 8px;
 }
 
 .transcriptStatusMessage {
@@ -196,22 +133,32 @@
 }
 
 .transcriptControlsBlock {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
   display: grid;
   gap: 10px;
-  padding-top: 16px;
-  padding-bottom: 28px;
-  margin-top: 8px;
+  padding: 20px 0 28px;
+  background: linear-gradient(to bottom, transparent, var(--surface-0) 40%);
 }
 
+.commandGrid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────── */
+
 @media (max-width: 767px) {
-  .discussionPane {
+  .convoPane {
     --section-gap: 22px;
-    gap: 0;
-    padding: 32px 0 0;
   }
 
-  .sectionGroup {
-    gap: 12px;
+  .themeSection,
+  .participantsSection,
+  .typeSection {
+    gap: 8px;
   }
 
   .topicSectionLayout {
@@ -233,7 +180,6 @@
     min-height: 32px;
     min-width: 0;
     padding: 4px 10px;
-    box-shadow: 2px 2px 0 var(--line-medium);
   }
 
   .commandGrid {
@@ -243,33 +189,4 @@
   .councilChips {
     gap: 6px;
   }
-
-  .transcriptHeadingRow {
-    width: 100%;
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .commandButton,
-  .editCouncilButton {
-    min-height: 48px;
-    padding: 10px 12px;
-    box-shadow: 2px 2px 0 var(--line);
-  }
-
-  .startConvoButton {
-    margin-top: 8px;
-    min-height: 50px;
-    border-width: 3px;
-    box-shadow: 4px 4px 0 var(--line);
-    font-size: 0.82rem;
-  }
-
-  .editCouncilButton {
-    width: auto;
-    max-width: 100%;
-    flex: 0 0 auto;
-  }
-
 }

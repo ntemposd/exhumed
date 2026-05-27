@@ -37,7 +37,7 @@ export function AppNavbar() {
         <div className={styles.brandCopy}>
           <div className={styles.brandTitleRow}>
             <span className={styles.brandTitle}>EXHUMED</span>
-            <span className={styles.betaBadge}>v1.0.0-alpha.1</span>
+            <span className={styles.betaBadge}>v1.0.0-beta.1</span>
           </div>
           <span className={styles.brandSubtitle}>Historical Convo Engine</span>
         </div>
