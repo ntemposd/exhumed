@@ -39,7 +39,7 @@ export function ChatWorkbench() {
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const telemetrySidebarRef = useRef<HTMLElement | null>(null);
   const telemetrySidebarUserScrolledRef = useRef(false);
-  const { topic, setTopic, topicEditorRef, hasHydratedTopic } = useTopicEditorState({
+  const { topic, setTopic } = useTopicEditorState({
     storageKey: TOPIC_STORAGE_KEY,
     defaultTopic: DEFAULT_TOPIC,
   });
@@ -238,8 +238,6 @@ export function ChatWorkbench() {
       <section className="workspace">
         <DiscussionPanel
           topic={topic}
-          hasHydratedTopic={hasHydratedTopic}
-          topicEditorRef={topicEditorRef}
           discussionActive={discussionActive}
           selectedCouncil={selectedCouncil}
           targetEntropy={targetEntropy}

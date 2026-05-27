@@ -3,6 +3,7 @@
 import { type RefObject } from "react";
 import Image from "next/image";
 
+
 import type { DebateMessage, LegendDetails, TranscriptViewState } from "../types";
 import { avatarUrlForAgent, ENTROPY_PROFILES, getAgentArchetype } from "../utils";
 import { DiscussionTranscript } from "./discussion-transcript";
@@ -10,8 +11,6 @@ import styles from "./discussion-panel.module.css";
 
 type DiscussionPanelProps = {
   topic: string;
-  hasHydratedTopic: boolean;
-  topicEditorRef: RefObject<HTMLTextAreaElement | null>;
   discussionActive: boolean;
   selectedCouncil: LegendDetails[];
   legendEntries: LegendDetails[];
@@ -40,8 +39,6 @@ type DiscussionPanelProps = {
 
 export function DiscussionPanel({
   topic,
-  hasHydratedTopic,
-  topicEditorRef,
   discussionActive,
   selectedCouncil,
   legendEntries,
@@ -82,26 +79,14 @@ export function DiscussionPanel({
             <div className={styles.topicSectionLayout}>
               <div className={styles.topicSection}>
                 <div className="topicEditorWrap" data-replicated-value={topic || "The future of AI in society"}>
-                  {hasHydratedTopic ? (
-                    <textarea
-                      ref={topicEditorRef}
-                      className="topicEditorField"
-                      value={topic}
-                      rows={1}
-                      onChange={(event) => onTopicChange(event.target.value)}
-                      onInput={(event) => {
-                        const el = event.currentTarget;
-                        el.style.height = "auto";
-                        el.style.height = `${el.scrollHeight}px`;
-                      }}
-                      placeholder="The future of AI in society"
-                      disabled={discussionActive}
-                    />
-                  ) : (
-                    <span className="topicEditorLoading" aria-live="polite">
-                      Loading saved topic...
-                    </span>
-                  )}
+                  <textarea
+                    className="topicEditorField"
+                    value={topic}
+                    rows={1}
+                    onChange={(event) => onTopicChange(event.target.value)}
+                    placeholder="The future of AI in society"
+                    disabled={discussionActive}
+                  />
                 </div>
                 {!showTranscriptControls && (
                   <button className="buttonPrimary" type="button" onClick={onStartDebate}>

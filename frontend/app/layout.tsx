@@ -11,6 +11,7 @@ const monoFont = IBM_Plex_Mono({
   variable: "--font-mono",
   weight: ["400", "500", "700"],
   display: "optional",
+  preload: false,
 });
 
 export const metadata: Metadata = {
