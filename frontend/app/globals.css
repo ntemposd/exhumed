@@ -189,6 +189,7 @@
 
 html {
 	background: #F8F2E2;
+	scrollbar-gutter: stable;
 }
 
 html[data-theme="dark"] {
@@ -257,6 +258,15 @@ select {
 	text-underline-offset: 0.16em;
 }
 
+.siteFooterVersion {
+	display: block;
+	margin-top: 6px;
+	font-size: 0.68rem;
+	letter-spacing: 0.04em;
+	color: var(--muted);
+	opacity: 0.8;
+}
+
 .workspace {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(320px, 25vw);
@@ -268,6 +278,7 @@ select {
 	padding: 0;
 	transition: grid-template-columns 180ms ease;
 }
+
 
 .convoColumn,
 .telemetryColumn {
@@ -316,7 +327,7 @@ select {
 	display: block;
 	margin: 0;
 	font-family: var(--font-display), sans-serif;
-	font-size: 0.72rem;
+	font-size: 1rem;
 	font-weight: 800;
 	letter-spacing: 0.1em;
 	text-transform: uppercase;
@@ -550,6 +561,7 @@ select {
 	padding: 14px 16px;
 	overflow-wrap: anywhere;
 	box-shadow: 4px 4px 0 var(--line);
+	cursor: text;
 	transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 

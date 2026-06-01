@@ -258,9 +258,11 @@ function TelemetrySummarySections({
 type TelemetryPanelProps = {
   viewModel: TelemetryPanelViewModel;
   containerRef: RefObject<HTMLElement | null>;
+  isSidebarOpen: boolean;
+  onToggleSidebar: () => void;
 };
 
-export function TelemetryPanel({ viewModel, containerRef }: TelemetryPanelProps) {
+export function TelemetryPanel({ viewModel, containerRef, isSidebarOpen, onToggleSidebar }: TelemetryPanelProps) {
   const {
     servicesState,
     onlineServices,
@@ -276,19 +278,37 @@ export function TelemetryPanel({ viewModel, containerRef }: TelemetryPanelProps)
   return (
     <aside className="telemetryColumn" ref={containerRef}>
       <div className="panel telemetryPanel">
-        <TelemetryServiceStatus
-          servicesState={servicesState}
-          onlineServices={onlineServices}
-          serviceRows={serviceRows}
-        />
-        <TelemetrySummarySections
-          performanceRows={performanceRows}
-          sessionBurnUsd={sessionBurnUsd}
-          observedRatio={observedRatio}
-          diversityValue={diversityValue}
-          diversityLabel={diversityLabel}
-          vocalShareRows={vocalShareRows}
-        />
+        <button
+          type="button"
+          className={styles.telemetryToggleBtn}
+          onClick={onToggleSidebar}
+          aria-expanded={isSidebarOpen}
+        >
+          <span className={styles.telemetryToggleIcon} aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+          </span>
+          <span className={styles.telemetryToggleLabel}>{isSidebarOpen ? "Close Telemetry" : "Open Telemetry"}</span>
+          <span className={styles.telemetryToggleChevron} aria-hidden="true">{isSidebarOpen ? "−" : "+"}</span>
+        </button>
+        {isSidebarOpen ? (
+          <>
+            <TelemetryServiceStatus
+              servicesState={servicesState}
+              onlineServices={onlineServices}
+              serviceRows={serviceRows}
+            />
+            <TelemetrySummarySections
+              performanceRows={performanceRows}
+              sessionBurnUsd={sessionBurnUsd}
+              observedRatio={observedRatio}
+              diversityValue={diversityValue}
+              diversityLabel={diversityLabel}
+              vocalShareRows={vocalShareRows}
+            />
+          </>
+        ) : null}
       </div>
     </aside>
   );

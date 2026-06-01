@@ -39,6 +39,7 @@ type DiscussionTranscriptProps = {
   roundSize: number;
   roundStartAgentId?: string;
   roundScrollKey: number;
+  fillViewport?: boolean;
   transcriptRef: RefObject<HTMLDivElement | null>;
 };
 
@@ -47,7 +48,7 @@ type TranscriptRound = {
   messages: DebateMessage[];
 };
 
-export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, roundStartAgentId, roundScrollKey, transcriptRef }: DiscussionTranscriptProps) {
+export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, roundStartAgentId, roundScrollKey, fillViewport, transcriptRef }: DiscussionTranscriptProps) {
   const [expandedMessageIds, setExpandedMessageIds] = useState<Record<string, boolean>>({});
   const [collapsedRounds, setCollapsedRounds] = useState<Record<number, boolean>>({});
   const [retryCountdownTick, setRetryCountdownTick] = useState(0);
@@ -163,7 +164,23 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
     }
 
     const animationFrameId = window.requestAnimationFrame(() => {
-      const targetBubble = transcriptRef.current?.querySelector(
+      const container = transcriptRef.current;
+      if (!container) {
+        return;
+      }
+
+      // Full-screen convo mode scrolls the transcript internally. Keep the
+      // newest content pinned just above the command bar, but only when the
+      // reader is already near the bottom so scrolling up to review is stable.
+      if (fillViewport) {
+        const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+        if (distanceFromBottom < 160) {
+          container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+        }
+        return;
+      }
+
+      const targetBubble = container.querySelector(
         `article[data-message-id="${lastMessageId}"]`,
       ) as HTMLElement | null;
 
@@ -176,7 +193,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
       window.cancelAnimationFrame(animationFrameId);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastMessageId, transcriptRef]);
+  }, [lastMessageId, transcriptRef, fillViewport]);
 
   function getThinkingStatus(messageId: string, explicitStatus?: string): string {
     if (explicitStatus) {
@@ -257,20 +274,27 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
   }, [transcriptRounds]);
 
   function toggleRound(roundNumber: number) {
-    const savedScrollY = window.scrollY;
+    const container = transcriptRef.current;
+    const useContainerScroll = fillViewport && container;
+    const savedScroll = useContainerScroll ? container.scrollTop : window.scrollY;
     setCollapsedRounds((currentValue) => ({
       ...currentValue,
       [roundNumber]: !(currentValue[roundNumber] ?? false),
     }));
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => {
-        window.scrollTo({ top: savedScrollY, behavior: "auto" });
+        if (useContainerScroll) {
+          container.scrollTop = savedScroll;
+        } else {
+          window.scrollTo({ top: savedScroll, behavior: "auto" });
+        }
       });
     });
   }
 
   return (
-    <div className={styles.transcript} ref={transcriptRef}>
+    <div className={`${styles.transcript} ${fillViewport ? styles.transcriptScroll : ""}`.trim()} ref={transcriptRef}>
+      <div className={`${styles.transcriptInner} ${fillViewport ? styles.transcriptInnerFill : ""}`.trim()}>
       {messages.length === 0 ? (
         <div className={styles.emptyState}>
           <p className={styles.emptyStateText}>{emptyStateMessage}</p>
@@ -510,6 +534,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
           </section>
         );
       })}
+      </div>
     </div>
   );
 }

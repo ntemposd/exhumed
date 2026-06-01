@@ -85,7 +85,7 @@ export function useWorkbenchViewState({
       };
     }
     if (messages.length === 0) {
-      return { phase: "idle", statusLabel: statusNote, emptyMessage: "Draft the council, set the theme, and start a convo." };
+      return { phase: "idle", statusLabel: statusNote, emptyMessage: "Draft the council, set the topic, and start a convo." };
     }
     return { phase: "ready", statusLabel: statusNote, emptyMessage: "" };
   }, [controlError, discussionActive, messages, statusNote]);

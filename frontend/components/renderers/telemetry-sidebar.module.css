@@ -1,3 +1,67 @@
+/* ─── Sidebar toggle ─────────────────────────────────────────────────────── */
+
+.telemetryToggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+  border: 2px solid var(--line);
+  background: var(--surface-0);
+  box-shadow: 3px 3px 0 var(--line);
+  color: var(--ink);
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.telemetryToggleBtn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--line);
+  background: var(--surface-1);
+}
+
+.telemetryToggleBtn:focus-visible {
+  outline: 2px solid var(--line);
+  outline-offset: 3px;
+}
+
+.telemetryToggleIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: var(--accent-strong, var(--accent));
+}
+
+.telemetryToggleLabel {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+.telemetryToggleChevron {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--line);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.telemetryToggleBtn:hover .telemetryToggleChevron {
+  color: var(--ink);
+}
+
 /* ─── Primitive cards & tracks ──────────────────────────────────────────── */
 
 .card {

@@ -2,6 +2,33 @@
   display: grid;
 }
 
+/* Full-screen convo mode: the transcript becomes the internal scroll area that
+   fills the space between the header and the command bar. */
+.transcriptScroll {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.transcriptScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.transcriptInner {
+  display: grid;
+}
+
+/* margin-top:auto bottom-aligns the rounds so the newest content sits just
+   above the command bar; as the convo grows the rounds fill upward and the
+   container scrolls. */
+.transcriptInnerFill {
+  margin-top: auto;
+}
+
 .roundSection {
   display: grid;
   gap: 14px;

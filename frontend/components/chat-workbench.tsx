@@ -26,7 +26,7 @@ const ENTROPY_STORAGE_KEY = "exhumed-front-target-entropy";
 const AGENTS_CACHE_KEY = "exhumed-front-agents-cache";
 const SERVICES_CACHE_KEY = "exhumed-front-services-cache";
 const DEFAULT_TOPIC = "The future of AI in society.";
-const DEFAULT_TARGET_ENTROPY = 0;
+const DEFAULT_TARGET_ENTROPY = 0.75;
 const AGENTS_CACHE_TTL_MS = 5 * 60_000;
 const SERVICES_CACHE_TTL_MS = 60_000;
 
@@ -34,8 +34,7 @@ export function ChatWorkbench() {
   // Session + workspace chrome state that belongs at the composition root.
   const [sessionId, setSessionId] = useState("");
   const [targetEntropy, setTargetEntropy] = useState(DEFAULT_TARGET_ENTROPY);
-  const [isCouncilEditing, setIsCouncilEditing] = useState(false);
-  const [draftSelectedAgents, setDraftSelectedAgents] = useState<string[]>([]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const telemetrySidebarRef = useRef<HTMLElement | null>(null);
   const telemetrySidebarUserScrolledRef = useRef(false);
@@ -52,7 +51,7 @@ export function ChatWorkbench() {
     cacheKey: SERVICES_CACHE_KEY,
     cacheTtlMs: SERVICES_CACHE_TTL_MS,
   });
-  const effectiveSelectedAgents = isCouncilEditing ? draftSelectedAgents : selectedAgents;
+  const effectiveSelectedAgents = selectedAgents;
 
   function issueSessionId(nextSessionId = makeSessionId()) {
     setSessionId(nextSessionId);
@@ -186,17 +185,6 @@ export function ChatWorkbench() {
       return;
     }
 
-    if (isCouncilEditing) {
-      setDraftSelectedAgents((currentSelection) => {
-        if (currentSelection.includes(agentId)) {
-          return currentSelection.filter((selectedId) => selectedId !== agentId);
-        }
-
-        return [...currentSelection, agentId];
-      });
-      return;
-    }
-
     setSelectedAgents((currentSelection) => {
       if (currentSelection.includes(agentId)) {
         return currentSelection.filter((selectedId) => selectedId !== agentId);
@@ -206,42 +194,24 @@ export function ChatWorkbench() {
     });
   }
 
-  function toggleCouncilEdit() {
-    if (discussionActive) {
-      return;
-    }
-
-    setIsCouncilEditing((currentValue) => {
-      if (!currentValue) {
-        setDraftSelectedAgents(selectedAgents);
-        return true;
-      }
-
-      setSelectedAgents(draftSelectedAgents);
-      return false;
-    });
-  }
-
   function handleStartDebate() {
-    if (isCouncilEditing) {
-      setSelectedAgents(draftSelectedAgents);
-      setIsCouncilEditing(false);
-    }
-
     startDebate();
   }
 
+  // Mirrors the panel's showTranscriptControls: a convo is "live" once it is
+  // running or has produced at least one real (non-thinking) message.
+  const isConvoActive = discussionActive || messages.some((message) => !message.isThinking);
+
   return (
-    <main className="shell">
+    <main className="shell" data-convo-active={isConvoActive ? "true" : "false"}>
       <AppNavbar />
 
-      <section className="workspace">
+      <section className="workspace" data-sidebar={isSidebarOpen ? "open" : "closed"}>
         <DiscussionPanel
           topic={topic}
           discussionActive={discussionActive}
           selectedCouncil={selectedCouncil}
           targetEntropy={targetEntropy}
-          isCouncilEditing={isCouncilEditing}
           controlError={controlError}
           sessionId={sessionId}
           hasMessages={hasMessages}
@@ -255,7 +225,6 @@ export function ChatWorkbench() {
           transcriptRef={transcriptRef}
           legendEntries={legendEntries}
           onTopicChange={setTopic}
-          onToggleCouncilEdit={toggleCouncilEdit}
           onToggleCouncilMember={toggleCouncilMember}
           onTargetEntropyChange={setTargetEntropy}
           onStartDebate={handleStartDebate}
@@ -264,12 +233,20 @@ export function ChatWorkbench() {
           onDownloadTranscript={downloadTranscript}
         />
 
-        <TelemetryPanel viewModel={telemetryViewModel} containerRef={telemetrySidebarRef} />
+        <TelemetryPanel
+            viewModel={telemetryViewModel}
+            containerRef={telemetrySidebarRef}
+            isSidebarOpen={isSidebarOpen}
+            onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
+          />
       </section>
 
-      <footer className="siteFooter">
-        Built with ❤️ by <a className="siteFooterLink" href="https://ntemposd.me" target="_blank" rel="noreferrer">ntemposd</a>
-      </footer>
+      {!isConvoActive && (
+        <footer className="siteFooter">
+          Built with ❤️ by <a className="siteFooterLink" href="https://ntemposd.me" target="_blank" rel="noreferrer">ntemposd</a>
+          <span className="siteFooterVersion">v1.0.0-beta.3</span>
+        </footer>
+      )}
     </main>
   );
 }

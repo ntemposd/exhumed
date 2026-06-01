@@ -7,6 +7,7 @@
   padding: 18px 0 0 0;
 }
 
+
 /* ─── Individual section containers ──────────────────────────── */
 
 .themeSection,
@@ -23,8 +24,154 @@
   margin-top: var(--section-gap);
 }
 
+.startSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: var(--section-gap);
+}
+
 .transcriptSection {
   gap: 14px;
+}
+
+/* Full-screen convo mode: the setup is hidden and this section is sized by JS
+   to fill from its top down to the viewport bottom. It is a flex column whose
+   middle (the transcript) scrolls internally, so the command bar is pinned to
+   the bottom of the screen and the rounds bottom-align just above it. */
+.transcriptSectionActive {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* overflow visible so the roster popover in the chat header can overlay the
+     transcript; the internal scroll is owned by .transcriptScroll, not here. */
+  overflow: visible;
+  /* As the first (only) section in chat mode it shouldn't carry the
+     inter-section gap — keep it level with the app's standard top spacing. */
+  margin-top: 0;
+  animation: convoSectionEnter 260ms ease both;
+}
+
+/* ─── Chat-mode header (read-only topic + between-round roster) ──── */
+
+.transcriptHeaderActive {
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-subtle);
+}
+
+.chatTopicBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.chatTopicLabel {
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.chatTopicTitle {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Status line ("Rate limit hit. Retrying…", "Round complete") sits just under
+   the header separator, above the transcript. */
+.chatStatusMessage {
+  margin-top: -4px;
+}
+
+/* Compact avatars-only roster for the pinned chat header: drop the name/role
+   text and the "Add Speaker" label so the row stays a single slim line.
+   Full names remain on hover (chip title) and in the Add picker. */
+.chatRoster :global(.draftedChip) {
+  min-height: 0;
+  padding: 4px;
+  gap: 2px;
+}
+
+.chatRoster :global(.draftedChipMain) {
+  padding-right: 0;
+  gap: 0;
+}
+
+.chatRoster :global(.draftedChipText) {
+  display: none;
+}
+
+.chatRoster :global(.draftedChipAvatar) {
+  width: 30px;
+  height: 30px;
+}
+
+.chatRoster :global(.draftedChipActionButton) {
+  min-width: 18px;
+  width: 18px;
+  height: 18px;
+  border-width: 1.5px;
+  box-shadow: 1px 1px 0 var(--line);
+}
+
+.chatRoster :global(.draftedChipActionButton:hover) {
+  box-shadow: 2px 2px 0 var(--line);
+}
+
+.chatRoster :global(.draftedChipActionGlyph) {
+  width: 12px;
+  height: 12px;
+  font-size: 0.78rem;
+}
+
+.chatRoster .rosterAddTile {
+  padding: 6px 8px;
+  gap: 0;
+}
+
+.chatRoster .rosterAddText {
+  display: none;
+}
+
+.chatRoster .rosterAddGlyph {
+  font-size: 1.1rem;
+}
+
+/* Wrapper around the setup sections so they fade/slide in as a unit when the
+   convo is wiped and the controls return. */
+.setupGroup {
+  display: block;
+  animation: convoSectionEnter 260ms ease both;
+}
+
+@keyframes convoSectionEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transcriptSectionActive,
+  .setupGroup {
+    animation: none;
+  }
 }
 
 /* ─── Theme section ───────────────────────────────────────────── */
@@ -49,69 +196,330 @@
   align-items: flex-start;
 }
 
+.editHint {
+  display: block;
+  width: calc(100% + 32px);
+  margin: 16px -16px 0;
+  padding: 14px 16px 0;
+  border: none;
+  border-top: 1.5px dashed var(--line-subtle);
+  background: transparent;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  transition: color 120ms ease;
+}
+
+.editHint:hover {
+  color: var(--ink);
+}
+
+.editHint:focus-visible {
+  outline: 2px solid var(--line);
+  outline-offset: 2px;
+}
+
 /* ─── Participants section ────────────────────────────────────── */
 
 .councilChips {
+  position: relative;
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-/* ─── Type section ────────────────────────────────────────────── */
+/* ─── Roster add-tile + popover ──────────────────────────────── */
 
-.entropyOptions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  width: fit-content;
-  max-width: 100%;
-  padding: 0 2px;
+.rosterControl {
+  position: static;
+  display: inline-flex;
+  align-self: center;
 }
 
-.entropyOption {
-  display: flex;
+.rosterAddTile {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 28px;
-  min-width: 42px;
-  padding: 3px 10px;
-  border: 2px solid var(--line-medium);
-  background: color-mix(in srgb, var(--accent) 22%, var(--surface-0));
-  box-shadow: 1px 1px 0 var(--line-medium);
+  gap: 5px;
+  padding: 5px 9px;
+  border: 1.5px dashed var(--line-medium);
+  background: transparent;
   color: var(--muted);
   cursor: pointer;
-  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease;
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
 }
 
-.entropyOption:hover {
-  transform: translate(-1px, -1px);
+.rosterAddTile:hover {
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.rosterAddTile:focus-visible {
+  outline: 2px solid var(--line);
+  outline-offset: 2px;
+}
+
+.rosterAddTile[aria-expanded="true"] {
+  border-style: solid;
+  border-color: var(--line);
+  color: var(--ink);
+  background: var(--surface-1);
+}
+
+.rosterAddTile:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.rosterAddGlyph {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rosterAddText {
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+
+.rosterPopover {
+  --roster-row-h: 48px;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: auto;
+  z-index: 30;
+  display: grid;
+  grid-auto-rows: var(--roster-row-h);
+  width: max-content;
+  min-width: 248px;
+  max-width: 100%;
+  /* 5.5 rows tall so the 6th row is half-clipped, signalling more below */
+  max-height: calc(var(--roster-row-h) * 5.5);
+  overflow-y: auto;
+  scrollbar-width: none;
+  border: 2px solid var(--line);
+  background: var(--surface-0);
+  box-shadow: 4px 4px 0 var(--line);
+}
+
+.rosterPopover::-webkit-scrollbar {
+  display: none;
+}
+
+.rosterOption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid var(--line-subtle);
+  border-left: 4px solid transparent;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.rosterOption:last-child {
+  border-bottom: none;
+}
+
+.rosterOption:hover {
+  background: var(--surface-1);
+}
+
+.rosterOption:focus-visible {
+  outline: 2px solid var(--line);
+  outline-offset: -2px;
+}
+
+.rosterOption:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.rosterOption[data-archetype="creator"]    { border-left-color: var(--archetype-creator-bg);    }
+.rosterOption[data-archetype="commander"]  { border-left-color: var(--archetype-commander-bg);  }
+.rosterOption[data-archetype="thinker"]    { border-left-color: var(--archetype-thinker-bg);    }
+.rosterOption[data-archetype="strategist"] { border-left-color: var(--archetype-strategist-bg); }
+
+.rosterOptionAvatar {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid var(--line-medium);
+  background: var(--surface-1);
+}
+
+.rosterOptionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.rosterOptionName {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rosterOptionArchetype {
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.rosterOptionGlyph {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid var(--line);
+  background: var(--surface-0);
   box-shadow: 1px 1px 0 var(--line);
-  border-color: var(--line);
-  background: color-mix(in srgb, var(--accent) 55%, var(--surface-0));
-  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--muted);
+  transition: box-shadow 120ms ease, color 120ms ease, background 120ms ease;
 }
 
-.entropyOptionActive {
-  background: var(--accent-soft);
+.rosterOption:hover .rosterOptionGlyph {
+  color: var(--ink);
+  background: var(--surface-1);
   box-shadow: 2px 2px 0 var(--line);
-  border-color: var(--line);
-  color: var(--ink);
 }
 
-.entropyOption:disabled {
+/* ─── Type section ────────────────────────────────────────────── */
+
+.typeSelect {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.typeSelectTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 200px;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 5px 10px;
+  border: 2px solid var(--line);
+  background: var(--surface-0);
+  box-shadow: 1px 1px 0 var(--line);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.typeSelectTrigger:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0 var(--line);
+}
+
+.typeSelectTrigger:focus-visible {
+  outline: 2px solid var(--line);
+  outline-offset: 3px;
+}
+
+.typeSelectTrigger:disabled {
   cursor: not-allowed;
   opacity: 0.6;
   transform: none;
-  box-shadow: 2px 2px 0 var(--line);
+  box-shadow: 1px 1px 0 var(--line);
 }
 
-.entropyOptionValue {
+.typeSelectValue {
   font-family: var(--font-display), sans-serif;
-  font-size: 0.60rem;
+  font-size: 0.56rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.typeSelectCaret {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  line-height: 1;
+  color: var(--muted);
+  transition: transform 120ms ease;
+}
+
+.typeSelectTrigger[aria-expanded="true"] .typeSelectCaret {
+  transform: rotate(180deg);
+}
+
+.typeSelectList {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 100%;
+  width: max-content;
+  max-width: min(320px, 88vw);
+  border: 2px solid var(--line);
+  background: var(--surface-0);
+  box-shadow: 4px 4px 0 var(--line);
+}
+
+.typeSelectOption {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 9px 12px;
+  border: none;
+  border-bottom: 1px solid var(--line-subtle);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-family: var(--font-display), sans-serif;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.typeSelectList li:last-child .typeSelectOption {
+  border-bottom: none;
+}
+
+.typeSelectOption:hover {
+  background: color-mix(in srgb, var(--accent) 35%, var(--surface-0));
+}
+
+.typeSelectOptionActive {
+  background: var(--accent-soft);
 }
 
 /* ─── Transcript section ──────────────────────────────────────── */
@@ -170,16 +578,9 @@
     min-height: auto;
   }
 
-  .entropyOptions {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 6px;
-    width: 100%;
-  }
-
-  .entropyOption {
-    min-height: 32px;
-    min-width: 0;
-    padding: 4px 10px;
+  .typeSelectTrigger {
+    min-width: 200px;
+    min-height: 36px;
   }
 
   .commandGrid {

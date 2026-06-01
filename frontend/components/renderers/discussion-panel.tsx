@@ -1,6 +1,6 @@
 // DiscussionPanel frames the transcript stage and now owns the primary debate
 // controls so the main column is the single operator surface.
-import { type RefObject } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 
@@ -14,7 +14,6 @@ type DiscussionPanelProps = {
   discussionActive: boolean;
   selectedCouncil: LegendDetails[];
   legendEntries: LegendDetails[];
-  isCouncilEditing: boolean;
   targetEntropy: number;
   controlError: string;
   sessionId: string;
@@ -28,7 +27,6 @@ type DiscussionPanelProps = {
   roundScrollKey: number;
   transcriptRef: RefObject<HTMLDivElement | null>;
   onTopicChange: (value: string) => void;
-  onToggleCouncilEdit: () => void;
   onToggleCouncilMember: (agentId: string) => void;
   onTargetEntropyChange: (value: number) => void;
   onStartDebate: () => void;
@@ -42,7 +40,6 @@ export function DiscussionPanel({
   discussionActive,
   selectedCouncil,
   legendEntries,
-  isCouncilEditing,
   targetEntropy,
   controlError,
   hasMessages,
@@ -55,7 +52,6 @@ export function DiscussionPanel({
   messages,
   transcriptRef,
   onTopicChange,
-  onToggleCouncilEdit,
   onToggleCouncilMember,
   onTargetEntropyChange,
   onStartDebate,
@@ -63,23 +59,200 @@ export function DiscussionPanel({
   onWipeDebate,
   onDownloadTranscript,
 }: DiscussionPanelProps) {
+  const [isTypeEditing, setIsTypeEditing] = useState(false);
+  const [isRosterOpen, setIsRosterOpen] = useState(false);
+  const typeSelectRef = useRef<HTMLDivElement | null>(null);
+  const rosterRef = useRef<HTMLDivElement | null>(null);
+  const topicFieldRef = useRef<HTMLTextAreaElement | null>(null);
+  const transcriptSectionRef = useRef<HTMLElement | null>(null);
   const selectedEntropyValue = ENTROPY_PROFILES.reduce((closest, profile) => {
     return Math.abs(profile.value - targetEntropy) < Math.abs(closest.value - targetEntropy) ? profile : closest;
   }, ENTROPY_PROFILES[0]);
+
+  useEffect(() => {
+    if (!isTypeEditing) {
+      return;
+    }
+    const handlePointerDown = (event: PointerEvent) => {
+      if (typeSelectRef.current && !typeSelectRef.current.contains(event.target as Node)) {
+        setIsTypeEditing(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsTypeEditing(false);
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isTypeEditing]);
   const hasTranscriptHistory = messages.some((message) => !message.isThinking);
   const showTranscriptControls = discussionActive || hasTranscriptHistory;
   const selectedAgentIds = new Set(selectedCouncil.map((legend) => legend.agent_id));
   const availableCouncil = legendEntries.filter((legend) => !selectedAgentIds.has(legend.agent_id));
 
+  useEffect(() => {
+    if (!isRosterOpen) {
+      return;
+    }
+    const handlePointerDown = (event: PointerEvent) => {
+      if (rosterRef.current && !rosterRef.current.contains(event.target as Node)) {
+        setIsRosterOpen(false);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsRosterOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isRosterOpen]);
+
+  useEffect(() => {
+    if (availableCouncil.length === 0 || discussionActive) {
+      setIsRosterOpen(false);
+    }
+  }, [availableCouncil.length, discussionActive]);
+
+  // In full-screen convo mode the transcript section is sized to fill from its
+  // top down to the bottom of the viewport, so the command bar lands exactly at
+  // the bottom of the screen and the rounds scroll internally above it.
+  useEffect(() => {
+    if (!showTranscriptControls) {
+      return;
+    }
+    const section = transcriptSectionRef.current;
+    if (!section) {
+      return;
+    }
+    const applyHeight = () => {
+      const rect = section.getBoundingClientRect();
+      section.style.height = `${Math.max(window.innerHeight - rect.top, 0)}px`;
+    };
+    const raf = window.requestAnimationFrame(() => {
+      // Reset to the top so the section's measured offset is its natural one,
+      // then fit it to the viewport and pin the transcript to its newest entry.
+      window.scrollTo({ top: 0, behavior: "auto" });
+      applyHeight();
+      const container = transcriptRef.current;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    });
+    window.addEventListener("resize", applyHeight);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener("resize", applyHeight);
+      section.style.height = "";
+    };
+  }, [showTranscriptControls, transcriptRef]);
+
+  const councilEditor = (
+    <div className={`draftedCouncil ${styles.councilChips}`.trim()}>
+      {selectedCouncil.map((legend) => (
+        <div
+          key={legend.agent_id}
+          className="draftedChip"
+          data-archetype={getAgentArchetype(legend.agent_id)}
+          data-disabled={discussionActive ? "true" : "false"}
+        >
+          <div className="draftedChipMain" title={legend.display_name}>
+            <Image
+              className="draftedChipAvatar"
+              src={avatarUrlForAgent(legend.agent_id)}
+              alt=""
+              width={32}
+              height={32}
+            />
+            <span className="draftedChipText">
+              <span className="draftedChipLabel">{legend.display_name}</span>
+              <span className="draftedChipArchetype">{legend.archetype}</span>
+            </span>
+          </div>
+          <button
+            type="button"
+            className="draftedChipActionButton draftedChipActionRemove"
+            onClick={() => onToggleCouncilMember(legend.agent_id)}
+            disabled={discussionActive}
+            aria-label={`Remove ${legend.display_name} from council`}
+            title={`Remove ${legend.display_name}`}
+          >
+            <span className="draftedChipActionGlyph" aria-hidden="true">×</span>
+          </button>
+        </div>
+      ))}
+
+      {availableCouncil.length > 0 ? (
+        <div className={styles.rosterControl} ref={rosterRef}>
+          <button
+            type="button"
+            className={styles.rosterAddTile}
+            onClick={() => setIsRosterOpen((value) => !value)}
+            aria-haspopup="listbox"
+            aria-expanded={isRosterOpen}
+            disabled={discussionActive}
+            aria-label="Add a speaker"
+            title="Add a speaker"
+          >
+            <span className={styles.rosterAddGlyph} aria-hidden="true">+</span>
+            <span className={styles.rosterAddText}>Add Speaker</span>
+          </button>
+
+          {isRosterOpen ? (
+            <div className={styles.rosterPopover} role="listbox" aria-label="Available speakers">
+              {availableCouncil.map((legend) => (
+                <button
+                  key={legend.agent_id}
+                  type="button"
+                  role="option"
+                  aria-selected={false}
+                  className={styles.rosterOption}
+                  data-archetype={getAgentArchetype(legend.agent_id)}
+                  onClick={() => onToggleCouncilMember(legend.agent_id)}
+                  disabled={discussionActive}
+                >
+                  <Image
+                    className={styles.rosterOptionAvatar}
+                    src={avatarUrlForAgent(legend.agent_id)}
+                    alt=""
+                    width={28}
+                    height={28}
+                  />
+                  <span className={styles.rosterOptionText}>
+                    <span className={styles.rosterOptionName}>{legend.display_name}</span>
+                    <span className={styles.rosterOptionArchetype}>{legend.archetype}</span>
+                  </span>
+                  <span className={styles.rosterOptionGlyph} aria-hidden="true">+</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+    </div>
+  );
+
   return (
     <section className="convoColumn">
       <div className={styles.convoPane}>
+        {!showTranscriptControls && (
+          <div className={styles.setupGroup}>
         <section className={styles.themeSection}>
-            <h2 className={"sectionHeading"}>Theme</h2>
+            <h2 className={"sectionHeading"}>Topic</h2>
             <div className={styles.topicSectionLayout}>
               <div className={styles.topicSection}>
                 <div className="topicEditorWrap" data-replicated-value={topic || "The future of AI in society"}>
                   <textarea
+                    ref={topicFieldRef}
                     className="topicEditorField"
                     value={topic}
                     rows={1}
@@ -87,134 +260,114 @@ export function DiscussionPanel({
                     placeholder="The future of AI in society"
                     disabled={discussionActive}
                   />
+                  {!discussionActive && (
+                    <button
+                      type="button"
+                      className={styles.editHint}
+                      onClick={() => {
+                        const field = topicFieldRef.current;
+                        if (!field) {
+                          return;
+                        }
+                        field.focus();
+                        const end = field.value.length;
+                        field.setSelectionRange(end, end);
+                      }}
+                    >
+                      ✏ Tap to edit the topic
+                    </button>
+                  )}
                 </div>
-                {!showTranscriptControls && (
-                  <button className="buttonPrimary" type="button" onClick={onStartDebate}>
-                    {startButtonLabel}
-                  </button>
-                )}
               </div>
             </div>
-            {!showTranscriptControls && controlError ? <p className="statusNote">{controlError}</p> : null}
         </section>
 
         <section className={styles.participantsSection}>
             <h2 className={"sectionHeading"}>Participants</h2>
-            <div className={`draftedCouncil ${styles.councilChips}`.trim()}>
-              {selectedCouncil.map((legend) => (
-                <div
-                  key={legend.agent_id}
-                  className="draftedChip"
-                  data-archetype={getAgentArchetype(legend.agent_id)}
-                  data-disabled={discussionActive ? "true" : "false"}
-                >
-                  <div className="draftedChipMain" title={legend.display_name}>
-                    <Image
-                      className="draftedChipAvatar"
-                      src={avatarUrlForAgent(legend.agent_id)}
-                      alt=""
-                      width={32}
-                      height={32}
-                    />
-                    <span className="draftedChipText">
-                      <span className="draftedChipLabel">{legend.display_name}</span>
-                      <span className="draftedChipArchetype">{legend.archetype}</span>
-                    </span>
-                  </div>
-                  {isCouncilEditing ? (
-                    <button
-                      type="button"
-                      className="draftedChipActionButton draftedChipActionRemove"
-                      onClick={() => onToggleCouncilMember(legend.agent_id)}
-                      disabled={discussionActive}
-                      aria-label={`Remove ${legend.display_name} from council`}
-                      title={`Remove ${legend.display_name}`}
-                    >
-                      <span className="draftedChipActionGlyph" aria-hidden="true">×</span>
-                    </button>
-                  ) : null}
-                </div>
-              ))}
-
-              <button
-                className="buttonPrimary"
-                type="button"
-                onClick={onToggleCouncilEdit}
-                aria-pressed={isCouncilEditing}
-                disabled={discussionActive}
-              >
-                {isCouncilEditing ? "Done" : "Edit"}
-              </button>
-
-              {isCouncilEditing ? availableCouncil.map((legend) => (
-                <div
-                  key={legend.agent_id}
-                  className="draftedChip draftedChipAvailable"
-                  data-archetype={getAgentArchetype(legend.agent_id)}
-                  data-disabled={discussionActive ? "true" : "false"}
-                >
-                  <div className="draftedChipMain" title={legend.display_name}>
-                    <Image
-                      className="draftedChipAvatar"
-                      src={avatarUrlForAgent(legend.agent_id)}
-                      alt=""
-                      width={32}
-                      height={32}
-                    />
-                    <span className="draftedChipText">
-                      <span className="draftedChipLabel">{legend.display_name}</span>
-                      <span className="draftedChipArchetype">{legend.archetype}</span>
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    className="draftedChipActionButton draftedChipActionAdd"
-                    onClick={() => onToggleCouncilMember(legend.agent_id)}
-                    disabled={discussionActive}
-                    aria-label={`Add ${legend.display_name} to council`}
-                    title={`Add ${legend.display_name}`}
-                  >
-                    <span className="draftedChipActionGlyph" aria-hidden="true">✓</span>
-                  </button>
-                </div>
-              )) : null}
-            </div>
+            {councilEditor}
         </section>
 
         <section className={styles.typeSection}>
             <h2 className={"sectionHeading"}>Type</h2>
-            <div className={styles.entropyOptions} role="radiogroup" aria-label="Logic entropy selector">
-              {ENTROPY_PROFILES.map((profile) => {
-                const isSelected = profile.value === selectedEntropyValue.value;
+            <div className={styles.typeSelect} ref={typeSelectRef}>
+              <button
+                type="button"
+                className={styles.typeSelectTrigger}
+                onClick={() => setIsTypeEditing((value) => !value)}
+                aria-haspopup="listbox"
+                aria-expanded={isTypeEditing}
+                disabled={discussionActive}
+              >
+                <span className={styles.typeSelectValue}>{selectedEntropyValue.label}</span>
+                <span className={styles.typeSelectCaret} aria-hidden="true">▾</span>
+              </button>
 
-                return (
-                  <button
-                    key={profile.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={isSelected}
-                    className={`${styles.entropyOption} ${isSelected ? styles.entropyOptionActive : ""}`.trim()}
-                    onClick={() => onTargetEntropyChange(profile.value)}
-                    disabled={discussionActive}
-                  >
-                    <span className={styles.entropyOptionValue}>{profile.label}</span>
-                  </button>
-                );
-              })}
+              {isTypeEditing ? (
+                <ul className={styles.typeSelectList} role="listbox" aria-label="Logic entropy selector">
+                  {ENTROPY_PROFILES.map((profile) => {
+                    const isSelected = profile.value === selectedEntropyValue.value;
+
+                    return (
+                      <li key={profile.value} role="option" aria-selected={isSelected}>
+                        <button
+                          type="button"
+                          className={`${styles.typeSelectOption} ${isSelected ? styles.typeSelectOptionActive : ""}`.trim()}
+                          onClick={() => {
+                            onTargetEntropyChange(profile.value);
+                            setIsTypeEditing(false);
+                          }}
+                        >
+                          {profile.label}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
             </div>
         </section>
-
-        <section className={styles.transcriptSection}>
-          <div className={styles.transcriptHeader}>
-            <h2 className={"sectionHeading"}>Live Transcript</h2>
-            <p className={styles.transcriptStatusMessage}>{transcriptState.statusLabel}</p>
           </div>
+        )}
+
+        {!showTranscriptControls && (
+          <section className={styles.startSection}>
+            <button className="buttonPrimary" type="button" onClick={onStartDebate}>
+              {startButtonLabel}
+            </button>
+            {controlError ? <p className="statusNote">{controlError}</p> : null}
+          </section>
+        )}
+
+        <section
+          ref={transcriptSectionRef}
+          className={`${styles.transcriptSection} ${showTranscriptControls ? styles.transcriptSectionActive : ""}`.trim()}
+        >
+          <div className={`${styles.transcriptHeader} ${showTranscriptControls ? styles.transcriptHeaderActive : ""}`.trim()}>
+            {showTranscriptControls ? (
+              <>
+                <div className={styles.chatTopicBlock}>
+                  <span className={styles.chatTopicLabel}>Topic</span>
+                  <h2 className={styles.chatTopicTitle} title={topic}>{topic || "Untitled topic"}</h2>
+                </div>
+                <div className={styles.chatRoster}>{councilEditor}</div>
+              </>
+            ) : (
+              <>
+                <h2 className={"sectionHeading"}>Live Transcript</h2>
+                <p className={styles.transcriptStatusMessage}>{transcriptState.statusLabel}</p>
+              </>
+            )}
+          </div>
+          {showTranscriptControls ? (
+            <p className={`${styles.transcriptStatusMessage} ${styles.chatStatusMessage}`.trim()}>{transcriptState.statusLabel}</p>
+          ) : null}
           <DiscussionTranscript
             emptyStateMessage={transcriptState.emptyMessage}
             messages={messages}
             roundSize={Math.max(selectedCouncil.length, 1)}
             roundStartAgentId={roundStartAgentId}
             roundScrollKey={roundScrollKey}
+            fillViewport={showTranscriptControls}
             transcriptRef={transcriptRef}
           />
           {showTranscriptControls ? (
