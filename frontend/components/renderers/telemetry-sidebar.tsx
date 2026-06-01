@@ -257,7 +257,7 @@ function TelemetrySummarySections({
 
 type TelemetryPanelProps = {
   viewModel: TelemetryPanelViewModel;
-  containerRef: RefObject<HTMLElement | null>;
+  containerRef: RefObject<HTMLDivElement | null>;
   isSidebarOpen: boolean;
   onToggleSidebar: () => void;
 };
@@ -276,7 +276,7 @@ export function TelemetryPanel({ viewModel, containerRef, isSidebarOpen, onToggl
   } = viewModel;
 
   return (
-    <aside className="telemetryColumn" ref={containerRef}>
+    <aside className="telemetryColumn">
       <div className="panel telemetryPanel">
         <button
           type="button"
@@ -292,23 +292,25 @@ export function TelemetryPanel({ viewModel, containerRef, isSidebarOpen, onToggl
           <span className={styles.telemetryToggleLabel}>{isSidebarOpen ? "Close Telemetry" : "Open Telemetry"}</span>
           <span className={styles.telemetryToggleChevron} aria-hidden="true">{isSidebarOpen ? "−" : "+"}</span>
         </button>
-        {isSidebarOpen ? (
-          <>
-            <TelemetryServiceStatus
-              servicesState={servicesState}
-              onlineServices={onlineServices}
-              serviceRows={serviceRows}
-            />
-            <TelemetrySummarySections
-              performanceRows={performanceRows}
-              sessionBurnUsd={sessionBurnUsd}
-              observedRatio={observedRatio}
-              diversityValue={diversityValue}
-              diversityLabel={diversityLabel}
-              vocalShareRows={vocalShareRows}
-            />
-          </>
-        ) : null}
+        <div className={styles.telemetrySidebarScroll} ref={containerRef}>
+          {isSidebarOpen ? (
+            <>
+              <TelemetryServiceStatus
+                servicesState={servicesState}
+                onlineServices={onlineServices}
+                serviceRows={serviceRows}
+              />
+              <TelemetrySummarySections
+                performanceRows={performanceRows}
+                sessionBurnUsd={sessionBurnUsd}
+                observedRatio={observedRatio}
+                diversityValue={diversityValue}
+                diversityLabel={diversityLabel}
+                vocalShareRows={vocalShareRows}
+              />
+            </>
+          ) : null}
+        </div>
       </div>
     </aside>
   );

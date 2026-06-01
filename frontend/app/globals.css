@@ -189,7 +189,6 @@
 
 html {
 	background: #F8F2E2;
-	scrollbar-gutter: stable;
 }
 
 html[data-theme="dark"] {
@@ -267,6 +266,22 @@ select {
 	opacity: 0.8;
 }
 
+/* Buy Me a Coffee floating button — scaled down a touch, anchored bottom-right
+   so it stays in its corner. Only the button is scaled; the popup keeps its
+   native (responsive) size so it isn't shifted/clipped. */
+#bmc-wbtn {
+	transform: scale(0.82);
+	transform-origin: right bottom;
+}
+
+/* On mobile the command bar owns the bottom of the screen during a convo, so
+   hide the floating coffee button there to avoid covering Advance/Wipe. */
+@media (max-width: 767px) {
+	body:has(.shell[data-convo-active="true"]) #bmc-wbtn {
+		display: none !important;
+	}
+}
+
 .workspace {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(320px, 25vw);
@@ -305,6 +320,64 @@ select {
 .telemetryColumn > * {
 	position: relative;
 	z-index: 1;
+}
+
+/* Desktop: lock the app to the viewport so the page never gains or loses a body
+   scrollbar. Each column scrolls within itself, so opening the (tall) telemetry
+   sidebar scrolls inside its own column instead of growing the page. This avoids
+   both the reserved-gutter strip and the layout shift of the chat column when
+   the sidebar opens. (Mobile keeps natural page scroll.) */
+@media (min-width: 768px) {
+	.shell {
+		height: 100dvh;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	.convoColumn,
+	.telemetryColumn {
+		align-self: stretch;
+		min-height: 0;
+	}
+
+	.convoColumn {
+		overflow-y: auto;
+		scrollbar-width: none;
+	}
+
+	.convoColumn::-webkit-scrollbar {
+		display: none;
+	}
+
+	/* The column itself doesn't scroll — its panel is a flex column with a
+	   pinned toggle button and an internally-scrolling section area, so the
+	   "Open/Close Telemetry" button stays put whether open or closed. */
+	.telemetryColumn {
+		overflow: hidden;
+	}
+
+	.telemetryPanel {
+		position: static;
+		top: auto;
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+	}
+
+	/* Collapsed: the telemetry column shrinks to just its toggle button instead
+	   of rendering as a big empty bordered/tinted box. */
+	.workspace[data-sidebar="closed"] .telemetryColumn {
+		align-self: start;
+		background: transparent;
+		border-left: none;
+		overflow: visible;
+	}
+
+	.workspace[data-sidebar="closed"] .telemetryPanel {
+		display: block;
+		height: auto;
+	}
 }
 
 .panel {

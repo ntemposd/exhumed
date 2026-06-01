@@ -36,7 +36,7 @@ export function ChatWorkbench() {
   const [targetEntropy, setTargetEntropy] = useState(DEFAULT_TARGET_ENTROPY);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
-  const telemetrySidebarRef = useRef<HTMLElement | null>(null);
+  const telemetrySidebarRef = useRef<HTMLDivElement | null>(null);
   const telemetrySidebarUserScrolledRef = useRef(false);
   const { topic, setTopic } = useTopicEditorState({
     storageKey: TOPIC_STORAGE_KEY,
@@ -244,7 +244,7 @@ export function ChatWorkbench() {
       {!isConvoActive && (
         <footer className="siteFooter">
           Built with ❤️ by <a className="siteFooterLink" href="https://ntemposd.me" target="_blank" rel="noreferrer">ntemposd</a>
-          <span className="siteFooterVersion">v1.0.0-beta.3</span>
+          <span className="siteFooterVersion">v1.0.0-beta.4</span>
         </footer>
       )}
     </main>

@@ -3,6 +3,8 @@ import { Analytics } from "@vercel/analytics/react";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono } from "next/font/google";
 
+import { BuyMeACoffee } from "@/components/buy-me-a-coffee";
+
 import "./globals.css";
 
 // Single load — --font-display is aliased to --font-mono in globals.css :root.
@@ -46,6 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={monoFont.variable}>
         {children}
         <Analytics />
+        <BuyMeACoffee />
       </body>
     </html>
   );

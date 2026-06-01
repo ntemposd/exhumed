@@ -288,7 +288,7 @@ export function DiscussionPanel({
         </section>
 
         <section className={styles.typeSection}>
-            <h2 className={"sectionHeading"}>Type</h2>
+            <h2 className={"sectionHeading"}>Style</h2>
             <div className={styles.typeSelect} ref={typeSelectRef}>
               <button
                 type="button"
@@ -303,7 +303,7 @@ export function DiscussionPanel({
               </button>
 
               {isTypeEditing ? (
-                <ul className={styles.typeSelectList} role="listbox" aria-label="Logic entropy selector">
+                <ul className={styles.typeSelectList} role="listbox" aria-label="Conversation style selector">
                   {ENTROPY_PROFILES.map((profile) => {
                     const isSelected = profile.value === selectedEntropyValue.value;
 

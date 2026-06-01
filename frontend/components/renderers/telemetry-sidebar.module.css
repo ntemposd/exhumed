@@ -62,6 +62,29 @@
   color: var(--ink);
 }
 
+/* Section area below the pinned toggle. On desktop the panel is a flex column,
+   so the button stays fixed at the top and only this area scrolls. */
+.telemetrySidebarScroll {
+  display: grid;
+}
+
+@media (min-width: 768px) {
+  .telemetryToggleBtn {
+    flex: 0 0 auto;
+  }
+
+  .telemetrySidebarScroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .telemetrySidebarScroll::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* ─── Primitive cards & tracks ──────────────────────────────────────────── */
 
 .card {
