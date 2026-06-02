@@ -813,7 +813,9 @@ select {
 		position: static;
 		top: auto;
 		padding: 22px 16px;
-		background: color-mix(in srgb, var(--surface-0) 14%, transparent);
+		/* No tinted band — it grew/appeared on toggle (visible bg change). The
+		   button card and section cards already provide structure. */
+		background: transparent;
 	}
 
 	.telemetryPanel .sidebarSectionGroup:last-child {

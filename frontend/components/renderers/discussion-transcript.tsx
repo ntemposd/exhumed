@@ -54,6 +54,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
   const [retryCountdownTick, setRetryCountdownTick] = useState(0);
   const lastAutoCollapsedRoundRef = useRef(0);
   const retryCountdownsRef = useRef<Record<string, { initialSeconds: number; startedAtMs: number; status: string }>>({});
+  const followBottomRef = useRef(true);
   const normalizedRoundSize = Math.max(roundSize, 1);
 
   useEffect(() => {
@@ -155,9 +156,32 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
     };
   }, [hasActiveRetryCountdown]);
 
-  // Scroll to each new bubble as it arrives so the latest content is always
-  // visible just above the sticky controls bar — chat-style bottom-anchored scroll.
-  const lastMessageId = messages.at(-1)?.id;
+  // In full-screen convo mode the transcript scrolls internally. Track whether
+  // the reader is pinned to the bottom *before* new content arrives, so we only
+  // auto-follow when they haven't scrolled up to review earlier turns.
+  useEffect(() => {
+    if (!fillViewport) {
+      return;
+    }
+    const container = transcriptRef.current;
+    if (!container) {
+      return;
+    }
+    const handleScroll = () => {
+      followBottomRef.current = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
+    };
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, [fillViewport, transcriptRef]);
+
+  // Follow the newest content as it streams/arrives. The tail signal also tracks
+  // the latest message's length so a streaming answer keeps the view at the
+  // bottom, not just when a new turn starts.
+  const lastMessage = messages.at(-1);
+  const lastMessageId = lastMessage?.id;
+  const transcriptTailSignal = `${lastMessageId ?? ""}:${lastMessage?.message?.length ?? 0}:${lastMessage?.isThinking ? "1" : "0"}`;
   useEffect(() => {
     if (!lastMessageId) {
       return;
@@ -169,13 +193,12 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
         return;
       }
 
-      // Full-screen convo mode scrolls the transcript internally. Keep the
-      // newest content pinned just above the command bar, but only when the
-      // reader is already near the bottom so scrolling up to review is stable.
+      // Full-screen convo mode scrolls the transcript internally — keep the
+      // newest content pinned just above the command bar (unless the reader
+      // has scrolled up to review).
       if (fillViewport) {
-        const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
-        if (distanceFromBottom < 160) {
-          container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+        if (followBottomRef.current) {
+          container.scrollTop = container.scrollHeight;
         }
         return;
       }
@@ -193,7 +216,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
       window.cancelAnimationFrame(animationFrameId);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastMessageId, transcriptRef, fillViewport]);
+  }, [transcriptTailSignal, transcriptRef, fillViewport]);
 
   function getThinkingStatus(messageId: string, explicitStatus?: string): string {
     if (explicitStatus) {
