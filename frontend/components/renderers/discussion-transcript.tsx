@@ -170,9 +170,25 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
     const handleScroll = () => {
       followBottomRef.current = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
     };
+    // Re-pin to the bottom when the layout reflows — e.g. the status line wraps
+    // or the throttled bubble's countdown text changes height as it ticks — so
+    // the newest content (and its bottom border) never slips under the command
+    // bar. Only re-pin when the reader is already at the bottom.
+    const repinIfFollowing = () => {
+      if (followBottomRef.current) {
+        container.scrollTop = container.scrollHeight;
+      }
+    };
     container.addEventListener("scroll", handleScroll, { passive: true });
+    const resizeObserver = new ResizeObserver(repinIfFollowing);
+    resizeObserver.observe(container);
+    const inner = container.firstElementChild;
+    if (inner) {
+      resizeObserver.observe(inner);
+    }
     return () => {
       container.removeEventListener("scroll", handleScroll);
+      resizeObserver.disconnect();
     };
   }, [fillViewport, transcriptRef]);
 
@@ -181,7 +197,10 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
   // bottom, not just when a new turn starts.
   const lastMessage = messages.at(-1);
   const lastMessageId = lastMessage?.id;
-  const transcriptTailSignal = `${lastMessageId ?? ""}:${lastMessage?.message?.length ?? 0}:${lastMessage?.isThinking ? "1" : "0"}`;
+  // Include thinkingStatus so the scroll re-fires when a thinking bubble grows
+  // (e.g. the throttle/retry skull appearing) — otherwise the newly-added skull
+  // row lands below the fold, hidden under the command bar.
+  const transcriptTailSignal = `${lastMessageId ?? ""}:${lastMessage?.message?.length ?? 0}:${lastMessage?.isThinking ? "1" : "0"}:${lastMessage?.thinkingStatus ?? ""}`;
   useEffect(() => {
     if (!lastMessageId) {
       return;
@@ -195,9 +214,11 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
 
       // Full-screen convo mode scrolls the transcript internally — keep the
       // newest content pinned just above the command bar (unless the reader
-      // has scrolled up to review).
+      // has scrolled up to review). Thinking/throttled messages always force
+      // a scroll since the user can't be reviewing while waiting.
       if (fillViewport) {
-        if (followBottomRef.current) {
+        const isThinking = lastMessage?.isThinking ?? false;
+        if (followBottomRef.current || isThinking) {
           container.scrollTop = container.scrollHeight;
         }
         return;

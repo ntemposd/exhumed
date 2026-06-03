@@ -24,9 +24,11 @@
 
 /* margin-top:auto bottom-aligns the rounds so the newest content sits just
    above the command bar; as the convo grows the rounds fill upward and the
-   container scrolls. */
+   container scrolls. Bottom padding ensures the last bubble (and any skull
+   animation) clears the edge of the scroll area. */
 .transcriptInnerFill {
   margin-top: auto;
+  padding-bottom: 16px;
 }
 
 .roundSection {

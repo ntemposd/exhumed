@@ -550,6 +550,17 @@
   background: linear-gradient(to bottom, transparent, var(--surface-0) 40%);
 }
 
+/* In active chat mode the controls sit at the bottom of the flex column as a
+   static block — no need for the upward-bleeding gradient that would overlay
+   (and hide) the last bubble's content, including the rolling skull. */
+.transcriptSectionActive .transcriptControlsBlock {
+  position: static;
+  background: transparent;
+  padding-top: 12px;
+  padding-bottom: 14px;
+  border-top: 1px solid var(--line-subtle);
+}
+
 .commandGrid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
