@@ -40,24 +40,26 @@
   margin-top: 18px;
 }
 
+/* Light, flat meta block — header + stats merged into a transcript-style
+   header: a title/toggle row on top and a wrapping stats line below, with a
+   subtle bottom rule instead of a chunky shadowed bar. Stacking keeps it from
+   breaking when the stats wrap on narrow screens. */
 .roundHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
-  background: var(--round-header-bg);
-  border: 2px solid var(--line);
-  box-shadow: 3px 3px 0 var(--line);
+  display: grid;
+  gap: clamp(4px, 0.4vw, 7px);
+  padding: 2px 2px 9px;
+  border-bottom: 1.5px solid var(--line-subtle);
   cursor: pointer;
   user-select: none;
-  transition: transform 120ms ease, box-shadow 120ms ease;
+  transition: border-color 120ms ease;
 }
 
 .roundHeader:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 var(--line);
-  background: var(--round-header-bg-hover);
+  border-color: var(--line-medium);
+}
+
+.roundHeader:hover .roundToggle {
+  color: var(--ink);
 }
 
 .roundHeader:focus-visible {
@@ -65,45 +67,25 @@
   outline-offset: 3px;
 }
 
-/* Inverted typography inside the dark header */
-.roundHeader .roundTitle {
-  color: var(--round-header-text);
-}
-
-.roundHeader .roundMeta {
-  color: var(--round-header-muted);
-}
-
-.roundHeader .roundMeta + .roundMeta::before {
-  color: var(--round-header-sep);
-}
-
-.roundHeader .roundToggle {
-  color: var(--round-header-muted);
-}
-
-.roundHeaderMain {
+.roundHeaderTop {
   display: flex;
-  align-items: baseline;
-  justify-content: flex-start;
-  gap: 14px;
-  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .roundMetaRow {
   display: flex;
-  align-items: center;
-  gap: 0;
+  align-items: baseline;
   flex-wrap: wrap;
-  flex-shrink: 0;
-  border-left: 1.5px solid var(--round-header-sep);
-  padding-left: 10px;
+  column-gap: 0.5em;
+  row-gap: 5px;
 }
 
 .roundTitle {
   margin: 0;
   font-family: var(--font-display), sans-serif;
-  font-size: 0.82rem;
+  font-size: clamp(0.82rem, 0.72rem + 0.45vw, 1.05rem);
   font-weight: 800;
   letter-spacing: 0.1em;
   line-height: 1;
@@ -113,58 +95,47 @@
 
 .roundMeta {
   margin: 0;
-  color: var(--muted);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  font-size: clamp(0.64rem, 0.58rem + 0.3vw, 0.82rem);
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
+.roundMetaLabel {
+  color: var(--muted);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.roundMetaValue {
+  color: var(--ink);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+/* Trailing separator attached to each item (except the last) so it wraps with
+   its own item and never orphans at the start of a wrapped line. */
+.roundMeta:not(:last-child)::after {
+  content: "·";
+  color: var(--line-strong);
+  font-weight: 400;
+}
 
 .roundToggle {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
+  width: clamp(18px, 1.4vw, 24px);
+  height: clamp(18px, 1.4vw, 24px);
   font-family: var(--font-display), sans-serif;
-  font-size: 1rem;
+  font-size: clamp(1rem, 0.85rem + 0.5vw, 1.3rem);
   font-weight: 700;
   line-height: 1;
   color: var(--muted);
-}
-
-.roundStats {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 7px 14px;
-  background: var(--surface-1);
-  border: 2px solid var(--line);
-}
-
-.roundStatItem {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-
-.roundStatLabel {
-  font-size: 0.60rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.roundStatValue {
-  font-family: var(--font-display), sans-serif;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink);
+  transition: color 120ms ease;
 }
 
 .roundTimeline {
@@ -359,47 +330,42 @@
 .bubbleMeta {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  column-gap: 14px;
-  row-gap: 4px;
+  align-items: baseline;
+  column-gap: 18px;
+  row-gap: 6px;
+}
+
+/* Flat meta groups — no boxes. Muted uppercase label, inked values, dot
+   separators within a group (matching the round-meta line). */
+.bubbleMetaGroup {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.bubbleMetaGroupLabel {
+  margin-right: 0.5em;
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .bubbleMetaItem {
   display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 0.60rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
+  align-items: baseline;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--ink);
   white-space: nowrap;
-}
-
-.bubbleMetaGroup {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-  padding: 2px 6px 2px 5px;
-  background: var(--surface-1);
-  border: 1px solid var(--line-subtle);
-}
-
-.bubbleMetaGroupLabel {
-  font-size: 0.52rem;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--line-strong);
-  padding-right: 6px;
-  margin-right: 6px;
-  border-right: 1px solid var(--line-medium);
 }
 
 /* Dot separator between items within a group */
 .bubbleMetaGroup .bubbleMetaItem + .bubbleMetaItem::before {
   content: "·";
-  padding: 0 5px;
+  padding: 0 0.45em;
   color: var(--line-strong);
   font-weight: 400;
 }
@@ -438,18 +404,7 @@
   }
 
   .roundHeader {
-    padding: 8px 12px;
-  }
-
-  .roundStats {
-    flex-wrap: wrap;
-    gap: 8px 16px;
-  }
-
-  .roundStatItem {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1px;
+    padding: 2px 0 8px;
   }
 
   .bubble {
@@ -463,22 +418,18 @@
   }
 
   .bubbleFooter {
-    gap: 6px;
+    gap: 8px;
     padding-top: 8px;
   }
 
-  .bubbleSources + .bubbleMeta {
-    padding-top: 6px;
-  }
-
   .bubbleMeta {
-    column-gap: 10px;
-    row-gap: 4px;
+    column-gap: 14px;
+    row-gap: 6px;
   }
 
   .bubbleMetaItem {
-    font-size: 0.56rem;
-    letter-spacing: 0.08em;
+    font-size: 0.58rem;
+    letter-spacing: 0.03em;
   }
 
   .bubbleInlineToggle {

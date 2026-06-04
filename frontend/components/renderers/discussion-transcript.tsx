@@ -378,47 +378,40 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
               onClick={() => toggleRound(round.roundNumber)}
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleRound(round.roundNumber); } }}
             >
-              <div className={styles.roundHeaderMain}>
+              <div className={styles.roundHeaderTop}>
                 <h3 className={styles.roundTitle}>ROUND {String(round.roundNumber).padStart(2, "0")}</h3>
-
-                <div className={styles.roundMetaRow}>
-                  <span className={styles.roundMeta}>
-                    {round.messages.length} {round.messages.length === 1 ? "speaker" : "speakers"}
-                  </span>
-                </div>
+                <span className={styles.roundToggle} aria-hidden="true">{isCollapsed ? "+" : "−"}</span>
               </div>
 
-              <span className={styles.roundToggle} aria-hidden="true">{isCollapsed ? "+" : "−"}</span>
+              <div className={styles.roundMetaRow}>
+                <span className={styles.roundMeta}>
+                  <span className={styles.roundMetaLabel}>{round.messages.length === 1 ? "Speaker" : "Speakers"}</span>
+                  <span className={styles.roundMetaValue}>{round.messages.length}</span>
+                </span>
+                {roundAvgEntropy !== null && (
+                  <span className={styles.roundMeta}>
+                    <span className={styles.roundMetaLabel}>Diversity</span>
+                    <span className={styles.roundMetaValue}>{roundAvgEntropy}%</span>
+                  </span>
+                )}
+                {roundSimRange !== null && (
+                  <span className={styles.roundMeta}>
+                    <span className={styles.roundMetaLabel}>Sim</span>
+                    <span className={styles.roundMetaValue}>
+                      {roundSimRange.min === roundSimRange.max ? roundSimRange.max : `${roundSimRange.min}–${roundSimRange.max}`}
+                    </span>
+                  </span>
+                )}
+                {roundTotalTokens !== null && (
+                  <span className={styles.roundMeta}>
+                    <span className={styles.roundMetaLabel}>Tokens</span>
+                    <span className={styles.roundMetaValue}>{roundTotalTokens.toLocaleString()}</span>
+                  </span>
+                )}
+              </div>
             </div>
 
             {!isCollapsed ? (
-              <>
-                {(roundAvgEntropy !== null || roundSimRange !== null || roundTotalTokens !== null) && (
-                  <div className={styles.roundStats}>
-                    {roundAvgEntropy !== null && (
-                      <div className={styles.roundStatItem}>
-                        <span className={styles.roundStatLabel}>Diversity</span>
-                        <span className={styles.roundStatValue}>{roundAvgEntropy}%</span>
-                      </div>
-                    )}
-                    {roundSimRange !== null && (
-                      <div className={styles.roundStatItem}>
-                        <span className={styles.roundStatLabel}>Similarity Range</span>
-                        <span className={styles.roundStatValue}>
-                          {roundSimRange.min === roundSimRange.max
-                            ? roundSimRange.max
-                            : `${roundSimRange.min} – ${roundSimRange.max}`}
-                        </span>
-                      </div>
-                    )}
-                    {roundTotalTokens !== null && (
-                      <div className={styles.roundStatItem}>
-                        <span className={styles.roundStatLabel}>Usage</span>
-                        <span className={styles.roundStatValue}>{roundTotalTokens.toLocaleString()} tokens</span>
-                      </div>
-                    )}
-                  </div>
-                )}
                 <div className={styles.roundTimeline}>
                 {round.messages.map((message) => {
                   const isExpanded = expandedMessageIds[message.id] ?? false;
@@ -572,7 +565,6 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                   );
                 })}
               </div>
-              </>
             ) : null}
 
           </section>
