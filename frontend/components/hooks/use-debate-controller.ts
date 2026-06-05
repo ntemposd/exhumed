@@ -167,7 +167,7 @@ export function useDebateController({
   const streamRevealFrameRef = useRef<number | null>(null);
 
   const hasMessages = messages.some((message) => !message.isThinking);
-  const startButtonLabel = isDebatePaused ? "Resume" : hasMessages ? "Advance" : "Start Convo";
+  const startButtonLabel = isDebatePaused ? "▶ Resume" : hasMessages ? "▶ Play" : "▶ Play";
 
   function clearStreamRevealQueue(messageId?: string) {
     // The streaming renderer buffers partial chunks and reveals them on the
@@ -340,6 +340,12 @@ export function useDebateController({
     if (!normalizedTopic) {
       setControlError("Set a discussion topic first.");
       setStatusNote("Set a discussion topic first.");
+      return false;
+    }
+
+    if (normalizedTopic.length > 255) {
+      setControlError(`Topic is too long (${normalizedTopic.length}/255 characters).`);
+      setStatusNote("Topic exceeds the 255 character limit.");
       return false;
     }
 

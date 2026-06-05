@@ -12,14 +12,12 @@
 
 .themeSection,
 .participantsSection,
-.typeSection,
 .transcriptSection {
   display: grid;
   gap: 6px;
 }
 
 .participantsSection,
-.typeSection,
 .transcriptSection {
   margin-top: var(--section-gap);
 }
@@ -28,8 +26,15 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 8px;
+  gap: 10px;
   margin-top: var(--section-gap);
+}
+
+.startRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .transcriptSection {
@@ -55,11 +60,15 @@
 
 /* ─── Chat-mode header (read-only topic + between-round roster) ──── */
 
-.transcriptHeaderActive {
+/* Active chat header — sits as a flex sibling above the scroll container.
+   Transparent background so the page grid pattern shows through naturally. */
+.chatHeader {
+  flex: 0 0 auto;
   gap: 10px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--line-subtle);
 }
+
 
 .chatTopicBlock {
   display: flex;
@@ -455,6 +464,14 @@
   box-shadow: 1px 1px 0 var(--line);
 }
 
+.typeSelectLabel {
+  font-size: 0.56rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .typeSelectValue {
   font-family: var(--font-display), sans-serif;
   font-size: 0.56rem;
@@ -575,8 +592,7 @@
   }
 
   .themeSection,
-  .participantsSection,
-  .typeSection {
+  .participantsSection {
     gap: 8px;
   }
 
@@ -600,5 +616,51 @@
 
   .councilChips {
     gap: 6px;
+  }
+
+  /* Compact chat header on mobile: single-line topic, smaller avatars,
+     tighter gaps, hide the "TOPIC" label to save vertical space. */
+  .chatHeader {
+    gap: 7px;
+    padding-bottom: 8px;
+  }
+
+  .chatHeader .chatTopicLabel {
+    display: none;
+  }
+
+  .chatHeader .chatTopicTitle {
+    font-size: 0.82rem;
+    -webkit-line-clamp: 1;
+    line-height: 1.3;
+  }
+
+  .chatRoster :global(.draftedChip) {
+    padding: 3px;
+  }
+
+  .chatRoster :global(.draftedChipAvatar) {
+    width: 24px;
+    height: 24px;
+  }
+
+  .chatRoster :global(.draftedChipActionButton) {
+    min-width: 15px;
+    width: 15px;
+    height: 15px;
+  }
+
+  .chatRoster :global(.draftedChipActionGlyph) {
+    width: 10px;
+    height: 10px;
+    font-size: 0.65rem;
+  }
+
+  .chatRoster .rosterAddTile {
+    padding: 4px 6px;
+  }
+
+  .chatRoster .rosterAddGlyph {
+    font-size: 0.88rem;
   }
 }

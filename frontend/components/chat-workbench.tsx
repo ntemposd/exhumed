@@ -244,7 +244,7 @@ export function ChatWorkbench() {
       {!isConvoActive && (
         <footer className="siteFooter">
           Built with ❤️ by <a className="siteFooterLink" href="https://ntemposd.me" target="_blank" rel="noreferrer">ntemposd</a>
-          <span className="siteFooterVersion">v1.0.0-beta.4</span>
+          <span className="siteFooterVersion">v1.0.0-beta.5</span>
         </footer>
       )}
     </main>

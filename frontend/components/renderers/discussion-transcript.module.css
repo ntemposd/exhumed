@@ -2,15 +2,13 @@
   display: grid;
 }
 
-/* Full-screen convo mode: the transcript becomes the internal scroll area that
-   fills the space between the header and the command bar. */
+/* Full-screen convo mode: the transcript is the scroll container. */
 .transcriptScroll {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
-  overscroll-behavior: contain;
   scrollbar-width: none;
 }
 
@@ -28,6 +26,7 @@
    animation) clears the edge of the scroll area. */
 .transcriptInnerFill {
   margin-top: auto;
+  padding-top: 14px;
   padding-bottom: 16px;
 }
 
@@ -128,19 +127,42 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: clamp(18px, 1.4vw, 24px);
-  height: clamp(18px, 1.4vw, 24px);
+  width: clamp(20px, 1.4vw, 26px);
+  height: clamp(20px, 1.4vw, 26px);
+  border: 1.5px solid var(--line);
+  background: var(--surface-0);
+  box-shadow: 1px 1px 0 var(--line);
   font-family: var(--font-display), sans-serif;
   font-size: clamp(1rem, 0.85rem + 0.5vw, 1.3rem);
   font-weight: 700;
   line-height: 1;
   color: var(--muted);
-  transition: color 120ms ease;
+  transition: color 120ms ease, box-shadow 120ms ease;
+}
+
+.roundHeader:hover .roundToggle {
+  box-shadow: 2px 2px 0 var(--line);
 }
 
 .roundTimeline {
   display: grid;
   gap: 16px;
+}
+
+/* Smooth expand/collapse for round content via grid-template-rows transition.
+   The content stays in the DOM; the wrapper animates between 0fr and 1fr. */
+.roundCollapsible {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 240ms ease;
+}
+
+.roundCollapsible[data-collapsed="true"] {
+  grid-template-rows: 0fr;
+}
+
+.roundCollapsibleInner {
+  overflow: hidden;
 }
 
 .turnRow {
@@ -149,18 +171,24 @@
 }
 
 .emptyState {
-  display: grid;
-  gap: 8px;
-  padding: 18px 20px;
-  border: 2px dashed var(--line-strong);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 24px;
+  border: 2px dashed var(--line-medium);
   background: var(--surface-1);
+  text-align: center;
 }
 
 .emptyStateText {
   margin: 0;
-  color: var(--ink);
-  font-size: 0.92rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-style: italic;
   line-height: 1.6;
+  max-width: 320px;
 }
 
 .bubble {
@@ -256,6 +284,27 @@
   overflow-wrap: anywhere;
 }
 
+.bubbleTextAnimated {
+  animation: bubbleTextFade 340ms ease both;
+}
+
+@keyframes bubbleTextFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubbleTextAnimated {
+    animation: none;
+  }
+}
+
 .bubbleText {
   margin: 0;
   white-space: pre-wrap;
@@ -327,74 +376,55 @@
   border-top: 1px dashed var(--line-subtle);
 }
 
+/* Prose-style footnote — one muted line of natural text that wraps like a
+   sentence. Groups separated by middots, items within a group by commas. */
 .bubbleMeta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  column-gap: 18px;
-  row-gap: 6px;
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--muted);
+  font-style: italic;
 }
 
-/* Flat meta groups — no boxes. Muted uppercase label, inked values, dot
-   separators within a group (matching the round-meta line). */
+.bubbleMetaGroup + .bubbleMetaGroup::before {
+  content: " · ";
+  font-style: normal;
+}
+
 .bubbleMetaGroup {
-  display: inline-flex;
-  align-items: baseline;
+  font-style: italic;
 }
 
+/* Group labels (Diversity, Vector:, LLM:) stand out from the values */
 .bubbleMetaGroupLabel {
-  margin-right: 0.5em;
-  font-size: 0.56rem;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* Book-reference style sources — italic prose with a bold label, semicolons
+   between entries (like a bibliography). Matches the meta footnote voice. */
+.bubbleSources {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.55;
   color: var(--muted);
 }
 
-.bubbleMetaItem {
-  display: inline-flex;
-  align-items: baseline;
-  font-size: 0.62rem;
+.bubbleSourcesLabel {
   font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--ink);
-  white-space: nowrap;
+  font-style: normal;
 }
 
-/* Dot separator between items within a group */
-.bubbleMetaGroup .bubbleMetaItem + .bubbleMetaItem::before {
-  content: "·";
-  padding: 0 0.45em;
-  color: var(--line-strong);
-  font-weight: 400;
-}
-
-.bubbleSources {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.bubbleSourceRef {
+  font-style: italic;
 }
 
 .bubbleSources + .bubbleMeta {
   border-top: 1px dashed var(--line-subtle);
   padding-top: 8px;
-}
-
-.bubbleSourceChip {
-  display: inline-block;
-  font-size: 0.60rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 2px 8px;
-  border: 1px solid var(--line-medium);
-  background: var(--surface-1);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
 }
 
 
@@ -409,12 +439,17 @@
 
   .bubble {
     max-width: 100%;
-    padding: 12px 12px 12px 14px;
+    padding: 10px 10px 10px 12px;
+    gap: 8px;
+  }
+
+  .roundTimeline {
+    gap: 12px;
   }
 
   .bubbleText {
-    font-size: 0.92rem;
-    line-height: 1.6;
+    font-size: 0.88rem;
+    line-height: 1.55;
   }
 
   .bubbleFooter {
@@ -423,13 +458,7 @@
   }
 
   .bubbleMeta {
-    column-gap: 14px;
-    row-gap: 6px;
-  }
-
-  .bubbleMetaItem {
-    font-size: 0.58rem;
-    letter-spacing: 0.03em;
+    font-size: 0.68rem;
   }
 
   .bubbleInlineToggle {

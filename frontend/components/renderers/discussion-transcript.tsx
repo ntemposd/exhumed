@@ -83,7 +83,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
     const travel = targetScrollTop - startTop;
 
     if (Math.abs(travel) < 2) {
-      window.scrollTo({ top: targetScrollTop, behavior: "auto" });
+      window.scrollTo({ top: targetScrollTop, behavior: "smooth" });
       return;
     }
 
@@ -95,7 +95,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
       const progress = Math.min(elapsed / durationMs, 1);
       const easedProgress = 1 - Math.pow(1 - progress, 3);
 
-      window.scrollTo({ top: startTop + travel * easedProgress, behavior: "auto" });
+      window.scrollTo({ top: startTop + travel * easedProgress, behavior: "smooth" });
 
       if (progress < 1) {
         window.requestAnimationFrame(step);
@@ -266,10 +266,53 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
   }
 
   function toggleExpandedMessage(messageId: string) {
-    setExpandedMessageIds((currentValue) => ({
-      ...currentValue,
-      [messageId]: !(currentValue[messageId] ?? false),
-    }));
+    const wasExpanded = expandedMessageIds[messageId] ?? false;
+    const container = transcriptRef.current;
+    const bubble = container?.querySelector(
+      `article[data-message-id="${messageId}"]`,
+    ) as HTMLElement | null;
+
+    if (!wasExpanded) {
+      // Expand: capture the "Read more" button's position — that's where the
+      // user left off. After expanding, scroll so that point sits at the top
+      // of the scroll area (which is right below the header sibling).
+      const toggleBtn = bubble?.querySelector(`.${styles.bubbleInlineToggle}`) as HTMLElement | null;
+      const anchorY = toggleBtn && container
+        ? toggleBtn.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop
+        : null;
+
+      setExpandedMessageIds((currentValue) => ({
+        ...currentValue,
+        [messageId]: true,
+      }));
+
+      if (anchorY !== null && container) {
+        requestAnimationFrame(() => {
+          container.scrollTo({ top: Math.max(anchorY - 12, 0), behavior: "smooth" });
+        });
+      }
+    } else {
+      // Collapse: shrink content and snap the bubble's top to the top of
+      // the scroll area. The text fade animation plays concurrently.
+      setExpandedMessageIds((currentValue) => ({
+        ...currentValue,
+        [messageId]: false,
+      }));
+      requestAnimationFrame(() => {
+        if (!bubble || !container) {
+          return;
+        }
+        if (fillViewport) {
+          const bubbleTop = bubble.getBoundingClientRect().top;
+          const containerTop = container.getBoundingClientRect().top;
+          const offset = bubbleTop - containerTop + container.scrollTop;
+          container.scrollTo({ top: Math.max(offset, 0), behavior: "auto" });
+        } else {
+          const bubbleTop = bubble.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: Math.max(bubbleTop, 0), behavior: "auto" });
+        }
+      });
+    }
   }
 
   const transcriptRounds = useMemo(() => messages.reduce<TranscriptRound[]>((rounds, message) => {
@@ -330,7 +373,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
         if (useContainerScroll) {
           container.scrollTop = savedScroll;
         } else {
-          window.scrollTo({ top: savedScroll, behavior: "auto" });
+          window.scrollTo({ top: savedScroll, behavior: "smooth" });
         }
       });
     });
@@ -411,7 +454,8 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
               </div>
             </div>
 
-            {!isCollapsed ? (
+            <div className={styles.roundCollapsible} data-collapsed={isCollapsed ? "true" : "false"}>
+              <div className={styles.roundCollapsibleInner}>
                 <div className={styles.roundTimeline}>
                 {round.messages.map((message) => {
                   const isExpanded = expandedMessageIds[message.id] ?? false;
@@ -437,7 +481,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                     typeof message.execution_metrics?.completion_tokens === "number" ||
                     typeof message.telemetry?.latency_ms === "number";
                   const showBubbleMeta = !message.isThinking && (isExpanded || !shouldTruncate) && (
-                    typeof message.telemetry?.entropy === "number" || hasVectorMeta || hasLlmMeta
+                    hasVectorMeta || hasLlmMeta
                   );
 
                   return (
@@ -471,7 +515,10 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                         </div>
                         {thinkingStatus ? <p className={styles.bubbleStatus}>{thinkingStatus}</p> : null}
                         {visibleMessage ? (
-                          <p className={styles.bubbleText}>
+                          <p
+                            key={shouldTruncate ? `${message.id}-${isExpanded ? "full" : "preview"}` : undefined}
+                            className={`${styles.bubbleText} ${shouldTruncate ? styles.bubbleTextAnimated : ""}`.trim()}
+                          >
                             {injectSourceFootnotes(visibleMessage, messageSources)}
                             {shouldTruncate ? (
                               <>
@@ -487,74 +534,44 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                             ) : null}
                           </p>
                         ) : null}
-                        {(showSources || showBubbleMeta) && (
+                        {(showSources || showBubbleMeta) ? (
                           <div className={styles.bubbleFooter}>
                             {showSources && (
-                              <div className={styles.bubbleSources}>
+                              <p className={styles.bubbleSources}>
+                                <span className={styles.bubbleSourcesLabel}>Sources:</span>{" "}
                                 {messageSources.map((source, idx) => (
-                                  <span key={source} className={styles.bubbleSourceChip}>
-                                    [{idx + 1}] {source}
+                                  <span key={source} className={styles.bubbleSourceRef}>
+                                    [{idx + 1}] {source}{idx < messageSources.length - 1 ? "; " : ""}
                                   </span>
                                 ))}
-                              </div>
+                              </p>
                             )}
                             {showBubbleMeta && (
-                              <div className={styles.bubbleMeta}>
-                                {/* Diversity */}
-                                {typeof message.telemetry?.entropy === "number" && (
-                                  <span className={styles.bubbleMetaGroup}>
-                                    <span className={styles.bubbleMetaGroupLabel}>Diversity</span>
-                                    <span className={styles.bubbleMetaItem}>
-                                      {Math.round(message.telemetry.entropy * 100)}%
-                                    </span>
-                                  </span>
-                                )}
-                                {/* Vector: hits · chars · top */}
+                              <p className={styles.bubbleMeta}>
                                 {hasVectorMeta && (
                                   <span className={styles.bubbleMetaGroup}>
-                                    <span className={styles.bubbleMetaGroupLabel}>Vector</span>
-                                    {typeof message.telemetry?.vector?.match_count === "number" && (
-                                      <span className={styles.bubbleMetaItem}>
-                                        {message.telemetry.vector.match_count} hits
-                                      </span>
-                                    )}
-                                    {typeof message.telemetry?.vector?.context_chars === "number" && (
-                                      <span className={styles.bubbleMetaItem}>
-                                        {message.telemetry.vector.context_chars.toLocaleString()} chars
-                                      </span>
-                                    )}
-                                    {typeof message.telemetry?.vector?.top_score === "number" && (
-                                      <span className={styles.bubbleMetaItem}>
-                                        {message.telemetry.vector.top_score.toFixed(2)} top
-                                      </span>
-                                    )}
+                                    <span className={styles.bubbleMetaGroupLabel}>Vector:</span>{" "}
+                                    {[
+                                      typeof message.telemetry?.vector?.match_count === "number" && `${message.telemetry.vector.match_count} hits`,
+                                      typeof message.telemetry?.vector?.context_chars === "number" && `${message.telemetry.vector.context_chars.toLocaleString()} chars`,
+                                      typeof message.telemetry?.vector?.top_score === "number" && `${message.telemetry.vector.top_score.toFixed(2)} top score`,
+                                    ].filter(Boolean).join(", ")}
                                   </span>
                                 )}
-                                {/* LLM Usage: prompt · completion · latency */}
                                 {hasLlmMeta && (
                                   <span className={styles.bubbleMetaGroup}>
-                                    <span className={styles.bubbleMetaGroupLabel}>LLM Usage</span>
-                                    {typeof message.execution_metrics?.prompt_tokens === "number" && (
-                                      <span className={styles.bubbleMetaItem}>
-                                        {message.execution_metrics.prompt_tokens.toLocaleString()}q
-                                      </span>
-                                    )}
-                                    {typeof message.execution_metrics?.completion_tokens === "number" && (
-                                      <span className={styles.bubbleMetaItem}>
-                                        {message.execution_metrics.completion_tokens.toLocaleString()}a
-                                      </span>
-                                    )}
-                                    {typeof message.telemetry?.latency_ms === "number" && (
-                                      <span className={styles.bubbleMetaItem}>
-                                        {(message.telemetry.latency_ms / 1000).toFixed(1)}s
-                                      </span>
-                                    )}
+                                    <span className={styles.bubbleMetaGroupLabel}>LLM:</span>{" "}
+                                    {[
+                                      typeof message.execution_metrics?.prompt_tokens === "number" && `${message.execution_metrics.prompt_tokens.toLocaleString()} prompt`,
+                                      typeof message.execution_metrics?.completion_tokens === "number" && `${message.execution_metrics.completion_tokens.toLocaleString()} completion`,
+                                      typeof message.telemetry?.latency_ms === "number" && `${(message.telemetry.latency_ms / 1000).toFixed(1)}s latency`,
+                                    ].filter(Boolean).join(", ")}
                                   </span>
                                 )}
-                              </div>
+                              </p>
                             )}
                           </div>
-                        )}
+                        ) : null}
                         {showRetrySkull ? (
                           <div className={styles.bubbleThinkingState} aria-hidden="true">
                             <img className={styles.bubbleThinkingIcon} src="/waiting-skull.svg" alt="" />
@@ -565,7 +582,8 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                   );
                 })}
               </div>
-            ) : null}
+              </div>
+            </div>
 
           </section>
         );

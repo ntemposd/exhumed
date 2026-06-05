@@ -65,6 +65,7 @@ export function DiscussionPanel({
   const rosterRef = useRef<HTMLDivElement | null>(null);
   const topicFieldRef = useRef<HTMLTextAreaElement | null>(null);
   const transcriptSectionRef = useRef<HTMLElement | null>(null);
+  const chatScrollRef = useRef<HTMLDivElement | null>(null);
   const selectedEntropyValue = ENTROPY_PROFILES.reduce((closest, profile) => {
     return Math.abs(profile.value - targetEntropy) < Math.abs(closest.value - targetEntropy) ? profile : closest;
   }, ENTROPY_PROFILES[0]);
@@ -143,9 +144,9 @@ export function DiscussionPanel({
       // then fit it to the viewport and pin the transcript to its newest entry.
       window.scrollTo({ top: 0, behavior: "auto" });
       applyHeight();
-      const container = transcriptRef.current;
-      if (container) {
-        container.scrollTop = container.scrollHeight;
+      const scrollContainer = chatScrollRef.current;
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
       }
     });
     window.addEventListener("resize", applyHeight);
@@ -257,6 +258,7 @@ export function DiscussionPanel({
                     value={topic}
                     rows={1}
                     onChange={(event) => onTopicChange(event.target.value)}
+                    maxLength={255}
                     placeholder="The future of AI in society"
                     disabled={discussionActive}
                   />
@@ -274,7 +276,7 @@ export function DiscussionPanel({
                         field.setSelectionRange(end, end);
                       }}
                     >
-                      ✏ Tap to edit the topic
+                      ✏️ Tap to edit the topic
                     </button>
                   )}
                 </div>
@@ -283,57 +285,57 @@ export function DiscussionPanel({
         </section>
 
         <section className={styles.participantsSection}>
-            <h2 className={"sectionHeading"}>Participants</h2>
+            <h2 className={"sectionHeading"}>Council</h2>
             {councilEditor}
         </section>
 
-        <section className={styles.typeSection}>
-            <h2 className={"sectionHeading"}>Style</h2>
-            <div className={styles.typeSelect} ref={typeSelectRef}>
-              <button
-                type="button"
-                className={styles.typeSelectTrigger}
-                onClick={() => setIsTypeEditing((value) => !value)}
-                aria-haspopup="listbox"
-                aria-expanded={isTypeEditing}
-                disabled={discussionActive}
-              >
-                <span className={styles.typeSelectValue}>{selectedEntropyValue.label}</span>
-                <span className={styles.typeSelectCaret} aria-hidden="true">▾</span>
-              </button>
-
-              {isTypeEditing ? (
-                <ul className={styles.typeSelectList} role="listbox" aria-label="Conversation style selector">
-                  {ENTROPY_PROFILES.map((profile) => {
-                    const isSelected = profile.value === selectedEntropyValue.value;
-
-                    return (
-                      <li key={profile.value} role="option" aria-selected={isSelected}>
-                        <button
-                          type="button"
-                          className={`${styles.typeSelectOption} ${isSelected ? styles.typeSelectOptionActive : ""}`.trim()}
-                          onClick={() => {
-                            onTargetEntropyChange(profile.value);
-                            setIsTypeEditing(false);
-                          }}
-                        >
-                          {profile.label}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              ) : null}
-            </div>
-        </section>
           </div>
         )}
 
         {!showTranscriptControls && (
           <section className={styles.startSection}>
-            <button className="buttonPrimary" type="button" onClick={onStartDebate}>
-              {startButtonLabel}
-            </button>
+            <div className={styles.startRow}>
+              <button className="buttonPrimary" type="button" onClick={onStartDebate}>
+                {startButtonLabel}
+              </button>
+              <div className={styles.typeSelect} ref={typeSelectRef}>
+                <button
+                  type="button"
+                  className={styles.typeSelectTrigger}
+                  onClick={() => setIsTypeEditing((value) => !value)}
+                  aria-haspopup="listbox"
+                  aria-expanded={isTypeEditing}
+                  disabled={discussionActive}
+                >
+                  <span className={styles.typeSelectLabel}>Style:</span>
+                  <span className={styles.typeSelectValue}>{selectedEntropyValue.label}</span>
+                  <span className={styles.typeSelectCaret} aria-hidden="true">▾</span>
+                </button>
+
+                {isTypeEditing ? (
+                  <ul className={styles.typeSelectList} role="listbox" aria-label="Conversation style selector">
+                    {ENTROPY_PROFILES.map((profile) => {
+                      const isSelected = profile.value === selectedEntropyValue.value;
+
+                      return (
+                        <li key={profile.value} role="option" aria-selected={isSelected}>
+                          <button
+                            type="button"
+                            className={`${styles.typeSelectOption} ${isSelected ? styles.typeSelectOptionActive : ""}`.trim()}
+                            onClick={() => {
+                              onTargetEntropyChange(profile.value);
+                              setIsTypeEditing(false);
+                            }}
+                          >
+                            {profile.label}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
+              </div>
+            </div>
             {controlError ? <p className="statusNote">{controlError}</p> : null}
           </section>
         )}
@@ -342,7 +344,7 @@ export function DiscussionPanel({
           ref={transcriptSectionRef}
           className={`${styles.transcriptSection} ${showTranscriptControls ? styles.transcriptSectionActive : ""}`.trim()}
         >
-          <div className={`${styles.transcriptHeader} ${showTranscriptControls ? styles.transcriptHeaderActive : ""}`.trim()}>
+          <div className={`${styles.transcriptHeader} ${showTranscriptControls ? styles.chatHeader : ""}`.trim()}>
             {showTranscriptControls ? (
               <>
                 <div className={styles.chatTopicBlock}>
@@ -350,17 +352,15 @@ export function DiscussionPanel({
                   <h2 className={styles.chatTopicTitle} title={topic}>{topic || "Untitled topic"}</h2>
                 </div>
                 <div className={styles.chatRoster}>{councilEditor}</div>
+                <p className={`${styles.transcriptStatusMessage} ${styles.chatStatusMessage}`.trim()}>{transcriptState.statusLabel}</p>
               </>
             ) : (
               <>
-                <h2 className={"sectionHeading"}>Live Transcript</h2>
+                <h2 className={"sectionHeading"}>Transcript</h2>
                 <p className={styles.transcriptStatusMessage}>{transcriptState.statusLabel}</p>
               </>
             )}
           </div>
-          {showTranscriptControls ? (
-            <p className={`${styles.transcriptStatusMessage} ${styles.chatStatusMessage}`.trim()}>{transcriptState.statusLabel}</p>
-          ) : null}
           <DiscussionTranscript
             emptyStateMessage={transcriptState.emptyMessage}
             messages={messages}
@@ -368,7 +368,7 @@ export function DiscussionPanel({
             roundStartAgentId={roundStartAgentId}
             roundScrollKey={roundScrollKey}
             fillViewport={showTranscriptControls}
-            transcriptRef={transcriptRef}
+            transcriptRef={showTranscriptControls ? chatScrollRef : transcriptRef}
           />
           {showTranscriptControls ? (
             <div className={styles.transcriptControlsBlock}>
@@ -378,12 +378,11 @@ export function DiscussionPanel({
                   type="button"
                   onClick={discussionActive ? onHaltDebate : onStartDebate}
                 >
-                  {discussionActive ? "Pause" : startButtonLabel}
+                  {discussionActive ? "⏸ Pause" : startButtonLabel}
                 </button>
                 <button className="buttonGhost" type="button" onClick={() => void onWipeDebate()} disabled={isWipingSession || discussionActive}>
-                  {isWipingSession ? "Wiping..." : "Wipe"}
+                  {isWipingSession ? "Wiping..." : "🧹 Wipe"}
                 </button>
-                {/* Export hidden for launch — feature ready, not needed yet */}
               </div>
               {controlError ? <p className="statusNote">{controlError}</p> : null}
             </div>

@@ -2,7 +2,7 @@
 // the layout wrapper (SidebarSection), table primitives (TelemetryTable /
 // VectorUsageTable), per-section renderers, and the panel root (TelemetryPanel).
 // Internal helpers are not exported — only the three public surfaces are.
-import type { RefObject } from "react";
+import { type RefObject, useCallback, useRef } from "react";
 
 import type { ServiceStatus } from "@/lib/types";
 
@@ -263,6 +263,20 @@ type TelemetryPanelProps = {
 };
 
 export function TelemetryPanel({ viewModel, containerRef, isSidebarOpen, onToggleSidebar }: TelemetryPanelProps) {
+  const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
+
+  const handleToggle = useCallback(() => {
+    onToggleSidebar();
+    // On mobile the telemetry column is stacked below the convo, so scroll
+    // the toggle button to the top of the viewport after toggling.
+    requestAnimationFrame(() => {
+      const btn = toggleBtnRef.current;
+      if (btn) {
+        const top = btn.getBoundingClientRect().top + window.scrollY - 12;
+        window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
+      }
+    });
+  }, [onToggleSidebar]);
   const {
     servicesState,
     onlineServices,
@@ -279,9 +293,10 @@ export function TelemetryPanel({ viewModel, containerRef, isSidebarOpen, onToggl
     <aside className="telemetryColumn">
       <div className="panel telemetryPanel">
         <button
+          ref={toggleBtnRef}
           type="button"
           className={styles.telemetryToggleBtn}
-          onClick={onToggleSidebar}
+          onClick={handleToggle}
           aria-expanded={isSidebarOpen}
         >
           <span className={styles.telemetryToggleIcon} aria-hidden="true">
