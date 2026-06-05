@@ -680,6 +680,10 @@ select {
 	outline: none;
 }
 
+.topicEditorField[data-is-default="true"] {
+	color: var(--muted);
+}
+
 .topicEditorLoading {
 	flex: 1 1 auto;
 	display: flex;

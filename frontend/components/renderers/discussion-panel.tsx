@@ -11,6 +11,7 @@ import styles from "./discussion-panel.module.css";
 
 type DiscussionPanelProps = {
   topic: string;
+  defaultTopic: string;
   discussionActive: boolean;
   selectedCouncil: LegendDetails[];
   legendEntries: LegendDetails[];
@@ -37,6 +38,7 @@ type DiscussionPanelProps = {
 
 export function DiscussionPanel({
   topic,
+  defaultTopic,
   discussionActive,
   selectedCouncil,
   legendEntries,
@@ -251,16 +253,19 @@ export function DiscussionPanel({
             <h2 className={"sectionHeading"}>Topic</h2>
             <div className={styles.topicSectionLayout}>
               <div className={styles.topicSection}>
-                <div className="topicEditorWrap" data-replicated-value={topic || "The future of AI in society"}>
+                <div className="topicEditorWrap" data-replicated-value={topic || defaultTopic}>
                   <textarea
                     ref={topicFieldRef}
                     className="topicEditorField"
                     value={topic}
                     rows={1}
                     onChange={(event) => onTopicChange(event.target.value)}
+                    onFocus={() => { if (topic === defaultTopic) onTopicChange(""); }}
+                    onBlur={() => { if (!topic.trim()) onTopicChange(defaultTopic); }}
                     maxLength={255}
-                    placeholder="The future of AI in society"
+                    placeholder={defaultTopic}
                     disabled={discussionActive}
+                    data-is-default={topic === defaultTopic ? "true" : "false"}
                   />
                   {!discussionActive && (
                     <button

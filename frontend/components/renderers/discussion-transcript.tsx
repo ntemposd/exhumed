@@ -55,6 +55,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
   const lastAutoCollapsedRoundRef = useRef(0);
   const retryCountdownsRef = useRef<Record<string, { initialSeconds: number; startedAtMs: number; status: string }>>({});
   const followBottomRef = useRef(true);
+  const suppressNextResizeFollowRef = useRef(false);
   const normalizedRoundSize = Math.max(roundSize, 1);
 
   useEffect(() => {
@@ -175,6 +176,10 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
     // the newest content (and its bottom border) never slips under the command
     // bar. Only re-pin when the reader is already at the bottom.
     const repinIfFollowing = () => {
+      if (suppressNextResizeFollowRef.current) {
+        return;
+      }
+
       if (followBottomRef.current) {
         container.scrollTop = container.scrollHeight;
       }
@@ -276,21 +281,31 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
       // Expand: capture the "Read more" button's position — that's where the
       // user left off. After expanding, scroll so that point sits at the top
       // of the scroll area (which is right below the header sibling).
-      const toggleBtn = bubble?.querySelector(`.${styles.bubbleInlineToggle}`) as HTMLElement | null;
-      const anchorY = toggleBtn && container
-        ? toggleBtn.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop
-        : null;
+      const beforeTop = bubble?.getBoundingClientRect().top ?? null;
+      suppressNextResizeFollowRef.current = true;
 
       setExpandedMessageIds((currentValue) => ({
         ...currentValue,
         [messageId]: true,
       }));
 
-      if (anchorY !== null && container) {
+      requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          container.scrollTo({ top: Math.max(anchorY - 12, 0), behavior: "smooth" });
+          if (beforeTop !== null && bubble) {
+            const topDelta = bubble.getBoundingClientRect().top - beforeTop;
+
+            if (Math.abs(topDelta) > 1) {
+              if (fillViewport && container) {
+                container.scrollTop += topDelta;
+              } else {
+                window.scrollBy({ top: topDelta, behavior: "auto" });
+              }
+            }
+          }
+
+          suppressNextResizeFollowRef.current = false;
         });
-      }
+      });
     } else {
       // Collapse: shrink content and snap the bubble's top to the top of
       // the scroll area. The text fade animation plays concurrently.

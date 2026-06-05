@@ -132,9 +132,11 @@ type UseDebateControllerOptions = {
   selectedAgents: string[];
   sessionId: string;
   topic: string;
+  defaultTopic: string;
   targetEntropy: number;
   issueSessionId: (nextSessionId?: string) => string;
   makeSessionId: () => string;
+  onTopicChange: (topic: string) => void;
 };
 
 export function useDebateController({
@@ -142,9 +144,11 @@ export function useDebateController({
   selectedAgents,
   sessionId,
   topic,
+  defaultTopic,
   targetEntropy,
   issueSessionId,
   makeSessionId,
+  onTopicChange,
 }: UseDebateControllerOptions) {
   const [messages, setMessages] = useState<DebateMessage[]>([]);
   const [discussionActive, setDiscussionActive] = useState(false);
@@ -335,12 +339,11 @@ export function useDebateController({
   }
 
   function startDebate() {
-    const normalizedTopic = topic.trim();
+    let normalizedTopic = topic.trim();
 
     if (!normalizedTopic) {
-      setControlError("Set a discussion topic first.");
-      setStatusNote("Set a discussion topic first.");
-      return false;
+      normalizedTopic = defaultTopic;
+      onTopicChange(defaultTopic);
     }
 
     if (normalizedTopic.length > 255) {

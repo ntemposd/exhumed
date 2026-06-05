@@ -64,9 +64,11 @@ export function ChatWorkbench() {
     selectedAgents: effectiveSelectedAgents,
     sessionId,
     topic,
+    defaultTopic: DEFAULT_TOPIC,
     targetEntropy,
     issueSessionId,
     makeSessionId,
+    onTopicChange: setTopic,
   });
   const {
     messages,
@@ -209,6 +211,7 @@ export function ChatWorkbench() {
       <section className="workspace" data-sidebar={isSidebarOpen ? "open" : "closed"}>
         <DiscussionPanel
           topic={topic}
+          defaultTopic={DEFAULT_TOPIC}
           discussionActive={discussionActive}
           selectedCouncil={selectedCouncil}
           targetEntropy={targetEntropy}
@@ -244,7 +247,7 @@ export function ChatWorkbench() {
       {!isConvoActive && (
         <footer className="siteFooter">
           Built with ❤️ by <a className="siteFooterLink" href="https://ntemposd.me" target="_blank" rel="noreferrer">ntemposd</a>
-          <span className="siteFooterVersion">v1.0.0-beta.5</span>
+          <span className="siteFooterVersion">v1.0.0-beta.6</span>
         </footer>
       )}
     </main>

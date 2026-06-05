@@ -429,6 +429,12 @@
 
 
 @media (max-width: 767px) {
+  .transcriptInnerFill {
+    margin-top: 0;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
   .roundSection + .roundSection {
     margin-top: 14px;
   }
@@ -439,7 +445,7 @@
 
   .bubble {
     max-width: 100%;
-    padding: 10px 10px 10px 12px;
+    padding: 8px 7px 8px 9px;
     gap: 8px;
   }
 
