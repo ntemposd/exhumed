@@ -203,11 +203,11 @@ export function DiscussionPanel({
             aria-haspopup="listbox"
             aria-expanded={isRosterOpen}
             disabled={discussionActive}
-            aria-label="Add a speaker"
-            title="Add a speaker"
+            aria-label={isRosterOpen ? "Close speaker picker" : "Add a speaker"}
+            title={isRosterOpen ? "Close speaker picker" : "Add a speaker"}
           >
-            <span className={styles.rosterAddGlyph} aria-hidden="true">+</span>
-            <span className={styles.rosterAddText}>Add Speaker</span>
+            <span className={styles.rosterAddGlyph} aria-hidden="true">{isRosterOpen ? "✓" : "+"}</span>
+            <span className={styles.rosterAddText}>{isRosterOpen ? "Ok" : "Add Speaker"}</span>
           </button>
 
           {isRosterOpen ? (

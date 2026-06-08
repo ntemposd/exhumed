@@ -184,10 +184,15 @@
 }
 
 /* Wrapper around the setup sections so they fade/slide in as a unit when the
-   convo is wiped and the controls return. */
+   convo is wiped and the controls return. z-index: 1 ensures the rosterPopover
+   inside (which is absolute-positioned) paints above the startSection sibling
+   that follows in DOM order — the animation fill-mode creates a stacking
+   context that would otherwise be overtaken by startSection's positioned
+   children (typeSelect, position: relative). */
 .setupGroup {
   display: block;
   animation: convoSectionEnter 260ms ease both;
+  z-index: 1;
 }
 
 @keyframes convoSectionEnter {
