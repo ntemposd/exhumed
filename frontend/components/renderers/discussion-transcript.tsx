@@ -251,11 +251,11 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
         const elapsedSeconds = Math.max((retryCountdownTick - retryCountdown.startedAtMs) / 1000, 0);
         const remainingSeconds = Math.max(retryCountdown.initialSeconds - elapsedSeconds, 0);
 
-        return `Request throttled. Retrying in ${remainingSeconds.toFixed(1)}s`;
+        return `The ether is congested. Retrying in ${remainingSeconds.toFixed(1)}s`;
       }
 
       if (/rate limit|retry|\b429\b|\b5\d{2}\b/i.test(explicitStatus)) {
-        return "Request throttled";
+        return "The ether is congested";
       }
     }
 

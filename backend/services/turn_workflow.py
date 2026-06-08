@@ -12,7 +12,7 @@ class TurnWorkflowService:
         self,
         *,
         fetch_agent_config: Callable[[str], Awaitable[Any]],
-        fetch_context_messages: Callable[[UUID, int, Optional[str]], Awaitable[List[Dict[str, Any]]]],
+        fetch_context_messages: Callable[[UUID, int, Optional[str], Optional[str]], Awaitable[List[Dict[str, Any]]]],
         get_agent_context_matches: Callable[[str, str], List[Dict[str, Any]]],
         sanitize_generated_message: Callable[[str, str], str],
         save_latest_execution_metrics: Callable[[Any], Awaitable[None]],
@@ -37,21 +37,18 @@ class TurnWorkflowService:
         session_id: UUID,
         agent_id: str,
         topic: str,
-        context_limit: int = 5,
+        context_limit: int = 4,
     ) -> Tuple[Any, List[Dict[str, Any]], List[Dict[str, Any]], str]:
         """Load the agent config and recent context, then perform a context-aware RAG query."""
         agent_config, context_messages = await asyncio.gather(
             self.fetch_agent_config(agent_id),
-            self.fetch_context_messages(session_id, context_limit, topic),
+            self.fetch_context_messages(session_id, context_limit, topic, agent_id),
         )
         previous_response = ""
         if context_messages:
             previous_response = str(context_messages[-1].get("message", "") or "").strip()
 
-        if previous_response:
-            query_text = f"{topic}. {previous_response[:200]}"
-        else:
-            query_text = topic
+        query_text = topic
 
         agent_context_matches = await asyncio.to_thread(
             self.get_agent_context_matches,

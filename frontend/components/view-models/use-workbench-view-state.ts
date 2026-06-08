@@ -39,16 +39,16 @@ export function useWorkbenchViewState({
 }: UseWorkbenchViewStateOptions) {
   const legendCatalogState = useMemo<AsyncViewState>(() => {
     if (agentsError && agents.length === 0) {
-      return { phase: "error", summary: "Legend registry unavailable.", detail: agentsError };
+      return { phase: "error", summary: "The vault is sealed.", detail: agentsError };
     }
     if (isLoadingAgents && agents.length === 0) {
-      return { phase: "loading", summary: "Recovering legend registry..." };
+      return { phase: "loading", summary: "Unearthing the registry..." };
     }
     if (isRefreshingAgents && agents.length > 0) {
       return { phase: "refreshing", summary: "Refreshing registered legends..." };
     }
     if (agents.length === 0) {
-      return { phase: "empty", summary: "No legends available." };
+      return { phase: "empty", summary: "The vault is empty." };
     }
     return { phase: "ready", summary: `${agents.length} legends available.` };
   }, [agents, agentsError, isLoadingAgents, isRefreshingAgents]);
@@ -58,7 +58,7 @@ export function useWorkbenchViewState({
       return { phase: "error", summary: "Service checks unavailable.", detail: servicesError };
     }
     if (isLoadingServices && serviceRows.length === 0) {
-      return { phase: "loading", summary: "Checking services..." };
+      return { phase: "loading", summary: "Surveying the ether..." };
     }
     if (isRefreshingServices && serviceRows.length > 0) {
       return { phase: "refreshing", summary: `Services (${onlineServices}/${serviceRows.length})`, detail: "Refreshing live checks..." };
@@ -74,7 +74,7 @@ export function useWorkbenchViewState({
       return {
         phase: "error",
         statusLabel: controlError,
-        emptyMessage: "The chamber stalled before the first response. Adjust the council or topic and try again.",
+        emptyMessage: "The chamber fell silent. Adjust the council or topic and try again.",
       };
     }
     if (discussionActive || messages.some((message) => message.isThinking)) {

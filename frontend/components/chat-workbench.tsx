@@ -249,7 +249,7 @@ export function ChatWorkbench() {
           Built with ❤️ by <a className="siteFooterLink" href="https://ntemposd.me" target="_blank" rel="noreferrer">ntemposd</a>
           {" · "}
           <a className="siteFooterPartialLink" href="https://github.com/ntemposd/exhumed" target="_blank" rel="noreferrer">⭐ Star on <span className="siteFooterPartialLinkUnderline">GitHub</span></a>
-          <span className="siteFooterVersion">v1.0.0-beta.6</span>
+          <span className="siteFooterVersion">v1.0.0-beta.7</span>
         </footer>
       )}
     </main>

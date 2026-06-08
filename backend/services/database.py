@@ -16,11 +16,27 @@ class EmbeddingProvider(Protocol):
         ...
 
 
-class SentenceTransformerEmbeddingProvider:
-    """Lazy sentence-transformer wrapper used only when local embeddings are needed."""
+# BGE query instruction — prepended to queries (not to indexed documents) so the
+# local fallback vector sits in the same semantic space as Upstash's native
+# BGE_BASE_EN_V1_5 embeddings used at index time.
+_BGE_QUERY_INSTRUCTION = "Represent this sentence for searching relevant passages: "
 
-    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> None:
+
+class SentenceTransformerEmbeddingProvider:
+    """Local BGE fallback used only when Upstash's native embedding endpoint is
+    unavailable.  The default model (BAAI/bge-base-en-v1.5, 768-dim) matches the
+    index's BGE_BASE_EN_V1_5 embedding so vectors are dimensionally compatible.
+    The previous default (all-MiniLM-L6-v2, 384-dim) would have caused a silent
+    dimension mismatch against the 768-dim index.
+    """
+
+    def __init__(
+        self,
+        model_name: str = "BAAI/bge-base-en-v1.5",
+        query_instruction: str = _BGE_QUERY_INSTRUCTION,
+    ) -> None:
         self.model_name = model_name
+        self.query_instruction = query_instruction
         self._model = None
 
     def _load_model(self) -> Any:
@@ -29,8 +45,8 @@ class SentenceTransformerEmbeddingProvider:
                 from sentence_transformers import SentenceTransformer
             except ImportError as exc:
                 raise RuntimeError(
-                    "sentence-transformers is required for Vector querying. "
-                    "Install it in the backend environment or inject a custom embedding provider."
+                    "sentence-transformers is required for the local embedding fallback. "
+                    "Install it with: pip install sentence-transformers"
                 ) from exc
 
             self._model = SentenceTransformer(self.model_name)
@@ -38,8 +54,11 @@ class SentenceTransformerEmbeddingProvider:
         return self._model
 
     def embed(self, text: str) -> List[float]:
+        # Sanitize to clean UTF-8 before encoding so the model never receives
+        # raw bytes, surrogates, or control characters from retrieved text.
+        clean = text.encode("utf-8", errors="replace").decode("utf-8")
         model = self._load_model()
-        vector = model.encode(text, normalize_embeddings=True)
+        vector = model.encode(self.query_instruction + clean, normalize_embeddings=True)
         return vector.tolist() if hasattr(vector, "tolist") else list(vector)
 
 
@@ -97,6 +116,27 @@ class DatabaseService:
     @staticmethod
     def _escape_filter_value(value: str) -> str:
         return value.replace("\\", "\\\\").replace("'", "\\'")
+
+    @staticmethod
+    def _apply_source_diversity(
+        matches: List[Dict[str, Any]],
+        max_per_source: int,
+    ) -> List[Dict[str, Any]]:
+        slugs = {
+            str((m.get("metadata") or {}).get("source_slug") or "").strip() or "_unknown"
+            for m in matches
+        }
+        if len(slugs) <= 1:
+            return matches
+
+        seen: Dict[str, int] = {}
+        result: List[Dict[str, Any]] = []
+        for match in matches:
+            slug = str((match.get("metadata") or {}).get("source_slug") or "").strip() or "_unknown"
+            if seen.get(slug, 0) < max_per_source:
+                result.append(match)
+                seen[slug] = seen.get(slug, 0) + 1
+        return result
 
     @staticmethod
     def _coerce_optional_int(value: Any) -> Optional[int]:
@@ -364,14 +404,20 @@ class DatabaseService:
         top_k: int = 5,
         include_metadata: bool = True,
         include_data: bool = True,
-        neighbor_window: int = 1,
+        neighbor_window: int = 0,
+        max_per_source: int = 2,
     ) -> List[Dict[str, Any]]:
-        """Retrieve speaker-specific knowledge chunks from Upstash Vector."""
+        """Retrieve speaker-specific knowledge chunks from Upstash Vector.
+
+        Fetches a wider pool from Upstash so the source-diversity filter has
+        enough candidates to fill top_k slots from distinct sources.
+        """
         filter_expression = f"agent_id = '{self._escape_filter_value(agent_id)}'"
+        fetch_k = top_k * 2 + 1
         try:
             results = self.vector_index.query(
                 data=query_text,
-                top_k=top_k,
+                top_k=fetch_k,
                 include_metadata=include_metadata,
                 include_data=include_data,
                 filter=filter_expression,
@@ -384,7 +430,7 @@ class DatabaseService:
             query_embedding = self.embedding_provider.embed(query_text)
             results = self.vector_index.query(
                 vector=query_embedding,
-                top_k=top_k,
+                top_k=fetch_k,
                 include_metadata=include_metadata,
                 include_data=include_data,
                 filter=filter_expression,
@@ -398,6 +444,9 @@ class DatabaseService:
         if not matches:
             return []
 
+        top_score = matches[0].get("score") or 0.0
+        effective_top_k = top_k if top_score >= 0.72 else min(top_k + 2, len(matches))
+        matches = self._apply_source_diversity(matches, max_per_source)[:effective_top_k]
         return self._enrich_matches_with_neighbors(matches, agent_id=agent_id, neighbor_window=neighbor_window)
 
     def build_system_prompt(

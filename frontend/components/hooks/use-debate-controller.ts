@@ -154,7 +154,7 @@ export function useDebateController({
   const [discussionActive, setDiscussionActive] = useState(false);
   const [turnCount, setTurnCount] = useState(0);
   const [currentAgentIndex, setCurrentAgentIndex] = useState(0);
-  const [statusNote, setStatusNote] = useState("Standby.");
+  const [statusNote, setStatusNote] = useState("The chamber awaits.");
   const [controlError, setControlError] = useState("");
   const [isWipingSession, setIsWipingSession] = useState(false);
   const [isDownloadingTranscript, setIsDownloadingTranscript] = useState(false);
@@ -283,7 +283,7 @@ export function useDebateController({
         throw new Error(await getResponseErrorMessage(response, "Backend cleanup failed"));
       }
 
-      setStatusNote("Debate cleared.");
+      setStatusNote("The record expunged.");
       setControlError("");
     } catch (clearError) {
       const message = getRequestFailureMessage(clearError, "Debate cleared locally, but backend cleanup failed.");
@@ -297,15 +297,15 @@ export function useDebateController({
   function renewSession() {
     resetDebateState({
       nextSessionId: makeSessionId(),
-      nextStatusNote: "New session armed.",
+      nextStatusNote: "A new séance prepared.",
       nextControlError: "",
     });
   }
 
   function downloadTranscript() {
     if (!messages.some((message) => !message.isThinking)) {
-      setControlError("No messages to export.");
-      setStatusNote("No messages to export.");
+      setControlError("Nothing to transcribe.");
+      setStatusNote("Nothing to transcribe.");
       return;
     }
 
@@ -319,7 +319,7 @@ export function useDebateController({
 
     setIsDownloadingTranscript(true);
     setControlError("");
-    setStatusNote("Preparing PDF...");
+    setStatusNote("Transcribing the séance...");
 
     try {
       const visibleMessages = messages.filter((m) => !m.isThinking);
@@ -327,7 +327,7 @@ export function useDebateController({
       const html = buildPdfHtml(exportTopic, visibleMessages, sessionId);
       printWindow.document.write(html);
       printWindow.document.close();
-      setStatusNote("Print dialog opened.");
+      setStatusNote("The transcript surfaces.");
     } catch (exportError) {
       printWindow.close();
       const message = getRequestFailureMessage(exportError, "Export failed");
@@ -353,8 +353,8 @@ export function useDebateController({
     }
 
     if (selectedAgents.length === 0) {
-      setControlError("Draft at least one legend.");
-      setStatusNote("Draft at least one legend.");
+      setControlError("Summon at least one legend.");
+      setStatusNote("Summon at least one legend.");
       return false;
     }
 
@@ -366,7 +366,7 @@ export function useDebateController({
     if (topicChanged) {
       resetDebateState({
         nextSessionId: makeSessionId(),
-        nextStatusNote: "Topic changed. Started a fresh session.",
+        nextStatusNote: "New topic. A fresh séance begins.",
       });
     }
 
@@ -392,7 +392,7 @@ export function useDebateController({
 
     setDiscussionActive(true);
     lastStartedTopicRef.current = normalizedTopic;
-    setStatusNote(canResumeQueuedSpeaker ? "Round resumed." : "Round armed.");
+    setStatusNote(canResumeQueuedSpeaker ? "The séance resumes." : "The dead are summoned.");
     return true;
   }
 
@@ -401,14 +401,14 @@ export function useDebateController({
 
     if (turnInFlightRef.current) {
       pauseAfterCurrentTurnRef.current = true;
-      setStatusNote("Pausing after current speaker.");
+      setStatusNote("Sealing the vault after this voice.");
       return;
     }
 
     pauseAfterCurrentTurnRef.current = false;
     setDiscussionActive(false);
     setIsDebatePaused(true);
-    setStatusNote("Debate paused.");
+    setStatusNote("The voices fall silent.");
   }
 
   useEffect(() => {
@@ -429,7 +429,7 @@ export function useDebateController({
     if (currentAgentIndex >= selectedAgents.length) {
       setDiscussionActive(false);
       setCurrentAgentIndex(0);
-      setStatusNote("Round complete.");
+      setStatusNote("The round is interred.");
       return;
     }
 
@@ -447,14 +447,14 @@ export function useDebateController({
     const abortController = new AbortController();
     const slowTurnTimer = window.setTimeout(() => {
       if (requestResetSequence === resetSequenceRef.current && turnInFlightRef.current) {
-        setStatusNote(`${displayName} is taking longer than usual. Waiting on the backend...`);
+        setStatusNote(`${displayName} stirs slowly. Still channeling...`);
       }
     }, 12000);
 
     turnInFlightRef.current = true;
     currentTurnAbortControllerRef.current = abortController;
     setControlError("");
-    setStatusNote(`Running ${displayName}...`);
+    setStatusNote(`Raising ${displayName}...`);
     setMessages((currentMessages) => [
       ...currentMessages,
       {
@@ -581,18 +581,18 @@ export function useDebateController({
               setDiscussionActive(false);
               setCurrentAgentIndex(0);
               setIsDebatePaused(false);
-              setStatusNote("Round complete.");
+              setStatusNote("The round is interred.");
             } else if (shouldPauseAfterCurrentTurn) {
               setDiscussionActive(false);
               setCurrentAgentIndex(currentAgentIndex + 1);
               setIsDebatePaused(true);
-              setStatusNote("Debate paused.");
+              setStatusNote("The voices fall silent.");
             } else {
               const nextAgentId = selectedAgents[currentAgentIndex + 1];
               const nextAgentName = agents.find((agent) => agent.agent_id === nextAgentId)?.display_name ?? nextAgentId;
               setCurrentAgentIndex(currentAgentIndex + 1);
               setIsDebatePaused(false);
-              setStatusNote(`Queued ${nextAgentName}.`);
+              setStatusNote(`${nextAgentName} awaits the call.`);
             }
             return;
           }
@@ -604,7 +604,7 @@ export function useDebateController({
           return;
         }
 
-        const message = getRequestFailureMessage(turnError, "Turn execution failed");
+        const message = getRequestFailureMessage(turnError, "The séance was interrupted.");
         clearStreamRevealQueue(thinkingId);
         setControlError(message);
         setStatusNote(message);
@@ -615,7 +615,7 @@ export function useDebateController({
             message.id === thinkingId
               ? {
                   ...message,
-                  message: "Agent failed to produce a response.",
+                  message: "The voice did not return.",
                   round_number: message.round_number ?? currentRoundNumber,
                   isThinking: false,
                   failed: true,

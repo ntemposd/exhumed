@@ -38,8 +38,15 @@ class SessionService:
         session_id: UUID,
         limit: int = 5,
         topic: Optional[str] = None,
+        anchor_agent_id: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """Load the recent discussion turns needed to frame the next response."""
+        """Load the recent discussion turns needed to frame the next response.
+
+        If anchor_agent_id is provided and that speaker's last turn for the
+        active topic is not already in the window (common when the panel has
+        more speakers than context_limit), it is fetched separately and
+        prepended so the speaker always sees their own last response.
+        """
         if topic and str(topic).strip():
             raw_entries = await self._run_blocking_io(
                 self._database_service.get_recent_chat_history_for_topic,
@@ -55,6 +62,25 @@ class SessionService:
             if "turn_number" not in item:
                 item["turn_number"] = index
             messages.append(item)
+
+        if anchor_agent_id and topic and str(topic).strip():
+            in_window = any(m.get("agent_id") == anchor_agent_id for m in messages)
+            if not in_window:
+                all_topic_entries = await self._run_blocking_io(
+                    self._database_service.get_recent_chat_history_for_topic,
+                    str(session_id),
+                    topic,
+                    200,
+                )
+                speaker_turns = [
+                    dict(item) for item in all_topic_entries
+                    if item.get("agent_id") == anchor_agent_id
+                ]
+                if speaker_turns:
+                    anchor_turn = speaker_turns[-1]
+                    if "turn_number" not in anchor_turn:
+                        anchor_turn["turn_number"] = 0
+                    messages = [anchor_turn] + messages
 
         messages.sort(key=lambda item: int(item.get("turn_number", 0)))
         return messages
@@ -174,7 +200,7 @@ class SessionService:
     def get_agent_context_matches(self, query_text: str, agent_id: str) -> List[Dict[str, Any]]:
         """Fetch and log the Vector matches that will ground a speaker's next turn."""
         try:
-            matches = self._database_service.get_agent_context(query_text=query_text, agent_id=agent_id, top_k=4)
+            matches = self._database_service.get_agent_context(query_text=query_text, agent_id=agent_id, top_k=5)
             if matches:
                 top_match = matches[0]
                 top_metadata = top_match.get("metadata") or {}

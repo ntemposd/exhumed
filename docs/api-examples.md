@@ -90,14 +90,22 @@ Example request:
 }
 ```
 
-Example streamed chunks:
+Streamed response uses the Vercel AI SDK data stream protocol (`text/plain; charset=utf-8`, `x-vercel-ai-data-stream: v1`):
 
-```json
-{"type":"chunk","content":"I think"}
-{"type":"chunk","content":" the real question"}
+```
+0:"I think"
+0:" the real question"
+8:[{"type":"status","stage":"retrying","message":"Rate limit hit. Retrying in 2.0s"}]
+2:[{...final turn object...}]
+d:{"finishReason":"stop","usage":{"promptTokens":502,"completionTokens":44}}
 ```
 
-Final streamed payload:
+- `0:` — incremental text token
+- `8:` — status annotation (rate-limit retry, error)
+- `2:` — final turn metadata (message_id, telemetry, execution_metrics)
+- `d:` — finish signal with token usage
+
+Final `2:` data payload:
 
 ```json
 {
@@ -140,6 +148,8 @@ Final streamed payload:
 ```
 
 ## `POST /generate`
+
+Legacy non-streaming endpoint. `previous_response` is used to calculate the Jaccard entropy score in the telemetry response — it is compared against the generated response to produce the debate diversity metric. It is not used to build the RAG query; the query uses the topic only.
 
 Example request:
 

@@ -292,6 +292,12 @@ class LLMService:
 
                 if response is not None and response.status_code == 429 and attempt < self._max_retries:
                     retry_delay = self._parse_retry_after_seconds(response, error_text) or min(2 ** attempt, 8)
+                    if retry_delay > 60:
+                        self._logger.warning(
+                            "LLM quota exhausted (retry-after=%ss) — failing fast instead of sleeping",
+                            retry_delay,
+                        )
+                        raise HTTPException(status_code=429, detail=f"LLM rate limit: quota exhausted, retry after {retry_delay:.0f}s")
                     if on_retry is not None:
                         await on_retry(retry_delay, attempt + 1)
                     await self._sleep_for_retry(retry_delay, attempt + 1)
