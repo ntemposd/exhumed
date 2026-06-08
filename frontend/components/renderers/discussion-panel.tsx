@@ -126,6 +126,34 @@ export function DiscussionPanel({
     }
   }, [availableCouncil.length, discussionActive]);
 
+  // When a dropdown opens on mobile, scroll the page so the popover is fully
+  // visible — a long topic can push the council/style sections near the fold.
+  useEffect(() => {
+    if (!isRosterOpen) return;
+    const raf = requestAnimationFrame(() => {
+      const popover = rosterRef.current?.querySelector<HTMLElement>('[role="listbox"]');
+      if (!popover) return;
+      const rect = popover.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 8) {
+        window.scrollBy({ top: rect.bottom - window.innerHeight + 8, behavior: "smooth" });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isRosterOpen]);
+
+  useEffect(() => {
+    if (!isTypeEditing) return;
+    const raf = requestAnimationFrame(() => {
+      const list = typeSelectRef.current?.querySelector<HTMLElement>('[role="listbox"]');
+      if (!list) return;
+      const rect = list.getBoundingClientRect();
+      if (rect.bottom > window.innerHeight - 8) {
+        window.scrollBy({ top: rect.bottom - window.innerHeight + 8, behavior: "smooth" });
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [isTypeEditing]);
+
   // In full-screen convo mode the transcript section is sized to fill from its
   // top down to the bottom of the viewport, so the command bar lands exactly at
   // the bottom of the screen and the rounds scroll internally above it.
@@ -206,8 +234,8 @@ export function DiscussionPanel({
             aria-label={isRosterOpen ? "Close speaker picker" : "Add a speaker"}
             title={isRosterOpen ? "Close speaker picker" : "Add a speaker"}
           >
-            <span className={styles.rosterAddGlyph} aria-hidden="true">{isRosterOpen ? "✓" : "+"}</span>
-            <span className={styles.rosterAddText}>{isRosterOpen ? "Ok" : "Add Speaker"}</span>
+            <span className={styles.rosterAddGlyph} aria-hidden="true">{isRosterOpen ? "↵" : "+"}</span>
+            <span className={styles.rosterAddText}>{isRosterOpen ? "Done" : "Add Speaker"}</span>
           </button>
 
           {isRosterOpen ? (

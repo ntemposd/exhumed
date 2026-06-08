@@ -257,6 +257,19 @@ select {
 	text-underline-offset: 0.16em;
 }
 
+/* Partial-underline link: the <a> is plain text weight with no underline;
+   a child <span> handles the underline on just the highlighted word. */
+.siteFooterPartialLink {
+	font-weight: 400;
+	text-decoration: none;
+}
+
+.siteFooterPartialLinkUnderline {
+	font-weight: 700;
+	text-decoration: underline;
+	text-underline-offset: 0.16em;
+}
+
 .siteFooterVersion {
 	display: block;
 	margin-top: 6px;
@@ -266,20 +279,22 @@ select {
 	opacity: 0.8;
 }
 
-/* Buy Me a Coffee floating button — scaled down a touch, anchored bottom-right
-   so it stays in its corner. Only the button is scaled; the popup keeps its
-   native (responsive) size so it isn't shifted/clipped. */
+/* Buy Me a Coffee floating button — visually hidden but kept at its natural
+   bottom-right anchor so the widget popup still opens in the correct position.
+   The navbar 🍺 button is the sole user-facing entry point; the floating button
+   stays in the DOM so the programmatic .click() can trigger the popup.
+   We use clip-path + pointer-events instead of opacity so the widget's own
+   popup element (a sibling, not a child) is never affected by our hiding. */
 #bmc-wbtn {
-	transform: scale(0.82);
-	transform-origin: right bottom;
+	clip-path: inset(50%) !important;
+	pointer-events: none !important;
 }
 
-/* On mobile the command bar owns the bottom of the screen during a convo, so
-   hide the floating coffee button there to avoid covering Advance/Wipe. */
-@media (max-width: 767px) {
-	body:has(.shell[data-convo-active="true"]) #bmc-wbtn {
-		display: none !important;
-	}
+/* The actual popup/frame sibling that BMC appends to body must always be
+   fully interactive and unclipped. */
+#bmc-wbtn + * {
+	clip-path: none !important;
+	pointer-events: auto !important;
 }
 
 .workspace {

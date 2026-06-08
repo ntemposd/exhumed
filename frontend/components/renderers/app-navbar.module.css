@@ -49,6 +49,32 @@
   text-transform: uppercase;
 }
 
+.navbarActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.coffeeLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: opacity 120ms ease;
+  flex-shrink: 0;
+}
+
+.coffeeLink:hover {
+  opacity: 0.82;
+}
+
 .themeToggle {
   display: inline-flex;
   align-items: center;

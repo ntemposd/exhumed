@@ -40,14 +40,25 @@ export function AppNavbar() {
           <h1 className={styles.brandSubtitle}>Historical Convo Engine</h1>
         </div>
       </div>
-      <button
-        type="button"
-        className={styles.themeToggle}
-        onClick={toggleTheme}
-        aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      >
-        {isDark ? <SunIcon /> : <MoonIcon />}
-      </button>
+      <div className={styles.navbarActions}>
+        <button
+          type="button"
+          className={styles.coffeeLink}
+          onClick={() => (document.getElementById("bmc-wbtn") as HTMLElement | null)?.click()}
+          aria-label="Buy me a coffee"
+          title="Buy me a coffee"
+        >
+          🍺
+        </button>
+        <button
+          type="button"
+          className={styles.themeToggle}
+          onClick={toggleTheme}
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          {isDark ? <SunIcon /> : <MoonIcon />}
+        </button>
+      </div>
     </header>
   );
 }
