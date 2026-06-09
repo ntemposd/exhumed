@@ -20,7 +20,7 @@ The current runtime stack is:
 
 ## Quick Start
 
-### 1. Configure `.env`
+### 1. Configure backend `.env`
 
 Create a repo-root `.env` with at least:
 
@@ -32,13 +32,29 @@ UPSTASH_VECTOR_REST_TOKEN=...
 LLM_API_KEY=...
 LLM_API_BASE_URL=https://api.groq.com/openai/v1
 LLM_MODEL_ID=llama-3.1-8b-instant
-NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
 ```
 
-For production frontend builds, `NEXT_PUBLIC_BACKEND_URL` must point at the deployed backend origin.
-If frontend and backend run on different origins, the backend must also allow the deployed frontend origin via `CORS_ALLOW_ORIGINS` or a compatible `CORS_ALLOW_ORIGIN_REGEX`.
+### 2. Configure frontend `.env.local`
 
-### 2. Install dependencies
+The browser never calls the FastAPI backend directly. All frontend requests go through the Next.js proxy at `/api/backend`, which forwards server-side to the real backend and injects `BACKEND_API_KEY` when set.
+
+Create `frontend/.env.local` with:
+
+```dotenv
+BACKEND_URL=http://localhost:8000
+BACKEND_API_KEY=
+```
+
+For production (for example Vercel), set the same variables in the frontend host environment:
+
+- `BACKEND_URL` must point at the deployed backend origin (for example your Railway URL).
+- `BACKEND_API_KEY` must match `BACKEND_API_KEY` on the backend when API-key auth is enabled.
+
+These are server-only variables. Do not use `NEXT_PUBLIC_BACKEND_URL`; it is not read by the current frontend.
+
+CORS on the backend mainly matters for local direct API testing. In production the browser only talks to the Next.js origin.
+
+### 3. Install dependencies
 
 Windows:
 
@@ -54,7 +70,7 @@ macOS / Linux:
 
 These scripts install backend Python dependencies and the active Next.js frontend dependencies.
 
-### 3. Run the backend
+### 4. Run the backend
 
 Windows:
 
@@ -68,7 +84,7 @@ macOS / Linux:
 ./.venv/bin/python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 4. Run the active frontend
+### 5. Run the active frontend
 
 ```bash
 cd frontend
@@ -76,11 +92,11 @@ npm install
 npm run dev
 ```
 
-Production frontend builds now fail fast if `NEXT_PUBLIC_BACKEND_URL` is missing, which prevents silently shipping a frontend that still points at `localhost`.
+If `BACKEND_URL` is missing at runtime, the `/api/backend` proxy returns `503 Backend not configured.` instead of silently failing.
 
 Frontend runtime behavior has also been hardened so backend failures now surface clearer messages for:
 
-- backend unreachable or bad public URL
+- backend unreachable or incorrect `BACKEND_URL`
 - non-200 backend responses with JSON error payloads
 - debate turns that are taking longer than usual
 

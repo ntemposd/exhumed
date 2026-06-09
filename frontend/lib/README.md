@@ -5,7 +5,7 @@ not depend on feature-level React components.
 
 ## Current Files
 
-- `config.ts` centralizes environment-backed frontend configuration.
+- `config.ts` exposes the browser-facing backend base path (`/api/backend`). The real backend URL and API key live in server-only env vars (`BACKEND_URL`, `BACKEND_API_KEY`) read by `app/api/backend/[...path]/route.ts`.
 - `legends.ts` contains the local presentation registry for the historical figures.
 - `types.ts` contains shared backend contract types used across the frontend.
 

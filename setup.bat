@@ -67,6 +67,13 @@ if not exist ".env" (
     echo .env already exists.
 )
 
+if not exist "frontend\.env.local" (
+    copy frontend\.env.example frontend\.env.local >nul
+    echo Created frontend\.env.local from frontend\.env.example.
+) else (
+    echo frontend\.env.local already exists.
+)
+
 echo.
 echo Setup complete.
 echo.

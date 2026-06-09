@@ -51,7 +51,7 @@ export async function getResponseErrorMessage(response: Response, fallbackMessag
 
 export function getRequestFailureMessage(error: unknown, fallbackMessage: string) {
   if (error instanceof TypeError) {
-    return "Could not reach the backend. Check NEXT_PUBLIC_BACKEND_URL, CORS, and backend availability.";
+    return "Could not reach the backend. Check BACKEND_URL, BACKEND_API_KEY, and that the backend is running.";
   }
 
   if (error instanceof Error && error.message.trim()) {
