@@ -173,22 +173,22 @@ Unit coverage for context-prompt formatting, including how retrieval blocks are 
 Unit coverage for the Jaccard entropy and text normalization helpers.
 
 - `backend/tests/test_turn_workflow_service.py`
-Unit coverage for shared turn preparation and turn finalization, including context-aware retrieval query construction.
+Unit coverage for shared turn preparation and turn finalization, including topic-only retrieval query construction.
 
 ## Retrieval and RAG Notes
 
 The current retrieval path spans three files:
 
 - `services/turn_workflow.py`
-Builds a context-aware query by combining the topic with the latest discussion message when available before calling vector retrieval.
+Builds a topic-only vector query (`query_text = topic`). Debate awareness comes from the recent context block in the prompt, not from the retrieval query.
 
 - `services/database.py`
-Queries Upstash Vector, filters out weak matches under the configured score threshold, and optionally enriches strong matches with neighbor chunks.
+Queries Upstash Vector with an `agent_id` filter, applies the score threshold (0.60), source diversity (max 2 chunks per source), adaptive top_k, and optional neighbor enrichment. Neighbor enrichment is disabled by default (`neighbor_window=0`) to control token cost.
 
 - `services/session_service.py`
-Formats retrieved multi-paragraph matches into numbered prompt blocks so neighbor-enriched passages keep their structure.
+Formats retrieved chunks into numbered prompt blocks and assembles the user message with retrieval guidance and recent debate context.
 
-This means retrieval is now both debate-aware and less noisy than the previous topic-only path.
+See `docs/prompt-construction.md` for the full pipeline.
 
 ## Ingestion Notes
 
@@ -218,7 +218,7 @@ What is already in place:
 - request-scoped logging with `X-Request-ID`
 - startup readiness checks
 - local prompt capture for provider-request inspection
-- retrieval neighbor enrichment and score filtering
+- retrieval score filtering and optional neighbor enrichment (disabled by default)
 - an ingestion pipeline with dry-run support and batched Upstash writes
 
 Operational cautions:

@@ -92,7 +92,7 @@ npm install
 npm run dev
 ```
 
-If `BACKEND_URL` is missing at runtime, the `/api/backend` proxy returns `503 Backend not configured.` instead of silently failing.
+Production frontend builds fail fast when `BACKEND_URL` is missing. At runtime, a missing value also returns `503 Backend not configured.` from the `/api/backend` proxy instead of silently failing.
 
 Frontend runtime behavior has also been hardened so backend failures now surface clearer messages for:
 
