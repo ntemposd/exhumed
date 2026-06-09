@@ -21,7 +21,11 @@ export async function getResponseErrorMessage(response: Response, fallbackMessag
     if (contentType.includes("application/json")) {
       const payload = (await response.json()) as ReadableErrorPayload;
       if (typeof payload.detail === "string" && payload.detail.trim()) {
-        return payload.detail.trim();
+        const detail = payload.detail.trim();
+        if (response.status === 401 && detail.toLowerCase() === "unauthorized") {
+          return "BACKEND_API_KEY on Vercel does not match BACKEND_API_KEY on Railway. Set the same value for Preview and Production, then redeploy.";
+        }
+        return detail;
       }
 
       if (Array.isArray(payload.detail) && payload.detail.length > 0) {
