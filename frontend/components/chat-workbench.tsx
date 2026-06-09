@@ -9,6 +9,8 @@ import { AppNavbar, DiscussionPanel, TelemetryPanel } from "./renderers";
 import type { LegendDetails } from "./types";
 import { useAgentsCatalog, useDebateController, useServicesStatus, useTopicEditorState } from "./hooks";
 import { useTelemetryViewModel, useWorkbenchViewState } from "./view-models";
+import { isAgentSelectable } from "@/lib/legends";
+
 import {
   calculateSessionBurnUsd,
   clampNumber,
@@ -184,6 +186,10 @@ export function ChatWorkbench() {
     // Council changes are blocked during a live round so the speaking order and
     // transcript semantics stay stable for the active session.
     if (discussionActive) {
+      return;
+    }
+
+    if (!isAgentSelectable(agentId)) {
       return;
     }
 

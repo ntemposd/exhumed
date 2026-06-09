@@ -1,6 +1,6 @@
 // Utility helpers in this file are intentionally stateless so hooks and
 // presentational components can share formatting and lightweight derivation.
-import legendCatalog from "@/lib/legends";
+import legendCatalog, { isAgentSelectable } from "@/lib/legends";
 import type { Agent } from "@/lib/types";
 
 import type { DebateMessage, LegendDetails } from "./types";
@@ -137,14 +137,19 @@ export function countWords(text: string) {
 }
 
 export function getDefaultCouncilAgentIds(agents: Agent[]) {
-  const availableIds = new Set(agents.map((agent) => agent.agent_id));
+  const availableIds = new Set(
+    agents.filter((agent) => isAgentSelectable(agent.agent_id)).map((agent) => agent.agent_id),
+  );
   const seededDefaults = DEFAULT_COUNCIL_AGENT_IDS.filter((agentId) => availableIds.has(agentId));
 
   if (seededDefaults.length > 0) {
     return seededDefaults;
   }
 
-  return agents.slice(0, 4).map((agent) => agent.agent_id);
+  return agents
+    .filter((agent) => isAgentSelectable(agent.agent_id))
+    .slice(0, 4)
+    .map((agent) => agent.agent_id);
 }
 
 export function getRoleBreakdown(messages: DebateMessage[]) {
@@ -198,9 +203,11 @@ export function calculateSessionBurnUsd(messages: DebateMessage[]) {
 
 export function getLegendDetails(agent: Agent): LegendDetails {
   const registryMatch = legendCatalog.find((legend) => legend.agent_id === agent.agent_id);
+  const selectable = isAgentSelectable(agent.agent_id);
   return {
     agent_id: agent.agent_id,
     display_name: registryMatch?.display_name ?? agent.display_name,
     archetype: registryMatch?.archetype ?? "Council Member",
+    selectable,
   };
 }

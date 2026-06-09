@@ -386,6 +386,14 @@
   opacity: 0.6;
 }
 
+.rosterOption[data-unavailable="true"] {
+  opacity: 0.55;
+}
+
+.rosterOption[data-unavailable="true"]:hover {
+  background: transparent;
+}
+
 .rosterOption[data-archetype="creator"]    { border-left-color: var(--archetype-creator-bg);    }
 .rosterOption[data-archetype="commander"]  { border-left-color: var(--archetype-commander-bg);  }
 .rosterOption[data-archetype="thinker"]    { border-left-color: var(--archetype-thinker-bg);    }

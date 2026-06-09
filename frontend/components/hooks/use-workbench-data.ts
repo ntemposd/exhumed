@@ -6,6 +6,8 @@ import { backendUrl } from "@/lib/config";
 import { apiFetch, getRequestFailureMessage, getResponseErrorMessage } from "@/lib/http";
 import type { Agent, AgentsResponse, ServicesStatusResponse } from "@/lib/types";
 
+import { isAgentSelectable } from "@/lib/legends";
+
 import { getDefaultCouncilAgentIds } from "../utils";
 
 type UseAgentsCatalogOptions = {
@@ -145,7 +147,9 @@ export function useAgentsCatalog({ councilStorageKey, cacheKey, cacheTtlMs }: Us
     const storedCouncilIds = window.localStorage.getItem(councilStorageKey);
     const parsedCouncilIds = storedCouncilIds ? (JSON.parse(storedCouncilIds) as string[]) : [];
     const availableIds = new Set(nextAgents.map((agent) => agent.agent_id));
-    const hydratedCouncilIds = parsedCouncilIds.filter((agentId) => availableIds.has(agentId));
+    const hydratedCouncilIds = parsedCouncilIds.filter(
+      (agentId) => availableIds.has(agentId) && isAgentSelectable(agentId),
+    );
     return hydratedCouncilIds.length > 0 ? hydratedCouncilIds : getDefaultCouncilAgentIds(nextAgents);
   }
 

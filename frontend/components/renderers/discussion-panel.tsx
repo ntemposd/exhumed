@@ -96,7 +96,8 @@ export function DiscussionPanel({
   const hasTranscriptHistory = messages.some((message) => !message.isThinking);
   const showTranscriptControls = discussionActive || hasTranscriptHistory;
   const selectedAgentIds = new Set(selectedCouncil.map((legend) => legend.agent_id));
-  const availableCouncil = legendEntries.filter((legend) => !selectedAgentIds.has(legend.agent_id));
+  const unselectedLegends = legendEntries.filter((legend) => !selectedAgentIds.has(legend.agent_id));
+  const selectableUnselected = unselectedLegends.filter((legend) => legend.selectable);
 
   useEffect(() => {
     if (!isRosterOpen) {
@@ -121,10 +122,10 @@ export function DiscussionPanel({
   }, [isRosterOpen]);
 
   useEffect(() => {
-    if (availableCouncil.length === 0 || discussionActive) {
+    if (unselectedLegends.length === 0 || discussionActive) {
       setIsRosterOpen(false);
     }
-  }, [availableCouncil.length, discussionActive]);
+  }, [unselectedLegends.length, discussionActive]);
 
   // When a dropdown opens on mobile, scroll the page so the popover is fully
   // visible — a long topic can push the council/style sections near the fold.
@@ -222,7 +223,7 @@ export function DiscussionPanel({
         </div>
       ))}
 
-      {availableCouncil.length > 0 ? (
+      {unselectedLegends.length > 0 ? (
         <div className={styles.rosterControl} ref={rosterRef}>
           <button
             type="button"
@@ -232,7 +233,13 @@ export function DiscussionPanel({
             aria-expanded={isRosterOpen}
             disabled={discussionActive}
             aria-label={isRosterOpen ? "Close speaker picker" : "Add a speaker"}
-            title={isRosterOpen ? "Close speaker picker" : "Add a speaker"}
+            title={
+              selectableUnselected.length === 0
+                ? "All available speakers are drafted"
+                : isRosterOpen
+                  ? "Close speaker picker"
+                  : "Add a speaker"
+            }
           >
             <span className={styles.rosterAddGlyph} aria-hidden="true">{isRosterOpen ? "↵" : "+"}</span>
             <span className={styles.rosterAddText}>{isRosterOpen ? "Done" : "Add Speaker"}</span>
@@ -240,16 +247,19 @@ export function DiscussionPanel({
 
           {isRosterOpen ? (
             <div className={styles.rosterPopover} role="listbox" aria-label="Available speakers">
-              {availableCouncil.map((legend) => (
+              {unselectedLegends.map((legend) => (
                 <button
                   key={legend.agent_id}
                   type="button"
                   role="option"
                   aria-selected={false}
+                  aria-disabled={!legend.selectable}
                   className={styles.rosterOption}
                   data-archetype={getAgentArchetype(legend.agent_id)}
+                  data-unavailable={legend.selectable ? "false" : "true"}
                   onClick={() => onToggleCouncilMember(legend.agent_id)}
-                  disabled={discussionActive}
+                  disabled={discussionActive || !legend.selectable}
+                  title={legend.selectable ? `Add ${legend.display_name}` : "Corpus not yet available"}
                 >
                   <Image
                     className={styles.rosterOptionAvatar}
@@ -260,9 +270,11 @@ export function DiscussionPanel({
                   />
                   <span className={styles.rosterOptionText}>
                     <span className={styles.rosterOptionName}>{legend.display_name}</span>
-                    <span className={styles.rosterOptionArchetype}>{legend.archetype}</span>
+                    <span className={styles.rosterOptionArchetype}>
+                      {legend.selectable ? legend.archetype : "Corpus pending"}
+                    </span>
                   </span>
-                  <span className={styles.rosterOptionGlyph} aria-hidden="true">+</span>
+                  <span className={styles.rosterOptionGlyph} aria-hidden="true">{legend.selectable ? "+" : "—"}</span>
                 </button>
               ))}
             </div>

@@ -62,13 +62,13 @@ Current speaker corpus status:
 | agt_007 | Leonardo da Vinci | Ingested |
 | agt_008 | Ada Lovelace | Ingested (79 chunks — thin corpus) |
 | agt_009 | Marie Curie | Ingested |
-| agt_010 | Jorge Luis Borges | Pending — no source file |
+| agt_010 | Jorge Luis Borges | Pending — placeholder file, not selectable in UI |
 | agt_011 | Leon Trotsky | Ingested |
 | agt_012 | Friedrich Nietzsche | Ingested |
 | agt_013 | Nikola Tesla | Ingested |
 | agt_014 | Marie Antoinette | Ingested (1,439 chunks) |
-| agt_015 | (planned) | Pending — no source file |
-| agt_016 | (planned) | Pending — no source file |
+| agt_015 | Frida Kahlo | Pending — placeholder file, not selectable in UI |
+| agt_016 | Salvador Dali | Pending — placeholder file, not selectable in UI |
 
 The ingestion script performs:
 

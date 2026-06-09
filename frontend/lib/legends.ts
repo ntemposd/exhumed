@@ -1,5 +1,17 @@
 // This local registry provides presentation metadata for the historical agents
 // that the backend exposes. The UI uses it to enrich raw backend records.
+
+// Speakers without ingested corpora stay visible in the catalog but cannot be drafted.
+export const UNAVAILABLE_AGENT_IDS = new Set([
+  "agt_010", // Jorge Luis Borges — placeholder source file
+  "agt_015", // Frida Kahlo — placeholder source file
+  "agt_016", // Salvador Dali — placeholder source file
+]);
+
+export function isAgentSelectable(agentId: string) {
+  return !UNAVAILABLE_AGENT_IDS.has(agentId);
+}
+
 const legendCatalog = [
   { agent_id: "agt_001", display_name: "Socrates", archetype: "The Questioner" },
   { agent_id: "agt_002", display_name: "Steve Jobs", archetype: "The Product Visionary" },

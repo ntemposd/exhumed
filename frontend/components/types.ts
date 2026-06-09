@@ -19,6 +19,7 @@ export type LegendDetails = {
   agent_id: string;
   display_name: string;
   archetype: string;
+  selectable: boolean;
 };
 
 export type AsyncViewState = {
