@@ -9,6 +9,8 @@ import { AppNavbar, DiscussionPanel, TelemetryPanel } from "./renderers";
 import type { LegendDetails } from "./types";
 import { useAgentsCatalog, useDebateController, useServicesStatus, useTopicEditorState } from "./hooks";
 import { useTelemetryViewModel, useWorkbenchViewState } from "./view-models";
+import { isAgentSelectable } from "@/lib/legends";
+
 import {
   calculateSessionBurnUsd,
   clampNumber,
@@ -187,6 +189,10 @@ export function ChatWorkbench() {
       return;
     }
 
+    if (!isAgentSelectable(agentId)) {
+      return;
+    }
+
     setSelectedAgents((currentSelection) => {
       if (currentSelection.includes(agentId)) {
         return currentSelection.filter((selectedId) => selectedId !== agentId);
@@ -227,6 +233,7 @@ export function ChatWorkbench() {
           messages={messages}
           transcriptRef={transcriptRef}
           legendEntries={legendEntries}
+          legendCatalogState={legendCatalogState}
           onTopicChange={setTopic}
           onToggleCouncilMember={toggleCouncilMember}
           onTargetEntropyChange={setTargetEntropy}

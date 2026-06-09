@@ -62,13 +62,13 @@ Current speaker corpus status:
 | agt_007 | Leonardo da Vinci | Ingested |
 | agt_008 | Ada Lovelace | Ingested (79 chunks — thin corpus) |
 | agt_009 | Marie Curie | Ingested |
-| agt_010 | Jorge Luis Borges | Pending — no source file |
+| agt_010 | Jorge Luis Borges | Pending — placeholder file, not selectable in UI |
 | agt_011 | Leon Trotsky | Ingested |
 | agt_012 | Friedrich Nietzsche | Ingested |
 | agt_013 | Nikola Tesla | Ingested |
 | agt_014 | Marie Antoinette | Ingested (1,439 chunks) |
-| agt_015 | (planned) | Pending — no source file |
-| agt_016 | (planned) | Pending — no source file |
+| agt_015 | Frida Kahlo | Pending — placeholder file, not selectable in UI |
+| agt_016 | Salvador Dali | Pending — placeholder file, not selectable in UI |
 
 The ingestion script performs:
 
@@ -127,7 +127,7 @@ For each turn the backend does the following:
 2. Load the last 4 context turns from Redis, topic-scoped. If the panel has 5 or more speakers, also fetch and prepend the current speaker's own last turn (anchor mechanism).
 3. Query Upstash Vector with the topic text as the query. Fetch 11 candidates, apply score threshold (0.60), apply source diversity filter (max 2 chunks per source), apply adaptive top_k (5 if top score ≥ 0.72, otherwise 7).
 4. Build the prompt from: system prompt, topic, retrieved knowledge block, retrieval guidance, context turns, turn instructions.
-5. Call the LLM provider (Groq, `llama-3.3-70b-versatile`).
+5. Call the LLM provider (Groq, `llama-3.1-8b-instant`).
 6. Persist the finished turn to Redis, update telemetry, emit execution metrics.
 7. Stream or return the response to the frontend.
 
@@ -204,11 +204,10 @@ Tracked per turn and surfaced in the `VECTOR USAGE` section of the frontend side
 
 ## LLM Provider
 
-**Model:** `llama-3.3-70b-versatile` on Groq.
-**Free tier limit:** 12,000 tokens per minute (TPM).
-**Why 70B over smaller models:** persona fidelity — sounding like Socrates, not a generic assistant — is the core showcase value. The 70B model handles character voice significantly better than 8B alternatives.
+**Model:** `llama-3.1-8b-instant` on Groq (default in `backend/settings.py` and `.env.example`).
+**Why 8B instant for now:** lower latency and a much higher free-tier TPM ceiling than larger models, which keeps multi-speaker debates viable without exhausting Groq quotas.
 
-The backend also supports any OpenAI-compatible provider via `LLM_API_BASE_URL` and `LLM_API_KEY` environment variables.
+The backend also supports any OpenAI-compatible provider via `LLM_API_BASE_URL`, `LLM_API_KEY`, and `LLM_MODEL_ID` environment variables. Swap to a larger model (for example `llama-3.3-70b-versatile`) when quota and cost allow.
 
 ## Current Limitations
 

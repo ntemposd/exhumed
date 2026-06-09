@@ -46,6 +46,13 @@ else
   echo ".env already exists."
 fi
 
+if [ ! -f "frontend/.env.local" ]; then
+  cp frontend/.env.example frontend/.env.local
+  echo "Created frontend/.env.local from frontend/.env.example."
+else
+  echo "frontend/.env.local already exists."
+fi
+
 echo ""
 echo "Setup complete."
 echo ""

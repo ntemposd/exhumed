@@ -9,7 +9,7 @@ class TurnWorkflowServiceTests(unittest.IsolatedAsyncioTestCase):
     async def test_prepare_turn_inputs_extracts_previous_response(self):
         captured_queries = []
 
-        async def fetch_context_messages(session_id, limit, topic):
+        async def fetch_context_messages(session_id, limit, topic, anchor_agent_id):
             return [{"message": "Previous turn", "display_name": "Socrates", "agent_id": "agt_001"}]
 
         def get_agent_context_matches(query_text, agent_id):
@@ -36,15 +36,15 @@ class TurnWorkflowServiceTests(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(agent_config.display_name, "Socrates")
         self.assertEqual(len(context_messages), 1)
-        self.assertEqual(matches[0]["data"], "virtue. Previous turn")
+        self.assertEqual(matches[0]["data"], "virtue")
         self.assertEqual(previous_response, "Previous turn")
-        self.assertEqual(captured_queries, [("virtue. Previous turn", "agt_001")])
+        self.assertEqual(captured_queries, [("virtue", "agt_001")])
 
-    async def test_prepare_turn_inputs_truncates_previous_response_in_rag_query(self):
+    async def test_prepare_turn_inputs_uses_topic_only_for_rag_query(self):
         long_message = "x" * 250
         captured_queries = []
 
-        async def fetch_context_messages(session_id, limit, topic):
+        async def fetch_context_messages(session_id, limit, topic, anchor_agent_id):
             return [{"message": long_message, "display_name": "Sun Tzu", "agent_id": "agt_003"}]
 
         def get_agent_context_matches(query_text, agent_id):
@@ -69,7 +69,7 @@ class TurnWorkflowServiceTests(unittest.IsolatedAsyncioTestCase):
             topic="strategy",
         )
 
-        self.assertEqual(captured_queries, [f"strategy. {long_message[:200]}"])
+        self.assertEqual(captured_queries, ["strategy"])
 
     async def test_finalize_generated_turn_sanitizes_and_persists(self):
         stored_messages = []
@@ -112,7 +112,7 @@ class TurnWorkflowServiceTests(unittest.IsolatedAsyncioTestCase):
     async def _fetch_agent_config(self, agent_id):
         return SimpleNamespace(agent_id=agent_id, display_name="Socrates")
 
-    async def _fetch_context_messages(self, session_id, limit, topic=None):
+    async def _fetch_context_messages(self, session_id, limit, topic=None, anchor_agent_id=None):
         return [{"message": "Previous turn", "display_name": "Socrates", "agent_id": "agt_001"}]
 
     async def _save_message_to_storage(self, **kwargs):

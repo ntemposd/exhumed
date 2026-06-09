@@ -220,7 +220,7 @@ class DatabaseServiceHistoryTests(unittest.TestCase):
             embedding_provider=FakeEmbeddingProvider(),
         )
 
-        matches = service.get_agent_context("strategy", "agt_003", top_k=1)
+        matches = service.get_agent_context("strategy", "agt_003", top_k=1, neighbor_window=1)
 
         self.assertEqual(len(matches), 1)
         self.assertEqual(
@@ -265,7 +265,7 @@ class DatabaseServiceHistoryTests(unittest.TestCase):
             embedding_provider=FakeEmbeddingProvider(),
         )
 
-        matches = service.get_agent_context("inventor", "agt_013", top_k=1)
+        matches = service.get_agent_context("inventor", "agt_013", top_k=1, neighbor_window=1)
 
         self.assertEqual(len(matches), 1)
         self.assertEqual(matches[0]["metadata"]["source_slug"], "my_inventions")
