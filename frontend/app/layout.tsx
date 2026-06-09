@@ -1,5 +1,6 @@
 // RootLayout owns the global font setup and document shell for the Next app.
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono } from "next/font/google";
 
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={monoFont.variable}>
         {children}
         <Analytics />
+        <SpeedInsights />
         <BuyMeACoffee />
       </body>
     </html>
