@@ -233,6 +233,7 @@ export function ChatWorkbench() {
           messages={messages}
           transcriptRef={transcriptRef}
           legendEntries={legendEntries}
+          legendCatalogState={legendCatalogState}
           onTopicChange={setTopic}
           onToggleCouncilMember={toggleCouncilMember}
           onTargetEntropyChange={setTargetEntropy}

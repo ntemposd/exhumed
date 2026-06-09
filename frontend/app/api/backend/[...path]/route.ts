@@ -16,7 +16,23 @@ async function proxy(
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   if (!BACKEND_URL) {
-    return NextResponse.json({ detail: "Backend not configured." }, { status: 503 });
+    return NextResponse.json(
+      {
+        detail:
+          "Backend not configured. Set BACKEND_URL in the Vercel project environment (Production and Preview).",
+      },
+      { status: 503 },
+    );
+  }
+
+  if (process.env.VERCEL && /localhost|127\.0\.0\.1/i.test(BACKEND_URL)) {
+    return NextResponse.json(
+      {
+        detail:
+          "BACKEND_URL points to localhost, but this frontend runs on Vercel. Set BACKEND_URL to your deployed Railway URL for the Preview environment.",
+      },
+      { status: 503 },
+    );
   }
 
   const { path } = await params;

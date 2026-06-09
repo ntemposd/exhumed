@@ -50,6 +50,10 @@ For production (for example Vercel), set the same variables in the frontend host
 - `BACKEND_URL` must point at the deployed backend origin (for example your Railway URL).
 - `BACKEND_API_KEY` must match `BACKEND_API_KEY` on the backend when API-key auth is enabled.
 
+In Vercel, enable these variables for **both Production and Preview**. Branch preview deployments will not load speakers if Preview is missing `BACKEND_URL`, if `BACKEND_URL` still points at `localhost`, or if `BACKEND_API_KEY` does not match Railway.
+
+If a preview URL shows Vercel "Authentication Required" on `/api/backend/*`, either sign into the preview deployment in the browser or adjust Deployment Protection in the Vercel project settings.
+
 These are server-only variables. Do not use `NEXT_PUBLIC_BACKEND_URL`; it is not read by the current frontend.
 
 CORS on the backend mainly matters for local direct API testing. In production the browser only talks to the Next.js origin.

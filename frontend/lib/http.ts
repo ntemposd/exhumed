@@ -1,7 +1,10 @@
 // Thin alias kept so call-sites don't need updating.
 // Auth is handled server-side by the /api/backend proxy route.
 export function apiFetch(input: string, init?: RequestInit): Promise<Response> {
-  return fetch(input, init);
+  return fetch(input, {
+    credentials: "same-origin",
+    ...init,
+  });
 }
 
 type ReadableErrorPayload = {
@@ -38,6 +41,12 @@ export async function getResponseErrorMessage(response: Response, fallbackMessag
     }
 
     const text = (await response.text()).trim();
+    if (response.status === 401 && (contentType.includes("text/html") || text.includes("Authentication Required"))) {
+      return "Vercel deployment protection blocked the backend proxy. Open the deployment while signed into Vercel, or allow preview access in project settings.";
+    }
+    if (text.startsWith("<!") || text.startsWith("<html")) {
+      return `${fallbackMessage} (${response.status})`;
+    }
     if (text) {
       return text;
     }

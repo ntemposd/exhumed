@@ -4,7 +4,7 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 
-import type { DebateMessage, LegendDetails, TranscriptViewState } from "../types";
+import type { AsyncViewState, DebateMessage, LegendDetails, TranscriptViewState } from "../types";
 import { avatarUrlForAgent, ENTROPY_PROFILES, getAgentArchetype } from "../utils";
 import { DiscussionTranscript } from "./discussion-transcript";
 import styles from "./discussion-panel.module.css";
@@ -15,6 +15,7 @@ type DiscussionPanelProps = {
   discussionActive: boolean;
   selectedCouncil: LegendDetails[];
   legendEntries: LegendDetails[];
+  legendCatalogState: AsyncViewState;
   targetEntropy: number;
   controlError: string;
   sessionId: string;
@@ -42,6 +43,7 @@ export function DiscussionPanel({
   discussionActive,
   selectedCouncil,
   legendEntries,
+  legendCatalogState,
   targetEntropy,
   controlError,
   hasMessages,
@@ -331,6 +333,18 @@ export function DiscussionPanel({
 
         <section className={styles.participantsSection}>
             <h2 className={"sectionHeading"}>Council</h2>
+            {legendCatalogState.phase === "loading" || legendCatalogState.phase === "refreshing" ? (
+              <p className="statusNote">{legendCatalogState.summary}</p>
+            ) : null}
+            {legendCatalogState.phase === "error" ? (
+              <p className="statusNote" role="alert">
+                {legendCatalogState.summary}
+                {legendCatalogState.detail ? ` ${legendCatalogState.detail}` : ""}
+              </p>
+            ) : null}
+            {legendCatalogState.phase === "empty" ? (
+              <p className="statusNote">{legendCatalogState.summary}</p>
+            ) : null}
             {councilEditor}
         </section>
 
