@@ -7,6 +7,7 @@ import Image from "next/image";
 import type { AsyncViewState, DebateMessage, LegendDetails, TranscriptViewState } from "../types";
 import { avatarUrlForAgent, getAgentArchetype, resolveToneProfile, TONE_PROFILES } from "../utils";
 import { DiscussionTranscript } from "./discussion-transcript";
+import { TelemetryMarkIcon } from "./telemetry-sidebar";
 import styles from "./discussion-panel.module.css";
 
 type DiscussionPanelProps = {
@@ -22,6 +23,8 @@ type DiscussionPanelProps = {
   isWipingSession: boolean;
   isDownloadingTranscript: boolean;
   startButtonLabel: string;
+  pauseButtonLabel: string;
+  isPausePending: boolean;
   transcriptState: TranscriptViewState;
   messages: DebateMessage[];
   hasMessages: boolean;
@@ -35,6 +38,8 @@ type DiscussionPanelProps = {
   onHaltDebate: () => void;
   onWipeDebate: () => void | Promise<void>;
   onDownloadTranscript: () => void | Promise<void>;
+  onOpenTelemetry?: () => void;
+  showMobileTelemetryTrigger?: boolean;
 };
 
 export function DiscussionPanel({
@@ -52,6 +57,8 @@ export function DiscussionPanel({
   isWipingSession,
   isDownloadingTranscript,
   startButtonLabel,
+  pauseButtonLabel,
+  isPausePending,
   transcriptState,
   messages,
   transcriptRef,
@@ -62,6 +69,8 @@ export function DiscussionPanel({
   onHaltDebate,
   onWipeDebate,
   onDownloadTranscript,
+  onOpenTelemetry,
+  showMobileTelemetryTrigger = false,
 }: DiscussionPanelProps) {
   const [isTypeEditing, setIsTypeEditing] = useState(false);
   const [isRosterOpen, setIsRosterOpen] = useState(false);
@@ -166,14 +175,22 @@ export function DiscussionPanel({
     if (!section) {
       return;
     }
+    const mobileQuery = window.matchMedia("(max-width: 767px)");
     const applyHeight = () => {
+      if (mobileQuery.matches) {
+        section.style.height = "100%";
+        return;
+      }
+
       const rect = section.getBoundingClientRect();
       section.style.height = `${Math.max(window.innerHeight - rect.top, 0)}px`;
     };
     const raf = window.requestAnimationFrame(() => {
       // Reset to the top so the section's measured offset is its natural one,
       // then fit it to the viewport and pin the transcript to its newest entry.
-      window.scrollTo({ top: 0, behavior: "auto" });
+      if (!mobileQuery.matches) {
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }
       applyHeight();
       const scrollContainer = chatScrollRef.current;
       if (scrollContainer) {
@@ -181,9 +198,11 @@ export function DiscussionPanel({
       }
     });
     window.addEventListener("resize", applyHeight);
+    mobileQuery.addEventListener("change", applyHeight);
     return () => {
       window.cancelAnimationFrame(raf);
       window.removeEventListener("resize", applyHeight);
+      mobileQuery.removeEventListener("change", applyHeight);
       section.style.height = "";
     };
   }, [showTranscriptControls, transcriptRef]);
@@ -460,12 +479,26 @@ export function DiscussionPanel({
                   className="buttonPrimary"
                   type="button"
                   onClick={discussionActive ? onHaltDebate : onStartDebate}
+                  disabled={isPausePending}
+                  aria-busy={isPausePending}
                 >
-                  {discussionActive ? "⏸ Pause" : startButtonLabel}
+                  {discussionActive ? pauseButtonLabel : startButtonLabel}
                 </button>
                 <button className="buttonGhost" type="button" onClick={() => void onWipeDebate()} disabled={isWipingSession || discussionActive}>
                   {isWipingSession ? "Wiping..." : "🧹 Wipe"}
                 </button>
+                {showMobileTelemetryTrigger ? (
+                  <button
+                    className={`buttonGhost telemetryIconBtn ${styles.telemetryIconBtn}`.trim()}
+                    type="button"
+                    onClick={() => onOpenTelemetry?.()}
+                    aria-label="Open telemetry"
+                  >
+                    <span className={styles.telemetryIconGlyph} aria-hidden="true">
+                      <TelemetryMarkIcon size={16} />
+                    </span>
+                  </button>
+                ) : null}
               </div>
               {controlError ? <p className="statusNote">{controlError}</p> : null}
             </div>

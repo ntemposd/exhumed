@@ -3,8 +3,8 @@
 // Thinking bubbles: detailed copy with live countdown. See docs/ui-messages.md.
 import type { ProcessTurnStreamStatus } from "@/lib/types";
 
-const RETRY_COUNTDOWN_PATTERN = /retrying in\s+([\d.]+)\s*s/i;
-const THEMED_RETRY_COUNTDOWN_PATTERN = /^The ether is congested\. Retrying in\s+[\d.]+s$/i;
+const RETRY_COUNTDOWN_PATTERN = /(?:retrying in|wait for)\s+([\d.]+)\s*s/i;
+const THEMED_RETRY_COUNTDOWN_PATTERN = /^The ether is congested\. (?:Retrying in|Wait for)\s+[\d.]+s$/i;
 const THROTTLE_PATTERN = /rate limit|request throttled|\b429\b|llm rate limit|quota exhausted/i;
 
 export const THROTTLE_STATUS_HEADER = "The ether is congested";
@@ -42,7 +42,7 @@ export function themeRetryCountdownMessage(remainingSeconds: number): string {
     return THROTTLE_STATUS_HEADER;
   }
 
-  return `${THROTTLE_STATUS_HEADER}. Retrying in ${remainingSeconds.toFixed(1)}s`;
+  return `${THROTTLE_STATUS_HEADER}. Wait for ${remainingSeconds.toFixed(1)}s`;
 }
 
 /** Detailed stream status for the active speaker's thinking bubble. */

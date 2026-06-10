@@ -7,6 +7,9 @@
   position: relative;
   z-index: 2;
   box-sizing: border-box;
+  flex: 0 0 auto;
+  align-self: start;
+  height: auto;
   /* Leave room for the hard shadow so overflow:hidden on the column doesn't
      clip it into a thick edge bar on the right. */
   width: calc(100% - 4px);
@@ -66,6 +69,38 @@
   color: var(--ink);
 }
 
+.mobileBackBtn {
+  display: none;
+}
+
+.mobileBackArrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--line);
+  background: var(--accent);
+  box-shadow: 2px 2px 0 var(--line);
+  color: #111111;
+  line-height: 0;
+}
+
+@media (max-width: 767px) {
+  :global(.shell[data-convo-active="true"][data-mobile-pane="telemetry"]) .mobileBackBtn {
+    display: flex;
+    flex: 0 0 auto;
+    box-shadow: 2px 2px 0 var(--line);
+    width: calc(100% - 2px);
+  }
+
+  :global(.shell[data-convo-active="true"][data-mobile-pane="telemetry"]) .mobileBackBtn:hover {
+    transform: none;
+    box-shadow: 2px 2px 0 var(--line);
+  }
+}
+
 /* Section area below the pinned toggle. On desktop the panel is a flex column,
    so the button stays fixed at the top and only this area scrolls. */
 .telemetrySidebarScroll {
@@ -80,10 +115,6 @@
 }
 
 @media (min-width: 768px) {
-  .telemetryToggleBtn {
-    flex: 0 0 auto;
-  }
-
   .telemetrySidebarScroll {
     flex: 1 1 auto;
     min-height: 0;

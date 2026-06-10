@@ -12,6 +12,43 @@ import styles from "./telemetry-sidebar.module.css";
 
 export type { TelemetryTableRow, VectorUsageRow };
 
+export function TelemetryMarkIcon({ size = 15 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </svg>
+  );
+}
+
+export function BackArrowIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.8"
+      strokeLinecap="square"
+      strokeLinejoin="miter"
+      aria-hidden="true"
+    >
+      <path d="M19 12H5" />
+      <path d="M12 19L5 12L12 5" />
+    </svg>
+  );
+}
+
 type TelemetryTableVariant = "plain" | "bordered" | "shadowed";
 
 // ─── SidebarSection ───────────────────────────────────────────────────────
@@ -260,16 +297,29 @@ type TelemetryPanelProps = {
   viewModel: TelemetryPanelViewModel;
   containerRef: RefObject<HTMLDivElement | null>;
   isSidebarOpen: boolean;
+  mobileConvoPane?: boolean;
   onToggleSidebar: () => void;
+  onBackToChat?: () => void;
 };
 
-export function TelemetryPanel({ viewModel, containerRef, isSidebarOpen, onToggleSidebar }: TelemetryPanelProps) {
+export function TelemetryPanel({
+  viewModel,
+  containerRef,
+  isSidebarOpen,
+  mobileConvoPane = false,
+  onToggleSidebar,
+  onBackToChat,
+}: TelemetryPanelProps) {
   const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
+  const showMobileTelemetry = mobileConvoPane && isSidebarOpen;
 
   const handleToggle = useCallback(() => {
     onToggleSidebar();
-    // On mobile the telemetry column is stacked below the convo, so scroll
-    // the toggle button to the top of the viewport after toggling.
+    if (mobileConvoPane) {
+      return;
+    }
+    // On mobile setup view the telemetry column is stacked below the convo,
+    // so scroll the toggle button to the top of the viewport after toggling.
     requestAnimationFrame(() => {
       const btn = toggleBtnRef.current;
       if (btn) {
@@ -277,7 +327,7 @@ export function TelemetryPanel({ viewModel, containerRef, isSidebarOpen, onToggl
         window.scrollTo({ top: Math.max(top, 0), behavior: "smooth" });
       }
     });
-  }, [onToggleSidebar]);
+  }, [mobileConvoPane, onToggleSidebar]);
   const {
     servicesState,
     onlineServices,
@@ -293,23 +343,35 @@ export function TelemetryPanel({ viewModel, containerRef, isSidebarOpen, onToggl
   return (
     <aside className="telemetryColumn">
       <div className="panel telemetryPanel">
-        <button
-          ref={toggleBtnRef}
-          type="button"
-          className={styles.telemetryToggleBtn}
-          onClick={handleToggle}
-          aria-expanded={isSidebarOpen}
-        >
-          <span className={styles.telemetryToggleIcon} aria-hidden="true">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-            </svg>
-          </span>
-          <span className={styles.telemetryToggleLabel}>{isSidebarOpen ? "Close Telemetry" : "Open Telemetry"}</span>
-          <span className={styles.telemetryToggleChevron} aria-hidden="true">{isSidebarOpen ? "−" : "+"}</span>
-        </button>
-        <div className={styles.telemetrySidebarScroll} ref={containerRef}>
-          {isSidebarOpen ? (
+        {showMobileTelemetry ? (
+          <button
+            type="button"
+            className={`${styles.telemetryToggleBtn} ${styles.mobileBackBtn}`.trim()}
+            onClick={onBackToChat}
+            aria-label="Back to chat"
+          >
+            <span className={styles.mobileBackArrow} aria-hidden="true">
+              <BackArrowIcon size={15} />
+            </span>
+            <span className={styles.telemetryToggleLabel}>Back to chat</span>
+          </button>
+        ) : (
+          <button
+            ref={toggleBtnRef}
+            type="button"
+            className={`telemetryToggleBtn ${styles.telemetryToggleBtn}`.trim()}
+            onClick={handleToggle}
+            aria-expanded={isSidebarOpen}
+          >
+            <span className={styles.telemetryToggleIcon} aria-hidden="true">
+              <TelemetryMarkIcon />
+            </span>
+            <span className={styles.telemetryToggleLabel}>{isSidebarOpen ? "Close Telemetry" : "Open Telemetry"}</span>
+            <span className={styles.telemetryToggleChevron} aria-hidden="true">{isSidebarOpen ? "−" : "+"}</span>
+          </button>
+        )}
+        <div className={`telemetrySidebarScroll ${styles.telemetrySidebarScroll}`.trim()} ref={containerRef}>
+          {showMobileTelemetry || isSidebarOpen ? (
             <>
               <TelemetryServiceStatus
                 servicesState={servicesState}

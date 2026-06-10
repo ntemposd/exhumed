@@ -164,6 +164,7 @@ export function useDebateController({
   const [isWipingSession, setIsWipingSession] = useState(false);
   const [isDownloadingTranscript, setIsDownloadingTranscript] = useState(false);
   const [isDebatePaused, setIsDebatePaused] = useState(false);
+  const [isPausePending, setIsPausePending] = useState(false);
   const [roundScrollKey, setRoundScrollKey] = useState(0);
 
   const turnInFlightRef = useRef(false);
@@ -177,6 +178,12 @@ export function useDebateController({
 
   const hasMessages = messages.some((message) => !message.isThinking);
   const startButtonLabel = isDebatePaused ? "▶ Resume" : hasMessages ? "▶ Play" : "▶ Play";
+  const pauseButtonLabel = isPausePending ? "⏳ Sealing..." : "⏸ Pause";
+
+  function clearPausePending() {
+    pauseAfterCurrentTurnRef.current = false;
+    setIsPausePending(false);
+  }
 
   function clearStreamRevealQueue(messageId?: string) {
     // The streaming renderer buffers partial chunks and reveals them on the
@@ -248,7 +255,7 @@ export function useDebateController({
     currentTurnAbortControllerRef.current?.abort();
     currentTurnAbortControllerRef.current = null;
     turnInFlightRef.current = false;
-    pauseAfterCurrentTurnRef.current = false;
+    clearPausePending();
 
     if (options?.nextSessionId) {
       issueSessionId(options.nextSessionId);
@@ -384,7 +391,7 @@ export function useDebateController({
     const shouldAnchorUpcomingRound = !canResumeQueuedSpeaker || currentAgentIndex === 0;
 
     setControlError("");
-    pauseAfterCurrentTurnRef.current = false;
+    clearPausePending();
     setIsDebatePaused(false);
 
     if (!canResumeQueuedSpeaker) {
@@ -407,11 +414,12 @@ export function useDebateController({
 
     if (turnInFlightRef.current) {
       pauseAfterCurrentTurnRef.current = true;
+      setIsPausePending(true);
       setStatusNote("Sealing the vault after this voice.");
       return;
     }
 
-    pauseAfterCurrentTurnRef.current = false;
+    clearPausePending();
     setDiscussionActive(false);
     setIsDebatePaused(true);
     setStatusNote("The voices fall silent.");
@@ -597,7 +605,7 @@ export function useDebateController({
             setTurnCount((currentTurnCount) => currentTurnCount + 1);
 
             const shouldPauseAfterCurrentTurn = pauseAfterCurrentTurnRef.current;
-            pauseAfterCurrentTurnRef.current = false;
+            clearPausePending();
 
             const isLastSpeakerInRound = currentAgentIndex + 1 >= selectedAgents.length;
             if (isLastSpeakerInRound) {
@@ -629,6 +637,7 @@ export function useDebateController({
 
         const message = themeHeaderStatusNote(getRequestFailureMessage(turnError, "The séance was interrupted."));
         clearStreamRevealQueue(thinkingId);
+        clearPausePending();
         setControlError("");
         setStatusNote(message);
         setDiscussionActive(false);
@@ -666,6 +675,8 @@ export function useDebateController({
     isDownloadingTranscript,
     hasMessages,
     startButtonLabel,
+    pauseButtonLabel,
+    isPausePending,
     roundScrollKey,
     wipeDebate,
     downloadTranscript,

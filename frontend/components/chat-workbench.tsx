@@ -5,7 +5,7 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import { AppNavbar, DiscussionPanel, TelemetryPanel } from "./renderers";
+import { AppNavbar, DiscussionPanel, SiteFooter, TelemetryPanel } from "./renderers";
 import type { LegendDetails } from "./types";
 import { useAgentsCatalog, useDebateController, useServicesStatus, useTopicEditorState } from "./hooks";
 import { useTelemetryViewModel, useWorkbenchViewState } from "./view-models";
@@ -38,6 +38,7 @@ export function ChatWorkbench() {
   const [sessionId, setSessionId] = useState("");
   const [targetTemperature, setTargetTemperature] = useState(DEFAULT_TONE_TEMPERATURE);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const telemetrySidebarRef = useRef<HTMLDivElement | null>(null);
   const telemetrySidebarUserScrolledRef = useRef(false);
@@ -82,6 +83,8 @@ export function ChatWorkbench() {
     isDownloadingTranscript,
     hasMessages,
     startButtonLabel,
+    pauseButtonLabel,
+    isPausePending,
     roundScrollKey,
     wipeDebate,
     downloadTranscript,
@@ -211,8 +214,49 @@ export function ChatWorkbench() {
   // running or has produced at least one real (non-thinking) message.
   const isConvoActive = discussionActive || messages.some((message) => !message.isThinking);
 
+  // On mobile, block document scroll while a convo is active so overscroll at
+  // the transcript edges cannot chain into the telemetry stack below.
+  useEffect(() => {
+    const mobileQuery = window.matchMedia("(max-width: 767px)");
+    const applyLock = () => {
+      const locked = isConvoActive && mobileQuery.matches;
+      document.documentElement.style.overflow = locked ? "hidden" : "";
+      document.body.style.overflow = locked ? "hidden" : "";
+      document.body.style.overscrollBehavior = locked ? "none" : "";
+    };
+
+    applyLock();
+    mobileQuery.addEventListener("change", applyLock);
+    return () => {
+      mobileQuery.removeEventListener("change", applyLock);
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+      document.body.style.overscrollBehavior = "";
+    };
+  }, [isConvoActive]);
+
+  useEffect(() => {
+    const mobileQuery = window.matchMedia("(max-width: 767px)");
+    const syncViewport = () => setIsMobileViewport(mobileQuery.matches);
+    syncViewport();
+    mobileQuery.addEventListener("change", syncViewport);
+    return () => mobileQuery.removeEventListener("change", syncViewport);
+  }, []);
+
+  useEffect(() => {
+    if (!isConvoActive) {
+      setIsSidebarOpen(false);
+    }
+  }, [isConvoActive]);
+
+  const mobileConvoPane = isConvoActive && isMobileViewport;
+
   return (
-    <main className="shell" data-convo-active={isConvoActive ? "true" : "false"}>
+    <main
+      className="shell"
+      data-convo-active={isConvoActive ? "true" : "false"}
+      data-mobile-pane={mobileConvoPane && isSidebarOpen ? "telemetry" : "chat"}
+    >
       <AppNavbar />
 
       <section className="workspace" data-sidebar={isSidebarOpen ? "open" : "closed"}>
@@ -230,6 +274,8 @@ export function ChatWorkbench() {
           isWipingSession={isWipingSession}
           isDownloadingTranscript={isDownloadingTranscript}
           startButtonLabel={startButtonLabel}
+          pauseButtonLabel={pauseButtonLabel}
+          isPausePending={isPausePending}
           transcriptState={transcriptState}
           messages={messages}
           transcriptRef={transcriptRef}
@@ -242,26 +288,22 @@ export function ChatWorkbench() {
           onHaltDebate={haltDebate}
           onWipeDebate={wipeDebate}
           onDownloadTranscript={downloadTranscript}
+          onOpenTelemetry={() => setIsSidebarOpen(true)}
+          showMobileTelemetryTrigger={mobileConvoPane}
         />
 
         <TelemetryPanel
             viewModel={telemetryViewModel}
             containerRef={telemetrySidebarRef}
             isSidebarOpen={isSidebarOpen}
+            mobileConvoPane={mobileConvoPane}
             onToggleSidebar={() => setIsSidebarOpen((v) => !v)}
+            onBackToChat={() => setIsSidebarOpen(false)}
           />
       </section>
 
       {!isConvoActive && (
-        <footer className="siteFooter">
-          <span className="siteFooterCredits">
-            Built with ❤️ by <a className="siteFooterLink" href="https://ntemposd.me" target="_blank" rel="noreferrer">ntemposd</a>
-          </span>
-          <span className="siteFooterSep" aria-hidden="true" />
-          <span className="siteFooterStarLine">
-            <a className="siteFooterPartialLink" href="https://github.com/ntemposd/exhumed" target="_blank" rel="noreferrer">⭐ Star on <span className="siteFooterPartialLinkUnderline">GitHub</span></a>
-          </span>
-        </footer>
+        <SiteFooter />
       )}
     </main>
   );

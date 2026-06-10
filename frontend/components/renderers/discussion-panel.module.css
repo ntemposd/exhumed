@@ -631,11 +631,27 @@
   gap: 12px;
 }
 
+.telemetryIconBtn {
+  display: none;
+}
+
 /* ─── Responsive ──────────────────────────────────────────────── */
 
 @media (max-width: 767px) {
   .convoPane {
     --section-gap: 22px;
+  }
+
+  :global(.shell[data-convo-active="true"]) .convoPane {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  :global(.shell[data-convo-active="true"]) .transcriptSectionActive {
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   .themeSection,
@@ -657,8 +673,38 @@
   }
 
   .commandGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr) auto;
     gap: 8px;
+    padding-right: 2px;
+  }
+
+  .telemetryIconBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    padding-inline: 8px;
+    line-height: 1;
+  }
+
+  .telemetryIconGlyph {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-strong, var(--accent));
+  }
+
+  .transcriptSectionActive .commandGrid :global(.buttonPrimary),
+  .transcriptSectionActive .commandGrid :global(.buttonGhost),
+  .transcriptSectionActive .commandGrid .telemetryIconBtn {
+    min-height: 34px;
+    padding: 5px 10px;
+    font-size: 0.68rem;
+  }
+
+  .transcriptSectionActive .commandGrid .telemetryIconBtn {
+    padding-inline: 8px;
+    box-shadow: 2px 2px 0 var(--line);
   }
 
   .councilChips {
@@ -679,13 +725,6 @@
   .transcriptSectionActive .transcriptControlsBlock {
     padding-top: 6px;
     padding-bottom: 8px;
-  }
-
-  .transcriptSectionActive .commandGrid :global(.buttonPrimary),
-  .transcriptSectionActive .commandGrid :global(.buttonGhost) {
-    min-height: 34px;
-    padding: 5px 10px;
-    font-size: 0.68rem;
   }
 
   .chatHeader .chatTopicLabel {

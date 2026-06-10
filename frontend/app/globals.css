@@ -392,15 +392,6 @@ select {
 		overflow: hidden;
 	}
 
-	.telemetryPanel {
-		position: static;
-		top: auto;
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-		min-height: 0;
-	}
-
 	/* Collapsed: the telemetry column shrinks to just its toggle button instead
 	   of rendering as a big empty bordered/tinted box. */
 	.workspace[data-sidebar="closed"] .telemetryColumn {
@@ -408,11 +399,6 @@ select {
 		background: transparent;
 		border-left: none;
 		overflow: visible;
-	}
-
-	.workspace[data-sidebar="closed"] .telemetryPanel {
-		display: block;
-		height: auto;
 	}
 }
 
@@ -663,7 +649,8 @@ select {
 }
 
 .topicEditorWrap {
-	display: inline-grid;
+	display: grid;
+	width: 66.666%;
 	max-width: 66.666%;
 	min-width: 180px;
 	box-sizing: border-box;
@@ -801,9 +788,124 @@ select {
 	line-height: 1.35;
 }
 
+/* Desktop panel layout must follow the global .telemetryPanel grid rule above,
+   otherwise the toggle stretches with the chat column height. */
+@media (min-width: 768px) {
+	.telemetryPanel {
+		position: static;
+		top: auto;
+	}
+
+	.workspace[data-sidebar="open"] .telemetryPanel {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 0;
+	}
+
+	.workspace[data-sidebar="closed"] .telemetryPanel {
+		display: block;
+		height: auto;
+	}
+}
+
 @media (max-width: 767px) {
 	.shell {
 		width: 100%;
+	}
+
+	/* Active convo: lock the shell to the viewport so page scroll cannot
+	   chain past the command bar and reveal telemetry below the fold. */
+	.shell[data-convo-active="true"] {
+		height: 100dvh;
+		max-height: 100dvh;
+		min-height: 0;
+		overflow: hidden;
+		overscroll-behavior: none;
+		background:
+			linear-gradient(var(--grid-color) 1px, transparent 1px),
+			linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
+			var(--surface-0);
+		background-size: 24px 24px, 24px 24px, 100% 100%;
+	}
+
+	html:has(.shell[data-convo-active="true"]),
+	body:has(.shell[data-convo-active="true"]) {
+		overflow: hidden;
+		overscroll-behavior-y: none;
+		height: 100%;
+	}
+
+	.shell[data-convo-active="true"] .workspace {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		overscroll-behavior: none;
+	}
+
+	.shell[data-convo-active="true"] .convoColumn {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		align-self: stretch;
+	}
+
+	.shell[data-convo-active="true"][data-mobile-pane="chat"] .telemetryColumn {
+		display: none;
+	}
+
+	.shell[data-convo-active="true"][data-mobile-pane="telemetry"] .convoColumn {
+		display: none;
+	}
+
+	.shell[data-convo-active="true"][data-mobile-pane="telemetry"] .telemetryColumn {
+		display: flex;
+		flex: 1 1 auto;
+		flex-direction: column;
+		min-height: 0;
+		overflow: hidden;
+		align-self: stretch;
+		width: calc(100% + 32px);
+		margin-left: -16px;
+		margin-right: -16px;
+		border-left: none;
+		background: transparent;
+	}
+
+	.shell[data-convo-active="true"][data-mobile-pane="telemetry"] .telemetryPanel {
+		display: flex;
+		flex-direction: column;
+		flex: 1 1 auto;
+		min-height: 0;
+		height: 100%;
+		position: static;
+		top: auto;
+		padding: 12px 16px 0;
+		overflow: hidden;
+		background: transparent;
+	}
+
+	.shell[data-convo-active="true"][data-mobile-pane="telemetry"] .telemetryPanel .sidebarSectionGroup:last-child {
+		margin-bottom: 0;
+	}
+
+	.shell[data-convo-active="true"][data-mobile-pane="telemetry"] .telemetrySidebarScroll {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
+		overscroll-behavior-y: contain;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: none;
+		padding-bottom: 18px;
+	}
+
+	.shell[data-convo-active="true"][data-mobile-pane="telemetry"] .telemetrySidebarScroll::-webkit-scrollbar {
+		display: none;
 	}
 
 	.workspace {
@@ -837,17 +939,20 @@ select {
 
 	.buttonPrimary,
 	.buttonGhost,
-	.topicEditorWrap {
+	.topicEditorWrap,
+	.telemetryIconBtn {
 		box-shadow: 2px 2px 0 var(--line);
 	}
 
 	.buttonPrimary:hover,
-	.buttonGhost:hover {
+	.buttonGhost:hover,
+	.telemetryIconBtn:hover {
 		transform: none;
 		box-shadow: 2px 2px 0 var(--line);
 	}
 
 	.topicEditorWrap {
+		width: 100%;
 		max-width: 100%;
 		min-width: 0;
 	}

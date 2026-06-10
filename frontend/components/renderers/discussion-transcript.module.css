@@ -9,6 +9,8 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  overflow-anchor: none;
+  overscroll-behavior-y: contain;
   scrollbar-width: none;
 }
 
@@ -28,6 +30,12 @@
   margin-top: auto;
   padding-top: 14px;
   padding-bottom: 16px;
+}
+
+/* margin-top:auto only bottom-aligns short threads; once the transcript
+   overflows the scroll viewport it creates a runaway top margin on reflow. */
+.transcriptInnerFill[data-align-bottom="false"] {
+  margin-top: 0;
 }
 
 .roundSection {

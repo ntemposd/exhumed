@@ -81,8 +81,9 @@ async function proxy(
     // Return a structured 503 so the client gets a readable error instead of
     // a raw 500 with a Node.js stack trace in the server logs.
     if (err instanceof TypeError) {
+      console.error(`Backend proxy fetch failed: ${targetUrl}`, err);
       return NextResponse.json(
-        { detail: `Backend unreachable at ${targetUrl}. Is the server running and is BACKEND_URL correct?` },
+        { detail: "The séance could not reach the server. Try again in a moment." },
         { status: 503 },
       );
     }

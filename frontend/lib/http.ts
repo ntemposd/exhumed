@@ -13,6 +13,21 @@ type ReadableErrorPayload = {
   error?: string;
 };
 
+function sanitizeClientErrorDetail(detail: string): string {
+  const trimmed = detail.trim();
+  if (!trimmed) {
+    return trimmed;
+  }
+
+  if (
+    /backend unreachable|backend not configured|BACKEND_URL|localhost|127\.0\.0\.1|process-turn\/stream/i.test(trimmed)
+  ) {
+    return "The séance could not reach the server. Try again in a moment.";
+  }
+
+  return trimmed;
+}
+
 
 export async function getResponseErrorMessage(response: Response, fallbackMessage: string) {
   try {
@@ -21,7 +36,7 @@ export async function getResponseErrorMessage(response: Response, fallbackMessag
     if (contentType.includes("application/json")) {
       const payload = (await response.json()) as ReadableErrorPayload;
       if (typeof payload.detail === "string" && payload.detail.trim()) {
-        const detail = payload.detail.trim();
+        const detail = sanitizeClientErrorDetail(payload.detail);
         if (response.status === 401 && detail.toLowerCase() === "unauthorized") {
           return "BACKEND_API_KEY on Vercel does not match BACKEND_API_KEY on Railway. Set the same value for Preview and Production, then redeploy.";
         }
@@ -64,11 +79,11 @@ export async function getResponseErrorMessage(response: Response, fallbackMessag
 
 export function getRequestFailureMessage(error: unknown, fallbackMessage: string) {
   if (error instanceof TypeError) {
-    return "Could not reach the backend. Check BACKEND_URL, BACKEND_API_KEY, and that the backend is running.";
+    return "The séance could not reach the server. Try again in a moment.";
   }
 
   if (error instanceof Error && error.message.trim()) {
-    return error.message;
+    return sanitizeClientErrorDetail(error.message);
   }
 
   return fallbackMessage;

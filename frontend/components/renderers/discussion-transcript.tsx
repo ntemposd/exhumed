@@ -116,7 +116,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
         continue;
       }
 
-      const retryMatch = message.thinkingStatus.match(/retrying in\s+([\d.]+)s?/i);
+      const retryMatch = message.thinkingStatus.match(/(?:retrying in|wait for)\s+([\d.]+)s?/i);
       if (!retryMatch) {
         continue;
       }
@@ -146,7 +146,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
       message.isThinking
       && message.thinkingStatus
       && !message.message.trim()
-      && /retrying in\s+[\d.]+s?/i.test(message.thinkingStatus),
+      && /(?:retrying in|wait for)\s+[\d.]+s?/i.test(message.thinkingStatus),
     ),
   );
 
@@ -213,6 +213,90 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
   // (e.g. the throttle/retry skull appearing) — otherwise the newly-added skull
   // row lands below the fold, hidden under the command bar.
   const transcriptTailSignal = `${lastMessageId ?? ""}:${lastMessage?.message?.length ?? 0}:${lastMessage?.isThinking ? "1" : "0"}:${lastMessage?.thinkingStatus ?? ""}`;
+
+  // margin-top:auto bottom-aligns short threads, but it inflates scrollHeight
+  // once content overflows — toggle it off so scroll position stays stable.
+  useEffect(() => {
+    if (!fillViewport) {
+      return;
+    }
+    const container = transcriptRef.current;
+    const inner = container?.firstElementChild as HTMLElement | null;
+    if (!container || !inner) {
+      return;
+    }
+
+    const syncBottomAlign = () => {
+      const overflows = inner.scrollHeight > container.clientHeight + 1;
+      inner.dataset.alignBottom = overflows ? "false" : "true";
+    };
+
+    syncBottomAlign();
+    const resizeObserver = new ResizeObserver(syncBottomAlign);
+    resizeObserver.observe(container);
+    resizeObserver.observe(inner);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [fillViewport, transcriptRef, transcriptTailSignal]);
+
+  // Stop touch scroll chaining at the transcript edges on mobile — otherwise a
+  // downward swipe at the bottom overscrolls the page and reveals telemetry.
+  useEffect(() => {
+    if (!fillViewport) {
+      return;
+    }
+    const container = transcriptRef.current;
+    if (!container) {
+      return;
+    }
+
+    let lastTouchY = 0;
+
+    const onTouchStart = (event: TouchEvent) => {
+      lastTouchY = event.touches[0]?.clientY ?? 0;
+    };
+
+    const onTouchMove = (event: TouchEvent) => {
+      const touchY = event.touches[0]?.clientY;
+      if (touchY == null) {
+        return;
+      }
+
+      const deltaY = touchY - lastTouchY;
+      lastTouchY = touchY;
+
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const atTop = scrollTop <= 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+
+      if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
+        event.preventDefault();
+      }
+    };
+
+    const onWheel = (event: WheelEvent) => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const atTop = scrollTop <= 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1;
+
+      if ((atTop && event.deltaY < 0) || (atBottom && event.deltaY > 0)) {
+        event.preventDefault();
+      }
+    };
+
+    container.addEventListener("touchstart", onTouchStart, { passive: true });
+    container.addEventListener("touchmove", onTouchMove, { passive: false });
+    container.addEventListener("wheel", onWheel, { passive: false });
+
+    return () => {
+      container.removeEventListener("touchstart", onTouchStart);
+      container.removeEventListener("touchmove", onTouchMove);
+      container.removeEventListener("wheel", onWheel);
+    };
+  }, [fillViewport, transcriptRef]);
+
   useEffect(() => {
     if (!lastMessageId) {
       return;
