@@ -58,7 +58,7 @@ class QueryVectorStatsTests(unittest.TestCase):
         sun_tzu_summary = summaries[1]
         self.assertEqual(sun_tzu_summary["agent_id"], "agt_003")
         self.assertEqual(sun_tzu_summary["chunk_count"], 2)
-        self.assertEqual(sun_tzu_summary["sources"], ["The Art of War"])
+        self.assertEqual(sun_tzu_summary["source_stats"][0]["source_title"], "The Art of War")
         self.assertEqual(sun_tzu_summary["source_stats"][0]["max_chars"], 23)
         self.assertEqual(sun_tzu_summary["source_stats"][0]["min_chars"], 10)
 
@@ -67,10 +67,12 @@ class QueryVectorStatsTests(unittest.TestCase):
             {
                 "agent_id": "agt_013",
                 "speaker_name": "Nikola Tesla",
-                "sources": ["My Inventions"],
                 "source_stats": [
                     {
                         "source_title": "My Inventions",
+                        "source_volume": "",
+                        "source_chapter": "",
+                        "source_slug": "my-inventions",
                         "chunk_count": 3,
                         "avg_chars": 412.7,
                         "max_chars": 480,
@@ -89,7 +91,7 @@ class QueryVectorStatsTests(unittest.TestCase):
 
         self.assertIn("Query: electricity and invention", report)
         self.assertIn("Agent: Nikola Tesla (agt_013)", report)
-        self.assertIn("Sources: My Inventions", report)
+        self.assertIn("My Inventions [my-inventions]", report)
         self.assertIn("Chunks: 3", report)
         self.assertIn("Avg chars: 412.7", report)
         self.assertIn("Max chars: 480", report)

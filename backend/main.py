@@ -66,6 +66,7 @@ except ModuleNotFoundError:
     from utils.execution_metrics import build_stream_execution_metrics, extract_execution_metrics
     from utils.pdf_export import export_session_pdf
     from utils.text_metrics import calculate_jaccard_entropy
+    from version import APP_VERSION
 
 # Initialize logging
 _request_id_context: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")

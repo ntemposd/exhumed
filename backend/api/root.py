@@ -4,7 +4,10 @@ from typing import Any, Dict
 
 from fastapi import APIRouter
 
-from backend.version import APP_VERSION
+try:
+    from backend.version import APP_VERSION
+except ModuleNotFoundError:
+    from version import APP_VERSION
 
 
 def create_root_router() -> APIRouter:

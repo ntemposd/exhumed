@@ -8,8 +8,12 @@ from uuid import UUID, uuid4
 
 from fastapi import HTTPException
 
-from backend.utils.prompt_budget import PromptBudget, truncate_for_prompt
-from backend.utils.source_titles import citation_dedupe_key, citation_from_metadata
+try:
+    from backend.utils.prompt_budget import PromptBudget, truncate_for_prompt
+    from backend.utils.source_titles import citation_dedupe_key, citation_from_metadata
+except ModuleNotFoundError:
+    from utils.prompt_budget import PromptBudget, truncate_for_prompt
+    from utils.source_titles import citation_dedupe_key, citation_from_metadata
 
 
 class SessionService:
