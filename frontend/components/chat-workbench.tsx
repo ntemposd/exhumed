@@ -12,30 +12,31 @@ import { useTelemetryViewModel, useWorkbenchViewState } from "./view-models";
 import { isAgentSelectable } from "@/lib/legends";
 
 import {
-  calculateSessionBurnUsd,
+  calculateConvoCostUsd,
   clampNumber,
+  DEFAULT_TONE_TEMPERATURE,
   estimateTokenCount,
   getLegendDetails,
   getRoleBreakdown,
   isValidSessionId,
   makeSessionId,
+  resolveToneTemperature,
 } from "./utils";
 
 const SESSION_STORAGE_KEY = "exhumed-front-session-id";
 const COUNCIL_STORAGE_KEY = "exhumed-front-council-agent-ids";
 const TOPIC_STORAGE_KEY = "exhumed-front-topic";
-const ENTROPY_STORAGE_KEY = "exhumed-front-target-entropy";
+const TEMPERATURE_STORAGE_KEY = "exhumed-front-target-temperature";
 const AGENTS_CACHE_KEY = "exhumed-front-agents-cache";
 const SERVICES_CACHE_KEY = "exhumed-front-services-cache";
 const DEFAULT_TOPIC = "The future of AI in society.";
-const DEFAULT_TARGET_ENTROPY = 0.75;
 const AGENTS_CACHE_TTL_MS = 5 * 60_000;
 const SERVICES_CACHE_TTL_MS = 60_000;
 
 export function ChatWorkbench() {
   // Session + workspace chrome state that belongs at the composition root.
   const [sessionId, setSessionId] = useState("");
-  const [targetEntropy, setTargetEntropy] = useState(DEFAULT_TARGET_ENTROPY);
+  const [targetTemperature, setTargetTemperature] = useState(DEFAULT_TONE_TEMPERATURE);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const telemetrySidebarRef = useRef<HTMLDivElement | null>(null);
@@ -67,7 +68,7 @@ export function ChatWorkbench() {
     sessionId,
     topic,
     defaultTopic: DEFAULT_TOPIC,
-    targetEntropy,
+    targetTemperature,
     issueSessionId,
     makeSessionId,
     onTopicChange: setTopic,
@@ -91,26 +92,26 @@ export function ChatWorkbench() {
 
   useLayoutEffect(() => {
     const storedSessionId = window.localStorage.getItem(SESSION_STORAGE_KEY);
-    const storedEntropy = window.localStorage.getItem(ENTROPY_STORAGE_KEY);
+    const storedTemperature = window.localStorage.getItem(TEMPERATURE_STORAGE_KEY);
     const nextSessionId = storedSessionId && isValidSessionId(storedSessionId) ? storedSessionId : makeSessionId();
 
     setSessionId(nextSessionId);
     window.localStorage.setItem(SESSION_STORAGE_KEY, nextSessionId);
 
-    if (storedEntropy) {
-      const parsedEntropy = Number(storedEntropy);
-      if (!Number.isNaN(parsedEntropy)) {
-        setTargetEntropy(clampNumber(parsedEntropy, 0, 1.5));
+    if (storedTemperature) {
+      const parsedTemperature = Number(storedTemperature);
+      if (!Number.isNaN(parsedTemperature)) {
+        setTargetTemperature(resolveToneTemperature(clampNumber(parsedTemperature, 0, 1.5)));
         return;
       }
     }
 
-    setTargetEntropy(DEFAULT_TARGET_ENTROPY);
+    setTargetTemperature(DEFAULT_TONE_TEMPERATURE);
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(ENTROPY_STORAGE_KEY, String(targetEntropy));
-  }, [targetEntropy]);
+    window.localStorage.setItem(TEMPERATURE_STORAGE_KEY, String(targetTemperature));
+  }, [targetTemperature]);
 
   useEffect(() => {
     const element = telemetrySidebarRef.current;
@@ -156,7 +157,7 @@ export function ChatWorkbench() {
     [messages],
   );
   const roleBreakdown = useMemo(() => getRoleBreakdown(messages), [messages]);
-  const sessionBurnUsd = useMemo(() => calculateSessionBurnUsd(messages), [messages]);
+  const convoCostUsd = useMemo(() => calculateConvoCostUsd(messages), [messages]);
   const { legendCatalogState, servicesState, transcriptState } = useWorkbenchViewState({
     agents,
     agentsError,
@@ -174,7 +175,7 @@ export function ChatWorkbench() {
   });
   const telemetryViewModel = useTelemetryViewModel({
     servicesState,
-    sessionBurnUsd,
+    convoCostUsd,
     transcriptTokenEstimate,
     messages,
     roleBreakdown,
@@ -220,7 +221,7 @@ export function ChatWorkbench() {
           defaultTopic={DEFAULT_TOPIC}
           discussionActive={discussionActive}
           selectedCouncil={selectedCouncil}
-          targetEntropy={targetEntropy}
+          targetTemperature={targetTemperature}
           controlError={controlError}
           sessionId={sessionId}
           hasMessages={hasMessages}
@@ -236,7 +237,7 @@ export function ChatWorkbench() {
           legendCatalogState={legendCatalogState}
           onTopicChange={setTopic}
           onToggleCouncilMember={toggleCouncilMember}
-          onTargetEntropyChange={setTargetEntropy}
+          onTargetTemperatureChange={setTargetTemperature}
           onStartDebate={handleStartDebate}
           onHaltDebate={haltDebate}
           onWipeDebate={wipeDebate}
@@ -253,10 +254,13 @@ export function ChatWorkbench() {
 
       {!isConvoActive && (
         <footer className="siteFooter">
-          Built with ❤️ by <a className="siteFooterLink" href="https://ntemposd.me" target="_blank" rel="noreferrer">ntemposd</a>
-          {" · "}
-          <a className="siteFooterPartialLink" href="https://github.com/ntemposd/exhumed" target="_blank" rel="noreferrer">⭐ Star on <span className="siteFooterPartialLinkUnderline">GitHub</span></a>
-          <span className="siteFooterVersion">v1.0.0-beta.7</span>
+          <span className="siteFooterCredits">
+            Built with ❤️ by <a className="siteFooterLink" href="https://ntemposd.me" target="_blank" rel="noreferrer">ntemposd</a>
+          </span>
+          <span className="siteFooterSep" aria-hidden="true" />
+          <span className="siteFooterStarLine">
+            <a className="siteFooterPartialLink" href="https://github.com/ntemposd/exhumed" target="_blank" rel="noreferrer">⭐ Star on <span className="siteFooterPartialLinkUnderline">GitHub</span></a>
+          </span>
         </footer>
       )}
     </main>

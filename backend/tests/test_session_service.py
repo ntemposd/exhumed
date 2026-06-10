@@ -47,8 +47,8 @@ class SessionServicePromptTests(unittest.TestCase):
 
         self.assertTrue(prompt.startswith("Discussion topic: justice\n"))
         self.assertNotIn("Speak as Socrates.", prompt)
-        self.assertIn("Your response must be grounded in the passages above", prompt)
-        self.assertIn("Do not draw on general or popular knowledge about yourself", prompt)
+        self.assertIn("Ground your reply in the passages above", prompt)
+        self.assertIn("Do not use popular knowledge beyond what the passages establish", prompt)
 
     def test_build_context_prompt_adds_fallback_guidance_when_no_matches_exist(self):
         service = SessionService(

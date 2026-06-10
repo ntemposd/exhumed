@@ -46,6 +46,7 @@ try:
     from backend.utils.execution_metrics import build_stream_execution_metrics, extract_execution_metrics
     from backend.utils.pdf_export import export_session_pdf
     from backend.utils.text_metrics import calculate_jaccard_entropy
+    from backend.version import APP_VERSION
 except ModuleNotFoundError:
     from composition import build_runtime_services
     from settings import BackendSettings, load_settings
@@ -105,7 +106,6 @@ class ProcessTurnRequest(BaseModel):
     topic: str = Field(..., min_length=1, max_length=255, description="Discussion topic")
     agent_id: str = Field(..., description="Agent to process turn for")
     temperature: Optional[float] = Field(default=None, ge=0.0, le=1.5, description="Optional runtime temperature override from the UI")
-    entropy_profile: Optional[str] = Field(default=None, description="Named entropy profile selected by the user (e.g. 'Balanced Debate')")
     turn_number: Optional[int] = Field(default=None, ge=1, description="Turn number if already known")
 
 
@@ -173,11 +173,20 @@ class TelemetryData(BaseModel):
     vector: Optional["VectorTelemetry"] = Field(default=None, description="Speaker knowledge retrieval telemetry for this turn")
 
 
+class VectorSourceCitation(BaseModel):
+    title: str = Field(..., description="Primary source work or document title")
+    volume: Optional[str] = Field(None, description="Volume label when applicable")
+    chapter: Optional[str] = Field(None, description="Chapter, note, or section label when applicable")
+
+
 class VectorTelemetry(BaseModel):
     used: bool = Field(..., description="Whether speaker knowledge was injected into the prompt")
     match_count: int = Field(..., description="Number of retrieved knowledge chunks")
     top_score: Optional[float] = Field(None, description="Top retrieval similarity score")
-    sources: List[str] = Field(default_factory=list, description="Unique source titles contributing context")
+    sources: List[VectorSourceCitation] = Field(
+        default_factory=list,
+        description="Unique source citations contributing context",
+    )
     chunk_ids: List[str] = Field(default_factory=list, description="Retrieved chunk ids for debugging")
     context_chars: int = Field(..., description="Total character count of injected knowledge text")
 
@@ -277,6 +286,12 @@ def _build_services(settings: BackendSettings) -> Dict[str, Any]:
         llm_top_p=settings.llm.top_p,
         llm_429_max_retries=max(0, settings.llm.max_retries),
         llm_request_throttle_seconds=max(0.0, settings.llm.request_throttle_seconds),
+        llm_debate_max_tokens=max(50, settings.llm.debate_max_tokens),
+        llm_retrieval_top_k=max(1, settings.llm.retrieval_top_k),
+        llm_retrieval_weak_top_k_bonus=max(0, settings.llm.retrieval_weak_top_k_bonus),
+        llm_context_turn_limit=max(1, settings.llm.context_turn_limit),
+        llm_prompt_max_source_chunk_chars=max(200, settings.llm.prompt_max_source_chunk_chars),
+        llm_prompt_max_context_turn_chars=max(120, settings.llm.prompt_max_context_turn_chars),
         agent_registry_cache_ttl_seconds=settings.storage.agent_registry_cache_ttl_seconds,
         agent_config_cache_ttl_seconds=settings.storage.agent_config_cache_ttl_seconds,
         session_max_messages=settings.storage.session_max_messages,
@@ -358,7 +373,7 @@ def create_app(settings: Optional[BackendSettings] = None) -> FastAPI:
 
     app = FastAPI(
         title="EXHUMED",
-        version="1.1.0",
+        version=APP_VERSION,
         description="Decoupled AI discussion platform with Upstash Redis + Vector",
         lifespan=_build_lifespan(
             llm_service=services["llm_service"],

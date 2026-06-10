@@ -3,8 +3,10 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono } from "next/font/google";
+import Script from "next/script";
 
 import { BuyMeACoffee } from "@/components/buy-me-a-coffee";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 
 import "./globals.css";
 
@@ -35,18 +37,15 @@ export const metadata: Metadata = {
   },
 };
 
-// Runs synchronously before first paint: reads localStorage and stamps
-// data-theme on <html> before React hydrates, eliminating the light→dark
-// flash. Wrapped in try/catch so storage errors never break the page.
-const THEME_INIT_SCRIPT = `try{var t=localStorage.getItem('exhumed-theme');if(t==='dark')document.documentElement.dataset.theme='dark';}catch(e){}`;
+// Theme init runs before first paint via beforeInteractive Script below.
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-      </head>
+    <html lang="en" suppressHydrationWarning>
       <body className={monoFont.variable}>
+        <Script id="exhumed-theme-init" strategy="beforeInteractive">
+          {THEME_INIT_SCRIPT}
+        </Script>
         {children}
         <Analytics />
         <SpeedInsights />

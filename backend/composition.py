@@ -15,6 +15,7 @@ try:
     from backend.services.observability import ObservabilityService
     from backend.services.session_service import SessionService
     from backend.services.turn_workflow import TurnWorkflowService
+    from backend.utils.prompt_budget import PromptBudget
 except ModuleNotFoundError:
     from services.agent_registry import AgentRegistryService
     from services.database import DatabaseService, SentenceTransformerEmbeddingProvider
@@ -23,6 +24,7 @@ except ModuleNotFoundError:
     from services.observability import ObservabilityService
     from services.session_service import SessionService
     from services.turn_workflow import TurnWorkflowService
+    from utils.prompt_budget import PromptBudget
 
 
 def build_runtime_services(
@@ -36,7 +38,13 @@ def build_runtime_services(
     llm_model_id: str,
     llm_top_p: float = 0.95,
     llm_429_max_retries: int = 3,
-    llm_request_throttle_seconds: float = 0.0,
+    llm_request_throttle_seconds: float = 2.0,
+    llm_debate_max_tokens: int = 384,
+    llm_retrieval_top_k: int = 4,
+    llm_retrieval_weak_top_k_bonus: int = 1,
+    llm_context_turn_limit: int = 4,
+    llm_prompt_max_source_chunk_chars: int = 680,
+    llm_prompt_max_context_turn_chars: int = 320,
     agent_registry_cache_ttl_seconds: float = 60.0,
     agent_config_cache_ttl_seconds: float = 300.0,
     session_max_messages: int = 200,
@@ -90,6 +98,14 @@ def build_runtime_services(
         prompt_capture_log_path=prompt_capture_log_path,
         logger=logger,
     )
+    prompt_budget = PromptBudget(
+        retrieval_top_k=max(1, llm_retrieval_top_k),
+        retrieval_weak_top_k_bonus=max(0, llm_retrieval_weak_top_k_bonus),
+        context_turn_limit=max(1, llm_context_turn_limit),
+        max_source_chunk_chars=max(200, llm_prompt_max_source_chunk_chars),
+        max_context_turn_chars=max(120, llm_prompt_max_context_turn_chars),
+        debate_max_tokens=max(50, llm_debate_max_tokens),
+    )
     session = SessionService(
         redis_client=redis_client,
         database_service=database,
@@ -97,6 +113,7 @@ def build_runtime_services(
         decode_value=decode_redis_value,
         export_session_pdf=export_session_pdf,
         logger=logger,
+        prompt_budget=prompt_budget,
     )
     llm = LLMService(
         api_base_url=llm_api_base_url,
@@ -105,6 +122,7 @@ def build_runtime_services(
         top_p=llm_top_p,
         max_retries=llm_429_max_retries,
         throttle_seconds=llm_request_throttle_seconds,
+        debate_max_tokens=prompt_budget.debate_max_tokens,
         execution_metrics_builder=execution_metrics_model,
         extract_execution_metrics=extract_execution_metrics,
         build_stream_execution_metrics=build_stream_execution_metrics,
@@ -120,6 +138,7 @@ def build_runtime_services(
         save_message_to_storage=session.save_message_to_storage,
         calculate_entropy=calculate_entropy,
         build_telemetry=telemetry_model,
+        context_limit=prompt_budget.context_turn_limit,
     )
     discussion = DiscussionService(
         turn_workflow_service=turn_workflow,

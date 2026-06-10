@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import Image from "next/image";
 
 import type { DebateMessage } from "../types";
+import { isRetryCountdownStatusMessage, isThrottledStatusMessage, themeRetryCountdownMessage, THROTTLE_STATUS_HEADER } from "../status-messages";
+import { normalizeSourceTitles } from "../source-titles";
 import { avatarUrlForAgent, getAgentArchetype, sanitizeDebateMessageText } from "../utils";
 import styles from "./discussion-transcript.module.css";
 
@@ -110,7 +112,7 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
     const activeRetryIds = new Set<string>();
 
     for (const message of messages) {
-      if (!message.isThinking || !message.thinkingStatus) {
+      if (!message.isThinking || !message.thinkingStatus || message.message.trim()) {
         continue;
       }
 
@@ -140,7 +142,12 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
   }, [messages]);
 
   const hasActiveRetryCountdown = messages.some((message) =>
-    Boolean(message.isThinking && message.thinkingStatus && /retrying in\s+[\d.]+s?/i.test(message.thinkingStatus)),
+    Boolean(
+      message.isThinking
+      && message.thinkingStatus
+      && !message.message.trim()
+      && /retrying in\s+[\d.]+s?/i.test(message.thinkingStatus),
+    ),
   );
 
   useEffect(() => {
@@ -251,23 +258,15 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
         const elapsedSeconds = Math.max((retryCountdownTick - retryCountdown.startedAtMs) / 1000, 0);
         const remainingSeconds = Math.max(retryCountdown.initialSeconds - elapsedSeconds, 0);
 
-        return `The ether is congested. Retrying in ${remainingSeconds.toFixed(1)}s`;
+        return themeRetryCountdownMessage(remainingSeconds);
       }
 
-      if (/rate limit|retry|\b429\b|\b5\d{2}\b/i.test(explicitStatus)) {
-        return "The ether is congested";
+      if (isThrottledStatusMessage(explicitStatus)) {
+        return THROTTLE_STATUS_HEADER;
       }
     }
 
     return "";
-  }
-
-  function isThrottledThinkingStatus(explicitStatus?: string): boolean {
-    if (!explicitStatus) {
-      return false;
-    }
-
-    return /rate limit|retry|\b429\b/i.test(explicitStatus);
   }
 
   function toggleExpandedMessage(messageId: string) {
@@ -486,8 +485,14 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                   const visibleMessage = shouldTruncate && !isExpanded
                     ? previewMessage
                     : sanitizedMessage;
-                  const showRetrySkull = message.isThinking && !visibleMessage && isThrottledThinkingStatus(message.thinkingStatus);
-                  const messageSources = message.telemetry?.vector?.sources ?? [];
+                  const hasStreamedText = Boolean(sanitizedMessage.trim());
+                  const showBubbleStatus = message.isThinking && Boolean(thinkingStatus) && !hasStreamedText;
+                  const showThinkingIndicator = message.isThinking && !hasStreamedText;
+                  const isRateLimitWait = Boolean(
+                    message.thinkingStatus && isThrottledStatusMessage(message.thinkingStatus),
+                  ) || isRetryCountdownStatusMessage(thinkingStatus);
+                  const showRollingSkull = showThinkingIndicator && isRateLimitWait;
+                  const messageSources = normalizeSourceTitles(message.telemetry?.vector?.sources);
                   const showSources = messageSources.length > 0 && (isExpanded || !shouldTruncate);
                   const hasVectorMeta = typeof message.telemetry?.vector?.match_count === "number" ||
                     typeof message.telemetry?.vector?.context_chars === "number" ||
@@ -528,7 +533,20 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                             <span className={styles.bubbleTurn}>Turn {message.turn_number}</span>
                           ) : null}
                         </div>
-                        {thinkingStatus ? <p className={styles.bubbleStatus}>{thinkingStatus}</p> : null}
+                        {showBubbleStatus ? <p className={styles.bubbleStatus}>{thinkingStatus}</p> : null}
+                        {showThinkingIndicator ? (
+                          <div
+                            className={styles.bubbleThinkingState}
+                            data-skull-mode={showRollingSkull ? "rolling" : "pulsing"}
+                            aria-hidden="true"
+                          >
+                            <img
+                              className={`${styles.bubbleThinkingIcon} ${showRollingSkull ? styles.bubbleThinkingIconRolling : styles.bubbleThinkingIconPulsing}`.trim()}
+                              src="/waiting-skull.svg"
+                              alt=""
+                            />
+                          </div>
+                        ) : null}
                         {visibleMessage ? (
                           <p
                             key={shouldTruncate ? `${message.id}-${isExpanded ? "full" : "preview"}` : undefined}
@@ -585,11 +603,6 @@ export function DiscussionTranscript({ emptyStateMessage, messages, roundSize, r
                                 )}
                               </p>
                             )}
-                          </div>
-                        ) : null}
-                        {showRetrySkull ? (
-                          <div className={styles.bubbleThinkingState} aria-hidden="true">
-                            <img className={styles.bubbleThinkingIcon} src="/waiting-skull.svg" alt="" />
                           </div>
                         ) : null}
                       </article>

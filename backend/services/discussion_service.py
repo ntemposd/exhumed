@@ -272,10 +272,11 @@ class DiscussionService:
 
         async def handle_stream_retry(retry_after_seconds: float, attempt_number: int) -> None:
             # Provider-agnostic retry annotation (no hardcoded provider name).
+            display_retry_seconds = max(retry_after_seconds, 0.1)
             status_model = self._process_turn_stream_status_model(
                 type="status",
                 stage="retrying",
-                message=f"Rate limit hit. Retrying in {retry_after_seconds:.1f}s",
+                message=f"Rate limit hit. Retrying in {display_retry_seconds:.1f}s",
                 retry_after_seconds=retry_after_seconds,
                 attempt_number=attempt_number,
             )
@@ -292,7 +293,6 @@ class DiscussionService:
                         ],
                         agent_config,
                         temperature_override=request.temperature,
-                        entropy_profile=getattr(request, "entropy_profile", None),
                         on_complete=handle_stream_completion,
                         on_retry=handle_stream_retry,
                     ):
@@ -450,7 +450,6 @@ class DiscussionService:
                 llm_messages,
                 agent_config,
                 temperature_override=request.temperature,
-                entropy_profile=getattr(request, "entropy_profile", None),
                 on_complete=handle_stream_completion,
             ):
                 if chunk:

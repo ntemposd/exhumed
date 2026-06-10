@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import type { Agent, ServiceStatus } from "@/lib/types";
 
 import type { AsyncViewState, DebateMessage, TranscriptViewState } from "../types";
+import { resolveTranscriptStatusLabel, themeHeaderStatusNote } from "../status-messages";
 
 type UseWorkbenchViewStateOptions = {
   agents: Agent[];
@@ -73,21 +74,21 @@ export function useWorkbenchViewState({
     if (controlError && messages.length === 0) {
       return {
         phase: "error",
-        statusLabel: controlError,
+        statusLabel: themeHeaderStatusNote(controlError),
         emptyMessage: "The chamber fell silent. Adjust the council or topic and try again.",
       };
     }
     if (discussionActive || messages.some((message) => message.isThinking)) {
       return {
         phase: "running",
-        statusLabel: statusNote,
+        statusLabel: resolveTranscriptStatusLabel(statusNote, "running"),
         emptyMessage: "The chamber is assembling. First responses will appear here as the round begins.",
       };
     }
     if (messages.length === 0) {
-      return { phase: "idle", statusLabel: statusNote, emptyMessage: "Assemble the Council, define the Topic, and press PLAY." };
+      return { phase: "idle", statusLabel: resolveTranscriptStatusLabel(statusNote, "idle"), emptyMessage: "Assemble the Council, define the Topic, and press PLAY." };
     }
-    return { phase: "ready", statusLabel: statusNote, emptyMessage: "" };
+    return { phase: "ready", statusLabel: resolveTranscriptStatusLabel(statusNote, "ready"), emptyMessage: "" };
   }, [controlError, discussionActive, messages, statusNote]);
 
   return { legendCatalogState, servicesState, transcriptState };

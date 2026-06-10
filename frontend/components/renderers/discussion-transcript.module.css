@@ -216,15 +216,15 @@
 
 /* ─── Archetype accent — border + name badge background ──────── */
 
-.bubble[data-archetype="creator"]    { border-left: 4px solid var(--archetype-creator-bg);    }
-.bubble[data-archetype="commander"]  { border-left: 4px solid var(--archetype-commander-bg);  }
-.bubble[data-archetype="thinker"]    { border-left: 4px solid var(--archetype-thinker-bg);    }
-.bubble[data-archetype="strategist"] { border-left: 4px solid var(--archetype-strategist-bg); }
+.bubble[data-archetype="creator"]    { border-left: 4px solid var(--council-archetype-creator-bg);    }
+.bubble[data-archetype="commander"]  { border-left: 4px solid var(--council-archetype-commander-bg);  }
+.bubble[data-archetype="thinker"]    { border-left: 4px solid var(--council-archetype-thinker-bg);    }
+.bubble[data-archetype="strategist"] { border-left: 4px solid var(--council-archetype-strategist-bg); }
 
-.bubble[data-archetype="creator"]    .bubbleName { background: var(--archetype-creator-bg);    }
-.bubble[data-archetype="commander"]  .bubbleName { background: var(--archetype-commander-bg);  }
-.bubble[data-archetype="thinker"]    .bubbleName { background: var(--archetype-thinker-bg);    }
-.bubble[data-archetype="strategist"] .bubbleName { background: var(--archetype-strategist-bg); }
+.bubble[data-archetype="creator"]    .bubbleName { background: var(--council-archetype-creator-bg);    }
+.bubble[data-archetype="commander"]  .bubbleName { background: var(--council-archetype-commander-bg);  }
+.bubble[data-archetype="thinker"]    .bubbleName { background: var(--council-archetype-thinker-bg);    }
+.bubble[data-archetype="strategist"] .bubbleName { background: var(--council-archetype-strategist-bg); }
 
 .bubbleHeader {
   display: flex;
@@ -260,7 +260,7 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   line-height: 1.4;
-  color: var(--archetype-text);
+  color: var(--council-archetype-text);
 }
 
 .bubbleTurn {
@@ -331,33 +331,84 @@
 }
 
 .bubbleThinkingState {
+  --skull-anchor-left: 0;
   position: relative;
+}
+
+.bubbleThinkingState[data-skull-mode="pulsing"] {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+.bubbleThinkingState[data-skull-mode="rolling"] {
   width: 100%;
-  min-height: 36px;
+  min-height: 34px;
   overflow: hidden;
 }
 
 .bubbleThinkingIcon {
+  display: block;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  object-position: left center;
+  image-rendering: crisp-edges;
+}
+
+.bubbleThinkingState[data-skull-mode="rolling"] .bubbleThinkingIcon {
   position: absolute;
   top: 50%;
-  left: -40px;
-  width: 28px;
-  height: 28px;
-  object-fit: contain;
-  image-rendering: crisp-edges;
+  left: var(--skull-anchor-left);
   transform: translateY(-50%);
+  transform-origin: center center;
+}
+
+.bubbleThinkingIconPulsing {
+  opacity: 0.38;
+  animation: bubbleSkullPulse 1.35s ease-in-out infinite;
+}
+
+@keyframes bubbleSkullPulse {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scale(0.94);
+  }
+
+  50% {
+    opacity: 0.78;
+    transform: scale(1);
+  }
+}
+
+.bubbleThinkingIconRolling {
+  width: 24px;
+  height: 24px;
   animation: bubbleSkullTraverse 2.6s linear infinite;
 }
 
 @keyframes bubbleSkullTraverse {
   0% {
-    left: -40px;
+    left: var(--skull-anchor-left);
     transform: translateY(-50%) rotate(0deg);
+    opacity: 0.78;
   }
 
   100% {
     left: calc(100% + 12px);
     transform: translateY(-50%) rotate(1080deg);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubbleThinkingIconPulsing,
+  .bubbleThinkingIconRolling {
+    animation: none;
+    opacity: 0.55;
   }
 }
 
@@ -471,13 +522,17 @@
     font-size: 0.82em;
   }
 
-  .bubbleThinkingState {
-    min-height: 34px;
+  .bubbleThinkingState[data-skull-mode="rolling"] {
+    min-height: 32px;
   }
 
   .bubbleThinkingIcon {
-    left: -36px;
-    width: 26px;
-    height: 26px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .bubbleThinkingIconRolling {
+    width: 22px;
+    height: 22px;
   }
 }

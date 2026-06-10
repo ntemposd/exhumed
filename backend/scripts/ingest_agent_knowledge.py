@@ -18,12 +18,21 @@ from typing import Callable, Dict, List, Optional, Pattern, Sequence, Tuple
 
 from dotenv import load_dotenv
 
-
 SCRIPT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = SCRIPT_DIR.parent
 REPO_ROOT = BACKEND_DIR.parent
 
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from backend.utils.source_titles import normalize_stored_citation_field
+
 load_dotenv(REPO_ROOT / ".env")
+
+NAPOLEON_MEMOIR_SERIES_TITLE = (
+    "Memoirs of the life, exile, and conversations of the Emperor Napoleon"
+)
+NAPOLEON_VOLUME_ROMAN = ("", "I", "II", "III", "IV")
 
 UPSTASH_VECTOR_REST_URL = os.environ.get("UPSTASH_VECTOR_REST_URL")
 UPSTASH_VECTOR_REST_TOKEN = os.environ.get("UPSTASH_VECTOR_REST_TOKEN")
@@ -63,7 +72,7 @@ AGENT_SOURCE_CONFIG: Dict[str, Dict[str, str]] = {
     },
     "agt_004": {
         "speaker_name": "Napoleon Bonaparte",
-        "source_title": "Memoirs of the life...",
+        "source_title": NAPOLEON_MEMOIR_SERIES_TITLE,
         "author": "Emmanuel-Auguste-Dieudonne Las Cases",
         "translator": "",
         "source_type": "memoir",
@@ -233,6 +242,11 @@ def build_source_document(agent_id: str, text: str, **overrides: str) -> Dict[st
     """Merge base agent source metadata with extracted source text and overrides."""
     document = dict(AGENT_SOURCE_CONFIG[agent_id])
     document.update(overrides)
+    document.setdefault("source_volume", "")
+    document.setdefault("source_chapter", "")
+    document["source_title"] = normalize_stored_citation_field(document.get("source_title", ""))
+    document["source_volume"] = normalize_stored_citation_field(document.get("source_volume", ""))
+    document["source_chapter"] = normalize_stored_citation_field(document.get("source_chapter", ""))
     document["text"] = clean_whitespace(text)
     return document
 
@@ -688,7 +702,8 @@ def extract_lovelace_notes(text: str) -> List[SourceDocument]:
         build_source_document(
             "agt_008",
             normalize_lovelace_note_text(note_a),
-            source_title="Note A - Analytical Engine Scope",
+            source_title="Notes on the Analytical Engine",
+            source_chapter="Note A - Analytical Engine Scope",
             source_slug="note_a_analytical_engine_scope",
             section="note_a",
             source_type="scientific_note",
@@ -696,7 +711,8 @@ def extract_lovelace_notes(text: str) -> List[SourceDocument]:
         build_source_document(
             "agt_008",
             normalized_note_g,
-            source_title="Note G - Engine Limits and Bernoulli Method",
+            source_title="Notes on the Analytical Engine",
+            source_chapter="Note G - Engine Limits and Bernoulli Method",
             source_slug="note_g_engine_limits_bernoulli_method",
             section="note_g",
             source_type="scientific_note",
@@ -717,6 +733,7 @@ def extract_anchor_context_documents(
     before_paragraphs: int,
     after_paragraphs: int,
     volume_label: str,
+    volume_number: int,
 ) -> List[SourceDocument]:
     """Extract paragraph windows around exact anchor hits using deterministic regex matching."""
     paragraphs = extract_napoleon_core(text)
@@ -741,11 +758,13 @@ def extract_anchor_context_documents(
     documents: List[SourceDocument] = []
     for start_index, end_index, anchor_slug in matched_windows:
         anchor_counts[anchor_slug] = anchor_counts.get(anchor_slug, 0) + 1
+        volume_roman = NAPOLEON_VOLUME_ROMAN[volume_number]
         documents.append(
             build_source_document(
                 agent_id,
                 "\n\n".join(paragraphs[start_index:end_index]),
-                source_title="Memoirs of the life...",
+                source_title=NAPOLEON_MEMOIR_SERIES_TITLE,
+                source_volume=f"Vol. {volume_roman}",
                 source_slug=f"memoirs_of_the_life_{volume_label}_{anchor_slug}_{anchor_counts[anchor_slug]:04d}",
                 section=f"{volume_label}_{anchor_slug}_context_window",
                 source_type="memoir",
@@ -769,6 +788,7 @@ def extract_napoleon_source_documents(text: str) -> List[SourceDocument]:
                 before_paragraphs=3,
                 after_paragraphs=5,
                 volume_label=f"vol_{volume_number}",
+                volume_number=volume_number,
             )
         )
 
@@ -939,7 +959,7 @@ def extract_jobs_source_documents(text: str) -> List[Dict[str, str]]:
     for index, match in enumerate(matches):
         body_start = match.end()
         body_end = matches[index + 1].start() if index + 1 < len(matches) else len(normalized_text)
-        title = match.group("title").strip()
+        title = normalize_stored_citation_field(match.group("title").strip())
         body = clean_whitespace(normalized_text[body_start:body_end])
         if not body:
             continue
@@ -1000,7 +1020,8 @@ def extract_meditations_source_documents(text: str) -> List[SourceDocument]:
         build_source_document(
             "agt_005",
             extract_heading_section(text, "THE SECOND BOOK", "THE THIRD BOOK"),
-            source_title="Meditations - Second Book",
+            source_title="Meditations",
+            source_chapter="Second Book",
             source_slug="meditations_second_book",
             section="second_book",
             source_type="meditations",
@@ -1008,7 +1029,8 @@ def extract_meditations_source_documents(text: str) -> List[SourceDocument]:
         build_source_document(
             "agt_005",
             extract_heading_section(text, "THE FOURTH BOOK", "THE FIFTH BOOK"),
-            source_title="Meditations - Fourth Book",
+            source_title="Meditations",
+            source_chapter="Fourth Book",
             source_slug="meditations_fourth_book",
             section="fourth_book",
             source_type="meditations",
@@ -1045,7 +1067,8 @@ def extract_curie_source_documents(text: str) -> List[SourceDocument]:
         build_source_document(
             "agt_009",
             extract_heading_section(pierre_curie_body, "CHAPTER V", "CHAPTER VI"),
-            source_title="Pierre Curie - The Discovery of Radium",
+            source_title="Pierre Curie",
+            source_chapter="The Discovery of Radium",
             source_slug="pierre_curie_discovery_of_radium",
             section="chapter_v_discovery_of_radium",
             source_type="biography",
@@ -1053,7 +1076,8 @@ def extract_curie_source_documents(text: str) -> List[SourceDocument]:
         build_source_document(
             "agt_009",
             extract_heading_section(autobiographical_notes_body, "CHAPTER II", "CHAPTER III"),
-            source_title="Autobiographical Notes - Discovery and Old Shed Years",
+            source_title="Autobiographical Notes",
+            source_chapter="Discovery and Old Shed Years",
             source_slug="autobiographical_notes_discovery_old_shed_years",
             section="autobiographical_notes_chapter_ii",
             source_type="autobiography",
@@ -1061,7 +1085,8 @@ def extract_curie_source_documents(text: str) -> List[SourceDocument]:
         build_source_document(
             "agt_009",
             extract_heading_section(autobiographical_notes_body, "CHAPTER III", "CHAPTER IV"),
-            source_title="Autobiographical Notes - War Years",
+            source_title="Autobiographical Notes",
+            source_chapter="War Years",
             source_slug="autobiographical_notes_war_years",
             section="autobiographical_notes_chapter_iii",
             source_type="autobiography",
@@ -1612,6 +1637,8 @@ def build_chunk_payloads(
                     "agent_id": agent_id,
                     "speaker_name": source_document["speaker_name"],
                     "source_title": source_document["source_title"],
+                    "source_volume": source_document.get("source_volume", ""),
+                    "source_chapter": source_document.get("source_chapter", ""),
                     "author": source_document["author"],
                     "translator": source_document["translator"],
                     "source_type": source_document["source_type"],

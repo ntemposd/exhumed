@@ -49,6 +49,10 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  /* No gap between the pinned header and the transcript scroll container —
+     external spacing would sit outside overflow and create a dead zone where
+     content disappears while empty grid still shows through. */
+  gap: 0;
   /* overflow visible so the roster popover in the chat header can overlay the
      transcript; the internal scroll is owned by .transcriptScroll, not here. */
   overflow: visible;
@@ -68,8 +72,8 @@
   min-width: 0;
   max-width: 100%;
   gap: var(--chat-header-gap);
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--line-subtle);
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 
@@ -101,15 +105,16 @@
   overflow: hidden;
 }
 
-/* Status line ("Rate limit hit. Retrying…", "Round complete") — rendered as a
+/* Status line ("The ether is congested…", "The round is interred.") — rendered as a
    system-message line: "> text ────" prompt first, rule trails to the right. */
 .chatStatusMessage {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 8px;
-  padding-top: 0;
+  margin: 0;
+  padding: 7px 0;
   border-top: none;
+  border-bottom: 1px solid var(--line-subtle);
   min-width: 0;
   overflow: hidden;
 }
@@ -388,6 +393,7 @@
 
 .rosterOption[data-unavailable="true"] {
   opacity: 0.55;
+  cursor: default;
 }
 
 .rosterOption[data-unavailable="true"]:hover {
@@ -469,19 +475,21 @@
 }
 
 .typeSelectTrigger {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  min-width: 200px;
+  justify-content: flex-start;
+  gap: 6px;
+  width: auto;
+  min-width: 0;
   max-width: 100%;
   min-height: 32px;
-  padding: 5px 10px;
+  padding: 4px 8px;
   border: 2px solid var(--line);
   background: var(--surface-0);
   box-shadow: 1px 1px 0 var(--line);
   color: var(--ink);
   cursor: pointer;
+  white-space: nowrap;
   transition: transform 120ms ease, box-shadow 120ms ease;
 }
 
@@ -511,6 +519,7 @@
 }
 
 .typeSelectValue {
+  flex: 0 1 auto;
   font-family: var(--font-display), sans-serif;
   font-size: 0.56rem;
   font-weight: 700;
@@ -541,7 +550,7 @@
   list-style: none;
   min-width: 100%;
   width: max-content;
-  max-width: min(320px, 88vw);
+  max-width: min(160px, 88vw);
   border: 2px solid var(--line);
   background: var(--surface-0);
   box-shadow: 4px 4px 0 var(--line);
@@ -551,7 +560,7 @@
   display: block;
   width: 100%;
   text-align: left;
-  padding: 9px 12px;
+  padding: 7px 10px;
   border: none;
   border-bottom: 1px solid var(--line-subtle);
   background: transparent;
@@ -644,8 +653,7 @@
   }
 
   .typeSelectTrigger {
-    min-width: 200px;
-    min-height: 36px;
+    min-height: 34px;
   }
 
   .commandGrid {
@@ -661,11 +669,11 @@
      tighter gaps, hide the "TOPIC" label to save vertical space. */
   .chatHeader {
     --chat-header-gap: 7px;
-    padding-bottom: 4px;
+    padding-bottom: 0;
   }
 
   .transcriptSectionActive {
-    gap: 8px;
+    gap: 0;
   }
 
   .transcriptSectionActive .transcriptControlsBlock {

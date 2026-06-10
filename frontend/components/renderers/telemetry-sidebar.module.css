@@ -4,9 +4,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  width: 100%;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+  /* Leave room for the hard shadow so overflow:hidden on the column doesn't
+     clip it into a thick edge bar on the right. */
+  width: calc(100% - 4px);
   padding: 10px 12px;
-  margin-bottom: 16px;
   border: 2px solid var(--line);
   background: var(--surface-0);
   box-shadow: 3px 3px 0 var(--line);
@@ -65,7 +69,14 @@
 /* Section area below the pinned toggle. On desktop the panel is a flex column,
    so the button stays fixed at the top and only this area scrolls. */
 .telemetrySidebarScroll {
+  position: relative;
+  z-index: 1;
   display: grid;
+  /* Overlap the toggle's hard shadow so scrolled content tucks underneath
+     the pinned button instead of painting over the shadow. */
+  margin-top: -4px;
+  /* 16px rest gap + 4px max shadow overlap */
+  padding-top: 20px;
 }
 
 @media (min-width: 768px) {

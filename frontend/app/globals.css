@@ -88,51 +88,56 @@
 	--round-header-text:      #F0E8CE;
 	--round-header-muted:     rgba(240, 232, 206, 0.68);
 	--round-header-sep:       rgba(240, 232, 206, 0.28);
+
+	/* Council drafted speaker cards — light palette; not remapped in dark mode */
+	--council-archetype-thinker-bg: #DDBA6C;
+	--council-archetype-commander-bg: #C57B72;
+	--council-archetype-creator-bg: #7AAEC8;
+	--council-archetype-strategist-bg: #98AA68;
+	--council-archetype-text: #111111;
 }
 
 [data-theme="dark"] {
 	/* Backgrounds */
-	--grid-color: rgba(237, 224, 196, 0.05);
+	--grid-color: rgba(255, 255, 255, 0.045);
 
 	/* Panels */
-	--panel: #272318;
-	--panel-strong: #2C2820;
+	--panel: #0f0f0f;
+	--panel-strong: #141414;
 
 	/* Text */
-	--ink: #EDE0C4;
-	--muted: #9A8A6A;
+	--ink: #ededed;
+	--muted: #9a9a9a;
 
 	/* Borders */
-	--line: #EDE0C4;
-	--line-soft: rgba(237, 224, 196, 0.20);
-	--line-divider: rgba(237, 224, 196, 0.12);
-	--line-subtle: rgba(237, 224, 196, 0.16);
-	--line-medium: rgba(237, 224, 196, 0.22);
-	--line-strong: rgba(237, 224, 196, 0.35);
-
-
+	--line: #ededed;
+	--line-soft: rgba(237, 237, 237, 0.18);
+	--line-divider: rgba(237, 237, 237, 0.10);
+	--line-subtle: rgba(237, 237, 237, 0.14);
+	--line-medium: rgba(237, 237, 237, 0.20);
+	--line-strong: rgba(237, 237, 237, 0.32);
 
 	/* Surface scale */
-	--surface-0: #272318;
-	--surface-1: #2C2820;
-	--surface-2: #332E24;
-	--surface-error: #3A1810;
+	--surface-0: #0d0d0d;
+	--surface-1: #121212;
+	--surface-2: #181818;
+	--surface-error: #2a1212;
 
 	/* Tables and cards */
-	--card-bg: #272318;
-	--card-empty-bg: #2C2820;
-	--card-track-bg: #332E24;
-	--table-header-bg: #332E24;
+	--card-bg: #101010;
+	--card-empty-bg: #141414;
+	--card-track-bg: #1a1a1a;
+	--table-header-bg: #161616;
 	--table-header-text: var(--muted);
 	--table-body-bg: var(--surface-0);
 
 	/* Chips */
-	--chip-bg: #2C2820;
-	--chip-border: rgba(237, 224, 196, 0.20);
+	--chip-bg: #141414;
+	--chip-border: rgba(237, 237, 237, 0.16);
 
 	/* Accent - vivid yellow reads well on dark */
 	--accent: #FFE500;
-	--accent-soft: #3A3000;
+	--accent-soft: #2a2600;
 
 	/* Signal / warning / status */
 	--signal: #14B8A6;
@@ -165,22 +170,20 @@
 	--tone-10: #7AA040;  /* Borges */
 	--tone-11: #98BC5E;  /* Trotsky */
 
-	/* Shadow uses var(--line) which is now light - correct for dark neobrutalism */
-
 	/* Archetype chip backgrounds — dark variants */
-	--archetype-thinker-bg:    #5C3E10;
-	--archetype-commander-bg:  #5C2822;
-	--archetype-creator-bg:    #1C3E58;
-	--archetype-strategist-bg: #2A3E14;
-	--archetype-text:          #EDE0C4;
-	--archetype-border:        rgba(237, 224, 196, 0.55);
+	--archetype-thinker-bg:    #3a2808;
+	--archetype-commander-bg:  #3a1814;
+	--archetype-creator-bg:    #142838;
+	--archetype-strategist-bg: #1e2a0c;
+	--archetype-text:          #ededed;
+	--archetype-border:        rgba(237, 237, 237, 0.45);
 
-	/* Round header — inverted in dark mode for contrast */
-	--round-header-bg:        #DED8C8;
-	--round-header-bg-hover:  #CECAB8;
-	--round-header-text:      #1C1C1C;
-	--round-header-muted:     rgba(28, 28, 28, 0.68);
-	--round-header-sep:       rgba(28, 28, 28, 0.28);
+	/* Round header — stays dark-industrial in dark mode */
+	--round-header-bg:        #161616;
+	--round-header-bg-hover:  #202020;
+	--round-header-text:      #ededed;
+	--round-header-muted:     rgba(237, 237, 237, 0.62);
+	--round-header-sep:       rgba(237, 237, 237, 0.22);
 }
 
 * {
@@ -192,7 +195,7 @@ html {
 }
 
 html[data-theme="dark"] {
-	background: #181508;
+	background: #050505;
 }
 
 body {
@@ -212,7 +215,7 @@ body {
 	background:
 		linear-gradient(var(--grid-color) 1px, transparent 1px),
 		linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
-		linear-gradient(150deg, #272318 0%, #1C1810 45%, #181508 100%);
+		linear-gradient(150deg, #0d0d0d 0%, #090909 45%, #050505 100%);
 	background-size: 24px 24px, 24px 24px, 100% 100%;
 }
 
@@ -240,8 +243,12 @@ select {
 
 .siteFooter {
 	border-top: 2px solid var(--line-divider);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
 	width: 100%;
-	margin: 0;
+	margin: 2px 0 0;
 	padding: 24px 24px 18px;
 	color: var(--muted);
 	font-size: 0.78rem;
@@ -249,6 +256,29 @@ select {
 	background:
 		radial-gradient(circle at top left, rgba(227, 177, 0, 0.12), transparent 28%),
 		linear-gradient(180deg, var(--surface-0) 0%, var(--surface-1) 100%);
+}
+
+.siteFooterSep {
+	display: none;
+}
+
+@media (min-width: 768px) {
+	.siteFooter {
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.75em;
+	}
+
+	.siteFooterSep {
+		display: block;
+		flex: 0 0 auto;
+		width: 0.28em;
+		height: 0.28em;
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--muted) 72%, transparent);
+	}
 }
 
 .siteFooterLink {
@@ -268,15 +298,6 @@ select {
 	font-weight: 700;
 	text-decoration: underline;
 	text-underline-offset: 0.16em;
-}
-
-.siteFooterVersion {
-	display: block;
-	margin-top: 6px;
-	font-size: 0.68rem;
-	letter-spacing: 0.04em;
-	color: var(--muted);
-	opacity: 0.8;
 }
 
 /* Buy Me a Coffee floating button — visually hidden but kept at its natural
@@ -489,15 +510,18 @@ select {
 }
 
 /* --- Archetype-based chip backgrounds (solid, muted, per-category) --- */
-.draftedChip[data-archetype="thinker"]    { background: var(--archetype-thinker-bg); }
-.draftedChip[data-archetype="commander"]  { background: var(--archetype-commander-bg); }
-.draftedChip[data-archetype="creator"]    { background: var(--archetype-creator-bg); }
-.draftedChip[data-archetype="strategist"] { background: var(--archetype-strategist-bg); }
+.draftedChip[data-archetype="thinker"]    { background: var(--council-archetype-thinker-bg); }
+.draftedChip[data-archetype="commander"]  { background: var(--council-archetype-commander-bg); }
+.draftedChip[data-archetype="creator"]    { background: var(--council-archetype-creator-bg); }
+.draftedChip[data-archetype="strategist"] { background: var(--council-archetype-strategist-bg); }
 
 /* Force charcoal text on all archetype cards */
-.draftedChip[data-archetype] .draftedChipLabel,
+.draftedChip[data-archetype] .draftedChipLabel {
+	color: var(--council-archetype-text);
+}
+
 .draftedChip[data-archetype] .draftedChipArchetype {
-	color: var(--archetype-text);
+	color: color-mix(in srgb, var(--council-archetype-text) 72%, transparent);
 }
 
 .draftedChipArchetype {
@@ -790,7 +814,7 @@ select {
 
 	.siteFooter {
 		width: 100%;
-		margin: 0;
+		margin: 2px 0 0;
 		padding: 18px 8px 18px;
 	}
 

@@ -156,6 +156,9 @@ def summarize_matches(matches: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         agent_id = str(metadata.get("agent_id") or "unknown")
         speaker_name = str(metadata.get("speaker_name") or agent_id)
         source_title = str(metadata.get("source_title") or "Unknown Source")
+        source_volume = str(metadata.get("source_volume") or "")
+        source_chapter = str(metadata.get("source_chapter") or "")
+        source_slug = str(metadata.get("source_slug") or "")
         text = str(match.get("data") or "")
         char_count = len(text)
 
@@ -172,10 +175,14 @@ def summarize_matches(matches: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if agent_summary["top_score"] is None and isinstance(match.get("score"), (int, float)):
             agent_summary["top_score"] = float(match["score"])
 
+        source_key = (source_title, source_volume, source_chapter, source_slug)
         source_summary = agent_summary["sources"].setdefault(
-            source_title,
+            source_key,
             {
                 "source_title": source_title,
+                "source_volume": source_volume,
+                "source_chapter": source_chapter,
+                "source_slug": source_slug,
                 "chunk_lengths": [],
             },
         )
@@ -190,16 +197,25 @@ def summarize_matches(matches: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             source_summaries.append(
                 {
                     "source_title": source_summary["source_title"],
+                    "source_volume": source_summary["source_volume"],
+                    "source_chapter": source_summary["source_chapter"],
+                    "source_slug": source_summary["source_slug"],
                     **_build_char_stats(source_summary["chunk_lengths"]),
                 }
             )
 
-        source_summaries.sort(key=lambda item: item["source_title"])
+        source_summaries.sort(
+            key=lambda item: (
+                item["source_title"],
+                item["source_volume"],
+                item["source_chapter"],
+                item["source_slug"],
+            )
+        )
         summaries.append(
             {
                 "agent_id": agent_summary["agent_id"],
                 "speaker_name": agent_summary["speaker_name"],
-                "sources": [item["source_title"] for item in source_summaries],
                 "source_stats": source_summaries,
                 "top_score": agent_summary["top_score"],
                 **_build_char_stats(agent_summary["chunk_lengths"]),
@@ -228,7 +244,6 @@ def format_summary_report(report_label: str, summaries: List[Dict[str, Any]], to
             [
                 "",
                 f"Agent: {summary['speaker_name']} ({summary['agent_id']})",
-                f"Sources: {', '.join(summary['sources'])}",
                 f"Chunks: {summary['chunk_count']}",
                 f"Avg chars: {summary['avg_chars']}",
                 f"Max chars: {summary['max_chars']}",
@@ -239,9 +254,16 @@ def format_summary_report(report_label: str, summaries: List[Dict[str, Any]], to
         )
 
         for source_summary in summary["source_stats"]:
+            citation_parts = [source_summary["source_title"]]
+            if source_summary.get("source_volume"):
+                citation_parts.append(source_summary["source_volume"])
+            if source_summary.get("source_chapter"):
+                citation_parts.append(source_summary["source_chapter"])
+            citation_label = " - ".join(citation_parts)
+            slug_label = source_summary.get("source_slug") or "unknown"
             lines.append(
                 "  - "
-                f"{source_summary['source_title']}: "
+                f"{citation_label} [{slug_label}]: "
                 f"chunks={source_summary['chunk_count']}, "
                 f"avg={source_summary['avg_chars']}, "
                 f"max={source_summary['max_chars']}, "
@@ -273,17 +295,22 @@ def main() -> None:
     summaries = summarize_matches(matches)
 
     if args.json:
-        print(
-            json.dumps(
-                {
-                    "query": args.query,
-                    "mode": "all_agents" if args.all_agents else "query",
-                    "matched_chunks": len(matches),
-                    "results": summaries,
-                },
-                indent=2,
-            )
-        )
+        payload = {
+            "mode": "all_agents" if args.all_agents else "query",
+            "matched_chunks": len(matches),
+            "results": summaries,
+        }
+        if args.all_agents:
+            payload["scan_limit"] = args.scan_limit
+        else:
+            payload["query"] = args.query
+            payload["top_k"] = args.top_k
+        if args.namespace:
+            payload["namespace"] = args.namespace
+        if args.agent_id:
+            payload["agent_id"] = args.agent_id
+
+        print(json.dumps(payload, indent=2))
         return
 
     print(format_summary_report(report_label, summaries, len(matches)))

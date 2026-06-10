@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+import { appVersionLabel } from "@/lib/version";
+
 import styles from "./app-navbar.module.css";
 
 import { useTheme } from "../hooks";
@@ -36,7 +38,10 @@ export function AppNavbar() {
       <div className={styles.brandMark}>
         <Image className={styles.logo} src="/logo.png" alt="Exhumed logo" width={48} height={48} priority />
         <div className={styles.brandCopy}>
-          <span className={styles.brandTitle}>EXHUMED</span>
+          <div className={styles.brandTitleRow}>
+            <span className={styles.brandTitle}>EXHUMED</span>
+            <span className={styles.brandVersion}>{appVersionLabel()}</span>
+          </div>
           <h1 className={styles.brandSubtitle}>Historical Convo Engine</h1>
         </div>
       </div>

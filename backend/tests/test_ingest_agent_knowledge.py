@@ -8,6 +8,7 @@ dotenv_module.load_dotenv = lambda *args, **kwargs: None
 sys.modules.setdefault("dotenv", dotenv_module)
 
 from backend.scripts.ingest_agent_knowledge import (
+    NAPOLEON_MEMOIR_SERIES_TITLE,
     build_chunk_payloads,
     chunk_source_text,
     extract_source_documents,
@@ -190,7 +191,9 @@ Tail 4.
         documents = extract_source_documents("agt_004", text)
 
         self.assertEqual(len(documents), 3)
-        self.assertEqual(documents[0]["source_title"], "Memoirs of the life...")
+        self.assertEqual(documents[0]["source_title"], NAPOLEON_MEMOIR_SERIES_TITLE)
+        self.assertEqual(documents[0]["source_volume"], "Vol. I")
+        self.assertEqual(documents[0]["source_chapter"], "")
         self.assertNotIn("The Burning of Moscow 164", documents[0]["text"])
         self.assertIn("Paragraph 0.", documents[0]["text"])
         self.assertIn("Paragraph 10.", documents[0]["text"])
@@ -394,6 +397,8 @@ This is the first long paragraph that should remain attached to the heading and 
             source_document={
                 "speaker_name": "Steve Jobs",
                 "source_title": "Stanford Commencement Address",
+                "source_volume": "",
+                "source_chapter": "",
                 "author": "Steve Jobs",
                 "translator": "",
                 "source_type": "speech",
@@ -407,6 +412,8 @@ This is the first long paragraph that should remain attached to the heading and 
         self.assertEqual(payloads[0]["id"], "agt_002:stanford_commencement:0001")
         self.assertEqual(payloads[0]["metadata"]["agent_id"], "agt_002")
         self.assertEqual(payloads[0]["metadata"]["source_slug"], "stanford_commencement")
+        self.assertEqual(payloads[0]["metadata"]["source_volume"], "")
+        self.assertEqual(payloads[0]["metadata"]["source_chapter"], "")
         self.assertEqual(payloads[0]["metadata"]["chunk_index"], 1)
 
 

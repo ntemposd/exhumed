@@ -4,6 +4,8 @@ from typing import Any, Dict
 
 from fastapi import APIRouter
 
+from backend.version import APP_VERSION
+
 
 def create_root_router() -> APIRouter:
     """Build the root router that exposes the backend capability summary."""
@@ -14,7 +16,7 @@ def create_root_router() -> APIRouter:
         """Return a lightweight summary of service identity and public endpoints."""
         return {
             "name": "EXHUMED",
-            "version": "1.1.0",
+            "version": APP_VERSION,
             "status": "operational",
             "storage": "upstash-redis-vector",
             "endpoints": {

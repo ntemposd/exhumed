@@ -8,7 +8,12 @@ import { apiFetch, getRequestFailureMessage, getResponseErrorMessage } from "@/l
 import type { Agent, ProcessTurnStreamEvent, ProcessTurnStreamFinal, ProcessTurnStreamStatus } from "@/lib/types";
 
 import type { DebateMessage } from "../types";
-import { ENTROPY_PROFILES, getStyleIndex } from "../utils";
+import {
+  themeHeaderStatusNote,
+  themeHeaderStatusForStream,
+  themeThinkingBubbleStatus,
+} from "../status-messages";
+import { getStyleIndex } from "../utils";
 
 const STREAM_REVEAL_CHARS_PER_FRAME = 4;
 
@@ -133,7 +138,7 @@ type UseDebateControllerOptions = {
   sessionId: string;
   topic: string;
   defaultTopic: string;
-  targetEntropy: number;
+  targetTemperature: number;
   issueSessionId: (nextSessionId?: string) => string;
   makeSessionId: () => string;
   onTopicChange: (topic: string) => void;
@@ -145,7 +150,7 @@ export function useDebateController({
   sessionId,
   topic,
   defaultTopic,
-  targetEntropy,
+  targetTemperature,
   issueSessionId,
   makeSessionId,
   onTopicChange,
@@ -224,6 +229,7 @@ export function useDebateController({
           return {
             ...message,
             message: `${message.message}${revealedText}`,
+            thinkingStatus: undefined,
           };
         }),
       );
@@ -482,8 +488,7 @@ export function useDebateController({
             session_id: sessionId,
             topic: topic.trim(),
             agent_id: currentAgentId,
-            temperature: targetEntropy,
-            entropy_profile: ENTROPY_PROFILES.find((p) => p.value === targetEntropy)?.label ?? "Balanced Debate",
+            temperature: targetTemperature,
             turn_number: currentTurnNumber,
           }),
         });
@@ -529,6 +534,16 @@ export function useDebateController({
             if (event.type === "chunk") {
               streamRevealQueuesRef.current[thinkingId] = `${streamRevealQueuesRef.current[thinkingId] ?? ""}${event.content}`;
               scheduleStreamReveal();
+              setMessages((currentMessages) =>
+                currentMessages.map((message) =>
+                  message.id === thinkingId
+                    ? {
+                        ...message,
+                        thinkingStatus: undefined,
+                      }
+                    : message,
+                ),
+              );
               continue;
             }
 
@@ -536,13 +551,21 @@ export function useDebateController({
               if (event.stage === "error") {
                 throw new Error(event.message || "Turn execution failed");
               }
-              setStatusNote(event.message);
+
+              const bubbleStatus = themeThinkingBubbleStatus(event);
+              const headerStatus = themeHeaderStatusForStream(event);
+
+              // Keep prior header (e.g. "Raising …") during retry — bubble owns the countdown.
+              if (event.stage !== "retrying") {
+                setStatusNote(headerStatus);
+              }
+
               setMessages((currentMessages) =>
                 currentMessages.map((message) =>
-                  message.id === thinkingId
+                  message.id === thinkingId && !message.message.trim()
                     ? {
                         ...message,
-                        thinkingStatus: event.message,
+                        thinkingStatus: bubbleStatus,
                       }
                     : message,
                 ),
@@ -604,9 +627,9 @@ export function useDebateController({
           return;
         }
 
-        const message = getRequestFailureMessage(turnError, "The séance was interrupted.");
+        const message = themeHeaderStatusNote(getRequestFailureMessage(turnError, "The séance was interrupted."));
         clearStreamRevealQueue(thinkingId);
-        setControlError(message);
+        setControlError("");
         setStatusNote(message);
         setDiscussionActive(false);
         setCurrentAgentIndex(0);
@@ -632,7 +655,7 @@ export function useDebateController({
         window.clearTimeout(slowTurnTimer);
       }
     })();
-  }, [agents, currentAgentIndex, discussionActive, selectedAgents, sessionId, targetEntropy, topic, turnCount]);
+  }, [agents, currentAgentIndex, discussionActive, selectedAgents, sessionId, targetTemperature, topic, turnCount]);
 
   return {
     messages,

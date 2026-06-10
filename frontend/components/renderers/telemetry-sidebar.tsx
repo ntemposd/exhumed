@@ -6,6 +6,7 @@ import { type RefObject, useCallback, useRef } from "react";
 
 import type { ServiceStatus } from "@/lib/types";
 
+import { formatConvoCostUsd } from "../utils";
 import type { AsyncViewState, TelemetryPanelViewModel, TelemetryTableRow, VectorUsageRow } from "../types";
 import styles from "./telemetry-sidebar.module.css";
 
@@ -79,8 +80,8 @@ export function VectorUsageTable({ rows }: { rows: VectorUsageRow[] }) {
             <tr>
               <th>Speaker</th>
               <th>Hits</th>
-              <th>Chars</th>
-              <th>Top</th>
+              <th>Context</th>
+              <th>Top score</th>
             </tr>
           </thead>
           <tbody>
@@ -156,7 +157,7 @@ function TelemetryServiceStatus({ servicesState, onlineServices, serviceRows }: 
   const serviceTableRows: TelemetryTableRow[] = serviceRows.map((service) => ({
     Service: service.name,
     Provider: SERVICE_PROVIDER[service.name] ?? "—",
-    "Net RTT": typeof service.latency_ms === "number" ? `${Math.round(service.latency_ms)} ms` : "--",
+    "Net RTT": typeof service.latency_ms === "number" ? `${Math.round(service.latency_ms)} ms` : "IDLE",
   }));
   const serviceNotes = serviceRows
     .filter((s) => s.detail && s.status?.toUpperCase() !== "ONLINE")
@@ -191,12 +192,12 @@ function TelemetryServiceStatus({ servicesState, onlineServices, serviceRows }: 
 
 // ─── Summary sections ─────────────────────────────────────────────────────
 
-const SESSION_COST_CAPTION = "Spend estimate based on token volume.";
-const DIVERSITY_CAPTION = "Diversity calculated as average pairwise Jaccard entropy between a response and the immediately preceding one.";
+const CONVO_COST_CAPTION = "Spend estimate for this convo, based on LLM token volume.";
+const DIVERSITY_CAPTION = "Lexical spread (Jaccard): average pairwise word-set entropy between each response and the one before it. Measures vocabulary overlap, not semantic similarity.";
 
 type TelemetrySummarySectionsProps = {
   performanceRows: TelemetryTableRow[];
-  sessionBurnUsd: number;
+  convoCostUsd: number;
   observedRatio: number;
   diversityValue: string;
   diversityLabel: string;
@@ -205,7 +206,7 @@ type TelemetrySummarySectionsProps = {
 
 function TelemetrySummarySections({
   performanceRows,
-  sessionBurnUsd,
+  convoCostUsd,
   observedRatio,
   diversityValue,
   diversityLabel,
@@ -213,6 +214,17 @@ function TelemetrySummarySections({
 }: TelemetrySummarySectionsProps) {
   return (
     <>
+      <SidebarSection title="INFERENCE LATENCY">
+        <TelemetryTable rows={performanceRows} variant="shadowed" />
+      </SidebarSection>
+
+      <SidebarSection title="CONVO COST">
+        <div className={styles.card}>
+          <div className={styles.costValue}>{formatConvoCostUsd(convoCostUsd)}</div>
+          <div className={styles.caption}>{CONVO_COST_CAPTION}</div>
+        </div>
+      </SidebarSection>
+
       <SidebarSection title="DEBATE DIVERSITY">
         <div className={styles.card}>
           <div className={styles.entropyTopline}>
@@ -226,10 +238,6 @@ function TelemetrySummarySections({
         </div>
       </SidebarSection>
 
-      <SidebarSection title="MODEL PERFORMANCE">
-        <TelemetryTable rows={performanceRows} variant="shadowed" />
-      </SidebarSection>
-
       <SidebarSection
         title="VOCAL SHARE"
         panelClassName={vocalShareRows.length > 0 ? styles.vocalSharePanel : undefined}
@@ -241,13 +249,6 @@ function TelemetrySummarySections({
               <p className={styles.emptyStateText}>No air-time data yet.</p>
             </div>
           )}
-      </SidebarSection>
-
-      <SidebarSection title="SESSION COST">
-        <div className={styles.card}>
-          <div className={styles.costValue}>${sessionBurnUsd.toFixed(6)}</div>
-          <div className={styles.caption}>{SESSION_COST_CAPTION}</div>
-        </div>
       </SidebarSection>
     </>
   );
@@ -282,7 +283,7 @@ export function TelemetryPanel({ viewModel, containerRef, isSidebarOpen, onToggl
     onlineServices,
     serviceRows,
     performanceRows,
-    sessionBurnUsd,
+    convoCostUsd,
     observedRatio,
     diversityValue,
     diversityLabel,
@@ -317,7 +318,7 @@ export function TelemetryPanel({ viewModel, containerRef, isSidebarOpen, onToggl
               />
               <TelemetrySummarySections
                 performanceRows={performanceRows}
-                sessionBurnUsd={sessionBurnUsd}
+                convoCostUsd={convoCostUsd}
                 observedRatio={observedRatio}
                 diversityValue={diversityValue}
                 diversityLabel={diversityLabel}

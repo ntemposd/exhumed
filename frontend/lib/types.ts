@@ -46,11 +46,17 @@ export type TurnTelemetry = {
   vector?: VectorTelemetry | null;
 };
 
+export type VectorSourceCitation = {
+  title: string;
+  volume?: string | null;
+  chapter?: string | null;
+};
+
 export type VectorTelemetry = {
   used: boolean;
   match_count: number;
   top_score?: number | null;
-  sources: string[];
+  sources: VectorSourceCitation[];
   chunk_ids: string[];
   context_chars: number;
 };

@@ -20,6 +20,7 @@ class TurnWorkflowService:
         save_message_to_storage: Callable[..., Awaitable[Dict[str, Any]]],
         calculate_entropy: Callable[[str, str], float],
         build_telemetry: Callable[..., Any],
+        context_limit: int = 4,
     ) -> None:
         self.fetch_agent_config = fetch_agent_config
         self.fetch_context_messages = fetch_context_messages
@@ -30,6 +31,7 @@ class TurnWorkflowService:
         self.save_message_to_storage = save_message_to_storage
         self.calculate_entropy = calculate_entropy
         self.build_telemetry = build_telemetry
+        self._context_limit = max(1, int(context_limit))
 
     async def prepare_turn_inputs(
         self,
@@ -37,12 +39,11 @@ class TurnWorkflowService:
         session_id: UUID,
         agent_id: str,
         topic: str,
-        context_limit: int = 4,
     ) -> Tuple[Any, List[Dict[str, Any]], List[Dict[str, Any]], str]:
         """Load the agent config and recent context, then perform a context-aware RAG query."""
         agent_config, context_messages = await asyncio.gather(
             self.fetch_agent_config(agent_id),
-            self.fetch_context_messages(session_id, context_limit, topic, agent_id),
+            self.fetch_context_messages(session_id, self._context_limit, topic, agent_id),
         )
         previous_response = ""
         if context_messages:

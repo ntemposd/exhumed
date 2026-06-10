@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import type { ExecutionMetrics, ServiceStatus, VectorTelemetry } from "@/lib/types";
 
 import type { AsyncViewState, DebateMessage, TelemetryPanelViewModel, TelemetryTableRow, VectorUsageRow } from "../types";
+import { formatSourceCitation } from "../source-titles";
 import { getStyleIndex } from "../utils";
 
 type RoleBreakdownEntry = {
@@ -22,7 +23,7 @@ type VectorTurnEntry = {
 
 type UseTelemetryViewModelOptions = {
   servicesState: AsyncViewState;
-  sessionBurnUsd: number;
+  convoCostUsd: number;
   transcriptTokenEstimate: number;
   messages: DebateMessage[];
   roleBreakdown: RoleBreakdownEntry[];
@@ -45,7 +46,7 @@ function formatSpeakerTurnLabel(displayName: string, turnNumber: number): string
 
 export function useTelemetryViewModel({
   servicesState,
-  sessionBurnUsd,
+  convoCostUsd,
   transcriptTokenEstimate,
   messages,
   roleBreakdown,
@@ -134,23 +135,23 @@ export function useTelemetryViewModel({
   const performanceRows: TelemetryTableRow[] = [
     {
       Metric: "Generation Time",
-      Value: averageGenerationMs !== null ? `${Math.round(averageGenerationMs)}ms` : "IDLE",
+      "Convo avg.": averageGenerationMs !== null ? `${Math.round(averageGenerationMs)}ms` : "IDLE",
     },
     {
       Metric: "Queue Wait",
-      Value: averageQueueMs !== null ? `${Math.round(averageQueueMs)}ms` : "N/A",
+      "Convo avg.": averageQueueMs !== null ? `${Math.round(averageQueueMs)}ms` : "IDLE",
     },
     {
       Metric: "Prompt Processing",
-      Value: averagePromptMs !== null ? `${Math.round(averagePromptMs)}ms` : "N/A",
+      "Convo avg.": averagePromptMs !== null ? `${Math.round(averagePromptMs)}ms` : "IDLE",
     },
     {
       Metric: "Time to First Token",
-      Value: averageTtftMs !== null ? `${Math.round(averageTtftMs)}ms` : "N/A",
+      "Convo avg.": averageTtftMs !== null ? `${Math.round(averageTtftMs)}ms` : "IDLE",
     },
     {
-      Metric: "Session Throughput",
-      Value: sessionTps !== null ? `${sessionTps.toFixed(2)} tok/s` : "N/A",
+      Metric: "Throughput (convo)",
+      "Convo avg.": sessionTps !== null ? `${sessionTps.toFixed(2)} tok/s` : "IDLE",
     },
   ];
 
@@ -161,14 +162,17 @@ export function useTelemetryViewModel({
   }));
   const totalVectorHits = vectorTurns.reduce((sum, entry) => sum + entry.vector.match_count, 0);
   const uniqueVectorSources = new Set(
-    vectorTurns.flatMap((entry) => entry.vector.sources).map((source) => source.trim()).filter(Boolean),
+    vectorTurns
+      .flatMap((entry) => entry.vector.sources)
+      .map((source) => formatSourceCitation(source))
+      .filter(Boolean),
   ).size;
   const vectorRows: VectorUsageRow[] = vectorTurns.map(({ turn_number, display_name, vector, agent_id }) => {
     return {
       speaker: formatSpeakerTurnLabel(display_name, turn_number),
       hits: String(vector.match_count),
       top: typeof vector.top_score === "number" ? vector.top_score.toFixed(3) : "--",
-      context: String(vector.context_chars),
+      context: vector.context_chars.toLocaleString(),
       _tone: String(getStyleIndex(agent_id)),
     };
   });
@@ -207,12 +211,12 @@ export function useTelemetryViewModel({
     displayedTotalTokens,
     requestCount,
     tokenTableRows: requestRows,
-    sessionBurnUsd,
+    convoCostUsd,
     observedRatio,
     diversityValue,
     diversityLabel,
     vocalShareRows,
   };
   // deps: all inputs — recompute only when telemetry data actually changes
-  }, [servicesState, sessionBurnUsd, transcriptTokenEstimate, messages, roleBreakdown, onlineServices, serviceRows]);
+  }, [servicesState, convoCostUsd, transcriptTokenEstimate, messages, roleBreakdown, onlineServices, serviceRows]);
 }

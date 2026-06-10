@@ -45,7 +45,7 @@ export type TelemetryPanelViewModel = {
   displayedTotalTokens: number;
   requestCount: number;
   tokenTableRows: TelemetryTableRow[];
-  sessionBurnUsd: number;
+  convoCostUsd: number;
   observedRatio: number;
   diversityValue: string;
   diversityLabel: string;

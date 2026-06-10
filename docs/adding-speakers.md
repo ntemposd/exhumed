@@ -69,6 +69,8 @@ The goal is to ingest the actual speaker material, not archive headers or licens
 }
 ```
 
+Use a clear `source_title` in `AGENT_SOURCE_CONFIG` and in any `build_source_document()` overrides. At display time the app only applies mechanical formatting: trailing periods are removed and titles longer than 48 characters are truncated with `...`. The stored title itself is not renamed.
+
 ### 5. Write a source extractor
 
 If the file contains boilerplate, add a helper that strips it and returns the body text:

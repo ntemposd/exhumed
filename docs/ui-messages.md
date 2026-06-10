@@ -2,6 +2,8 @@
 
 This document lists all user-facing status messages in the frontend, their EXHUMED-themed copy, and what triggers each one.
 
+The canonical theming layer is `frontend/components/status-messages.ts`. Backend stream payloads may still carry technical strings (for example `Rate limit hit. Retrying in 2.0s`); the frontend rewrites those before they reach the system-message line or thinking bubbles.
+
 ---
 
 ## Debate Controller (`use-debate-controller.ts`)
@@ -29,14 +31,26 @@ This document lists all user-facing status messages in the frontend, their EXHUM
 
 ---
 
-## Throttle / Rate Limit (`discussion-transcript.tsx`)
+## Throttle / Rate Limit (`status-messages.ts`, `discussion-transcript.tsx`, `use-debate-controller.ts`)
+
+| Surface | Message | Trigger |
+|---|---|---|
+| **Thinking bubble** | `The ether is congested. Retrying in {n}s` (live countdown) | Groq 429 during an in-flight turn; ticks in the bubble only |
+| **Transcript header** | *(hidden during retry)* — stays on the prior line e.g. `Raising {name}...` | Header does not mirror the countdown; bubble owns throttle detail |
+| **Transcript header** | `The ether is congested` | Static throttle copy when surfaced outside an active thinking bubble |
+| **Transcript header** | `The ether is exhausted. The daily quota is spent.` | Daily token quota exhausted; backend fails fast |
+
+Legacy mapping (backend → themed):
 
 | New message | Old message | Trigger |
 |---|---|---|
-| `The ether is congested. Retrying in {n}s` | `Request throttled. Retrying in {n}s` | Groq returns 429 with a short retry-after (≤ 60s); backend retries and streams countdown |
-| `The ether is congested` | `Request throttled` | 429 detected in status text but no active countdown timer |
+| Bubble: `The ether is congested. Retrying in {n}s` | `Rate limit hit. Retrying in {n}s` / `Request throttled. Retrying in {n}s` | Groq returns 429 with a short retry-after (≤ 60s); backend retries and streams countdown |
+| Header/bubble: `The ether is congested` | `Request throttled` | 429 detected without an active bubble countdown |
+| Header: `The ether is exhausted. The daily quota is spent.` | `LLM rate limit: quota exhausted, retry after {n}s` | Daily token quota exhausted |
 
 > **Note on long countdowns:** If `retry-after > 60s` the backend now fails fast instead of sleeping. This surfaces when Groq's **daily token quota (TPD)** is exhausted — retrying would just hit the same wall immediately after the sleep.
+
+> **Header vs bubble:** Live retry countdown appears **only** in the active speaker's thinking bubble. The transcript header keeps the prior lifecycle line (`Raising {name}...`) or hides throttle copy while a turn is running. Turn errors show in the header only (not duplicated in the command footer).
 
 ---
 

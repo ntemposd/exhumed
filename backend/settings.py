@@ -83,10 +83,17 @@ class LLMSettings(BaseModel):
     model_id: str = "llama-3.1-8b-instant"
     api_base_url: str = "https://api.groq.com/openai/v1"
     max_retries: int = 3
-    request_throttle_seconds: float = 0.0
-    # Nucleus-sampling probability mass. Exposed here so it can be tuned
-    # per-deployment without a code change.
+    # Minimum spacing between provider calls (30 RPM on 8b-instant ≈ 2s/request).
+    request_throttle_seconds: float = 2.0
     top_p: float = 0.95
+    # Output cap for debate turns (agent config may be lower).
+    debate_max_tokens: int = 384
+    # Retrieval and prompt shaping to stay under TPM limits without dropping RAG entirely.
+    retrieval_top_k: int = 4
+    retrieval_weak_top_k_bonus: int = 1
+    context_turn_limit: int = 4
+    prompt_max_source_chunk_chars: int = 680
+    prompt_max_context_turn_chars: int = 320
 
 
 class RuntimeSettings(BaseModel):
@@ -152,8 +159,14 @@ def load_settings(
             "model_id": env.get("LLM_MODEL_ID", "llama-3.1-8b-instant"),
             "api_base_url": env.get("LLM_API_BASE_URL", "https://api.groq.com/openai/v1"),
             "max_retries": env.get("LLM_429_MAX_RETRIES", "3"),
-            "request_throttle_seconds": env.get("LLM_REQUEST_THROTTLE_SECONDS", "0.0"),
+            "request_throttle_seconds": env.get("LLM_REQUEST_THROTTLE_SECONDS", "2.0"),
             "top_p": env.get("LLM_TOP_P", "0.95"),
+            "debate_max_tokens": env.get("LLM_DEBATE_MAX_TOKENS", "384"),
+            "retrieval_top_k": env.get("LLM_RETRIEVAL_TOP_K", "4"),
+            "retrieval_weak_top_k_bonus": env.get("LLM_RETRIEVAL_WEAK_TOP_K_BONUS", "1"),
+            "context_turn_limit": env.get("LLM_CONTEXT_TURN_LIMIT", "4"),
+            "prompt_max_source_chunk_chars": env.get("LLM_PROMPT_MAX_SOURCE_CHUNK_CHARS", "680"),
+            "prompt_max_context_turn_chars": env.get("LLM_PROMPT_MAX_CONTEXT_TURN_CHARS", "320"),
         },
         "runtime": {
             "startup_readiness_mode": env.get("BACKEND_STARTUP_READINESS_MODE", "strict").strip().lower(),

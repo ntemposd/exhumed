@@ -406,6 +406,7 @@ class DatabaseService:
         include_data: bool = True,
         neighbor_window: int = 0,
         max_per_source: int = 2,
+        weak_top_k_bonus: int = 2,
     ) -> List[Dict[str, Any]]:
         """Retrieve speaker-specific knowledge chunks from Upstash Vector.
 
@@ -445,7 +446,7 @@ class DatabaseService:
             return []
 
         top_score = matches[0].get("score") or 0.0
-        effective_top_k = top_k if top_score >= 0.72 else min(top_k + 2, len(matches))
+        effective_top_k = top_k if top_score >= 0.72 else min(top_k + max(0, weak_top_k_bonus), len(matches))
         matches = self._apply_source_diversity(matches, max_per_source)[:effective_top_k]
         return self._enrich_matches_with_neighbors(matches, agent_id=agent_id, neighbor_window=neighbor_window)
 

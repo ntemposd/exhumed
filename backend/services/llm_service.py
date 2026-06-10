@@ -10,14 +10,6 @@ from typing import Any, AsyncIterator, Awaitable, Callable, Dict, List, Optional
 import httpx
 from fastapi import HTTPException
 
-ENTROPY_PROFILE_MAP: Dict[str, float] = {
-    "Historical Overview": 0.0,
-    "Grounded Discussion": 0.375,
-    "Balanced Debate": 0.75,
-    "Philosophical Drift": 1.125,
-    "Creative Synthesis": 1.5,
-}
-
 
 class LLMService:
     """Own outbound provider calls, retry policy, and streaming behavior."""
@@ -31,6 +23,7 @@ class LLMService:
         max_retries: int,
         throttle_seconds: float,
         top_p: float = 0.95,
+        debate_max_tokens: int = 384,
         execution_metrics_builder: Callable[..., Any],
         extract_execution_metrics: Callable[..., Any],
         build_stream_execution_metrics: Callable[..., Any],
@@ -45,6 +38,7 @@ class LLMService:
         self._model_id = model_id
         self._max_retries = max_retries
         self._throttle_seconds = throttle_seconds
+        self._debate_max_tokens = max(50, int(debate_max_tokens))
         self._top_p = top_p
         self._execution_metrics_builder = execution_metrics_builder
         self._extract_execution_metrics = extract_execution_metrics
@@ -89,6 +83,10 @@ class LLMService:
             else float(agent_config.temperature)
         )
 
+    def _resolve_max_tokens(self, agent_config: Any) -> int:
+        configured = int(getattr(agent_config, "max_tokens", 512) or 512)
+        return min(configured, self._debate_max_tokens)
+
     def build_provider_request(
         self,
         *,
@@ -101,7 +99,7 @@ class LLMService:
             "model": self._model_id,
             "messages": messages,
             "temperature": self._resolve_temperature(agent_config, temperature_override),
-            "max_tokens": agent_config.max_tokens,
+            "max_tokens": self._resolve_max_tokens(agent_config),
             "top_p": self._top_p,
             "stream": stream,
         }
@@ -192,7 +190,6 @@ class LLMService:
         messages: List[Dict[str, str]],
         agent_config: Any,
         temperature_override: Optional[float] = None,
-        entropy_profile: Optional[str] = None,
         on_complete: Optional[Callable[[str, Any], Awaitable[None]]] = None,
         on_retry: Optional[Callable[[float, int], Awaitable[None]]] = None,
     ) -> AsyncIterator[str]:
@@ -213,9 +210,8 @@ class LLMService:
                 request_started = self._perf_counter()
 
                 self._logger.debug(
-                    "[LLM CALL AUDIT] Agent: %s | Selected Profile: %s | Active LLM Temperature: %s",
+                    "[LLM CALL AUDIT] Agent: %s | Active LLM Temperature: %s",
                     getattr(agent_config, "agent_id", "unknown"),
-                    entropy_profile or "default",
                     payload["temperature"],
                 )
 

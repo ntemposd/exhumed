@@ -30,6 +30,13 @@
   min-width: 0;
 }
 
+.brandTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .brandTitle {
   margin: 0;
   font-family: var(--font-display), sans-serif;
@@ -38,6 +45,15 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink);
+}
+
+.brandVersion {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  opacity: 0.85;
+  white-space: nowrap;
 }
 
 .brandSubtitle {

@@ -5,7 +5,7 @@ import Image from "next/image";
 
 
 import type { AsyncViewState, DebateMessage, LegendDetails, TranscriptViewState } from "../types";
-import { avatarUrlForAgent, ENTROPY_PROFILES, getAgentArchetype } from "../utils";
+import { avatarUrlForAgent, getAgentArchetype, resolveToneProfile, TONE_PROFILES } from "../utils";
 import { DiscussionTranscript } from "./discussion-transcript";
 import styles from "./discussion-panel.module.css";
 
@@ -16,7 +16,7 @@ type DiscussionPanelProps = {
   selectedCouncil: LegendDetails[];
   legendEntries: LegendDetails[];
   legendCatalogState: AsyncViewState;
-  targetEntropy: number;
+  targetTemperature: number;
   controlError: string;
   sessionId: string;
   isWipingSession: boolean;
@@ -30,7 +30,7 @@ type DiscussionPanelProps = {
   transcriptRef: RefObject<HTMLDivElement | null>;
   onTopicChange: (value: string) => void;
   onToggleCouncilMember: (agentId: string) => void;
-  onTargetEntropyChange: (value: number) => void;
+  onTargetTemperatureChange: (value: number) => void;
   onStartDebate: () => void;
   onHaltDebate: () => void;
   onWipeDebate: () => void | Promise<void>;
@@ -44,7 +44,7 @@ export function DiscussionPanel({
   selectedCouncil,
   legendEntries,
   legendCatalogState,
-  targetEntropy,
+  targetTemperature,
   controlError,
   hasMessages,
   roundStartAgentId,
@@ -57,7 +57,7 @@ export function DiscussionPanel({
   transcriptRef,
   onTopicChange,
   onToggleCouncilMember,
-  onTargetEntropyChange,
+  onTargetTemperatureChange,
   onStartDebate,
   onHaltDebate,
   onWipeDebate,
@@ -70,9 +70,7 @@ export function DiscussionPanel({
   const topicFieldRef = useRef<HTMLTextAreaElement | null>(null);
   const transcriptSectionRef = useRef<HTMLElement | null>(null);
   const chatScrollRef = useRef<HTMLDivElement | null>(null);
-  const selectedEntropyValue = ENTROPY_PROFILES.reduce((closest, profile) => {
-    return Math.abs(profile.value - targetEntropy) < Math.abs(closest.value - targetEntropy) ? profile : closest;
-  }, ENTROPY_PROFILES[0]);
+  const selectedToneProfile = resolveToneProfile(targetTemperature);
 
   useEffect(() => {
     if (!isTypeEditing) {
@@ -249,36 +247,58 @@ export function DiscussionPanel({
 
           {isRosterOpen ? (
             <div className={styles.rosterPopover} role="listbox" aria-label="Available speakers">
-              {unselectedLegends.map((legend) => (
-                <button
-                  key={legend.agent_id}
-                  type="button"
-                  role="option"
-                  aria-selected={false}
-                  aria-disabled={!legend.selectable}
-                  className={styles.rosterOption}
-                  data-archetype={getAgentArchetype(legend.agent_id)}
-                  data-unavailable={legend.selectable ? "false" : "true"}
-                  onClick={() => onToggleCouncilMember(legend.agent_id)}
-                  disabled={discussionActive || !legend.selectable}
-                  title={legend.selectable ? `Add ${legend.display_name}` : "Corpus not yet available"}
-                >
-                  <Image
-                    className={styles.rosterOptionAvatar}
-                    src={avatarUrlForAgent(legend.agent_id)}
-                    alt=""
-                    width={28}
-                    height={28}
-                  />
-                  <span className={styles.rosterOptionText}>
-                    <span className={styles.rosterOptionName}>{legend.display_name}</span>
-                    <span className={styles.rosterOptionArchetype}>
-                      {legend.selectable ? legend.archetype : "Corpus pending"}
+              {unselectedLegends.map((legend) => {
+                const rosterRow = (
+                  <>
+                    <Image
+                      className={styles.rosterOptionAvatar}
+                      src={avatarUrlForAgent(legend.agent_id)}
+                      alt=""
+                      width={28}
+                      height={28}
+                    />
+                    <span className={styles.rosterOptionText}>
+                      <span className={styles.rosterOptionName}>{legend.display_name}</span>
+                      <span className={styles.rosterOptionArchetype}>{legend.archetype}</span>
                     </span>
-                  </span>
-                  <span className={styles.rosterOptionGlyph} aria-hidden="true">{legend.selectable ? "+" : "—"}</span>
-                </button>
-              ))}
+                    {legend.selectable ? (
+                      <span className={styles.rosterOptionGlyph} aria-hidden="true">+</span>
+                    ) : null}
+                  </>
+                );
+
+                if (!legend.selectable) {
+                  return (
+                    <div
+                      key={legend.agent_id}
+                      role="option"
+                      aria-disabled="true"
+                      className={styles.rosterOption}
+                      data-archetype={getAgentArchetype(legend.agent_id)}
+                      data-unavailable="true"
+                    >
+                      {rosterRow}
+                    </div>
+                  );
+                }
+
+                return (
+                  <button
+                    key={legend.agent_id}
+                    type="button"
+                    role="option"
+                    aria-selected={false}
+                    className={styles.rosterOption}
+                    data-archetype={getAgentArchetype(legend.agent_id)}
+                    data-unavailable="false"
+                    onClick={() => onToggleCouncilMember(legend.agent_id)}
+                    disabled={discussionActive}
+                    title={`Add ${legend.display_name}`}
+                  >
+                    {rosterRow}
+                  </button>
+                );
+              })}
             </div>
           ) : null}
         </div>
@@ -366,15 +386,15 @@ export function DiscussionPanel({
                   aria-expanded={isTypeEditing}
                   disabled={discussionActive}
                 >
-                  <span className={styles.typeSelectLabel}>Style:</span>
-                  <span className={styles.typeSelectValue}>{selectedEntropyValue.label}</span>
+                  <span className={styles.typeSelectLabel}>Tone:</span>
+                  <span className={styles.typeSelectValue}>{selectedToneProfile.label}</span>
                   <span className={styles.typeSelectCaret} aria-hidden="true">▾</span>
                 </button>
 
                 {isTypeEditing ? (
-                  <ul className={styles.typeSelectList} role="listbox" aria-label="Conversation style selector">
-                    {ENTROPY_PROFILES.map((profile) => {
-                      const isSelected = profile.value === selectedEntropyValue.value;
+                  <ul className={styles.typeSelectList} role="listbox" aria-label="Conversation tone selector">
+                    {TONE_PROFILES.map((profile) => {
+                      const isSelected = profile.value === selectedToneProfile.value;
 
                       return (
                         <li key={profile.value} role="option" aria-selected={isSelected}>
@@ -382,7 +402,7 @@ export function DiscussionPanel({
                             type="button"
                             className={`${styles.typeSelectOption} ${isSelected ? styles.typeSelectOptionActive : ""}`.trim()}
                             onClick={() => {
-                              onTargetEntropyChange(profile.value);
+                              onTargetTemperatureChange(profile.value);
                               setIsTypeEditing(false);
                             }}
                           >
@@ -411,12 +431,16 @@ export function DiscussionPanel({
                   <h2 className={styles.chatTopicTitle} title={topic}>{topic || "Untitled topic"}</h2>
                 </div>
                 <div className={styles.chatRoster}>{councilEditor}</div>
-                <p className={`${styles.transcriptStatusMessage} ${styles.chatStatusMessage}`.trim()}>{transcriptState.statusLabel}</p>
+                {transcriptState.statusLabel ? (
+                  <p className={`${styles.transcriptStatusMessage} ${styles.chatStatusMessage}`.trim()}>{transcriptState.statusLabel}</p>
+                ) : null}
               </>
             ) : (
               <>
                 <h2 className={"sectionHeading"}>Transcript</h2>
-                <p className={styles.transcriptStatusMessage}>{transcriptState.statusLabel}</p>
+                {transcriptState.statusLabel ? (
+                  <p className={styles.transcriptStatusMessage}>{transcriptState.statusLabel}</p>
+                ) : null}
               </>
             )}
           </div>

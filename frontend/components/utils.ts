@@ -37,17 +37,27 @@ export function getAgentArchetype(agentId: string): AgentArchetype {
   return AGENT_ARCHETYPE_MAP[agentId] ?? "thinker";
 }
 
-// Single source of truth for entropy profile definitions — shared by the
-// debate controller (API payload) and the discussion panel (UI selector).
-export const ENTROPY_PROFILES = [
-  { label: "Historical Overview", value: 0 },
-  { label: "Grounded Discussion", value: 0.375 },
-  { label: "Balanced Debate", value: 0.75 },
-  { label: "Philosophical Drift", value: 1.125 },
-  { label: "Creative Synthesis", value: 1.5 },
+// Tone presets map UI labels to LLM temperature values — shared by the
+// debate controller (API payload) and the discussion panel (Tone selector).
+export const TONE_PROFILES = [
+  { label: "Steady", value: 0 },
+  { label: "Balanced", value: 0.75 },
+  { label: "Unbound", value: 1.5 },
 ] as const;
 
-export type EntropyProfile = (typeof ENTROPY_PROFILES)[number];
+export type ToneProfile = (typeof TONE_PROFILES)[number];
+
+export const DEFAULT_TONE_TEMPERATURE: number = TONE_PROFILES[1].value;
+
+export function resolveToneProfile(temperature: number): ToneProfile {
+  return TONE_PROFILES.reduce((closest, profile) => {
+    return Math.abs(profile.value - temperature) < Math.abs(closest.value - temperature) ? profile : closest;
+  }, TONE_PROFILES[0]);
+}
+
+export function resolveToneTemperature(temperature: number): number {
+  return resolveToneProfile(temperature).value;
+}
 
 const INPUT_USD_PER_MILLION = 0.05;
 const OUTPUT_USD_PER_MILLION = 0.08;
@@ -175,7 +185,7 @@ export function getRoleBreakdown(messages: DebateMessage[]) {
     .sort((left, right) => right.words - left.words);
 }
 
-export function calculateSessionBurnUsd(messages: DebateMessage[]) {
+export function calculateConvoCostUsd(messages: DebateMessage[]) {
   let promptTokens = 0;
   let completionTokens = 0;
   let estimatedTokens = 0;
@@ -199,6 +209,18 @@ export function calculateSessionBurnUsd(messages: DebateMessage[]) {
 
   const blendedRate = ((INPUT_USD_PER_MILLION + OUTPUT_USD_PER_MILLION) / 2) / 1_000_000;
   return estimatedTokens * blendedRate;
+}
+
+export function formatConvoCostUsd(amount: number): string {
+  if (amount <= 0) {
+    return "$0.000000";
+  }
+
+  if (amount < 1) {
+    return `$${amount.toFixed(6)}`;
+  }
+
+  return `$${amount.toFixed(2)}`;
 }
 
 export function getLegendDetails(agent: Agent): LegendDetails {
