@@ -214,24 +214,59 @@ export function ChatWorkbench() {
   // running or has produced at least one real (non-thinking) message.
   const isConvoActive = discussionActive || messages.some((message) => !message.isThinking);
 
-  // On mobile, block document scroll while a convo is active so overscroll at
-  // the transcript edges cannot chain into the telemetry stack below.
+  // On mobile, block document scroll and pinch-zoom while a convo is active so
+  // overscroll at the transcript edges cannot chain into telemetry below.
   useEffect(() => {
     const mobileQuery = window.matchMedia("(max-width: 767px)");
+    const viewportNoZoom =
+      "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no";
+    let savedViewportContent: string | null = null;
+
+    const getViewportMeta = () =>
+      document.querySelector('meta[name="viewport"]') as HTMLMetaElement | null;
+
     const applyLock = () => {
       const locked = isConvoActive && mobileQuery.matches;
       document.documentElement.style.overflow = locked ? "hidden" : "";
       document.body.style.overflow = locked ? "hidden" : "";
       document.body.style.overscrollBehavior = locked ? "none" : "";
+
+      const viewportMeta = getViewportMeta();
+      if (!viewportMeta) {
+        return;
+      }
+      if (locked) {
+        if (savedViewportContent == null) {
+          savedViewportContent = viewportMeta.content;
+        }
+        viewportMeta.content = viewportNoZoom;
+        return;
+      }
+      if (savedViewportContent != null) {
+        viewportMeta.content = savedViewportContent;
+        savedViewportContent = null;
+      }
+    };
+
+    const blockPinchZoom = (event: TouchEvent) => {
+      if (isConvoActive && mobileQuery.matches && event.touches.length > 1) {
+        event.preventDefault();
+      }
     };
 
     applyLock();
     mobileQuery.addEventListener("change", applyLock);
+    document.addEventListener("touchmove", blockPinchZoom, { passive: false, capture: true });
     return () => {
       mobileQuery.removeEventListener("change", applyLock);
+      document.removeEventListener("touchmove", blockPinchZoom, { capture: true });
       document.documentElement.style.overflow = "";
       document.body.style.overflow = "";
       document.body.style.overscrollBehavior = "";
+      const viewportMeta = getViewportMeta();
+      if (viewportMeta && savedViewportContent != null) {
+        viewportMeta.content = savedViewportContent;
+      }
     };
   }, [isConvoActive]);
 

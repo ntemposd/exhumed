@@ -822,6 +822,7 @@ select {
 		min-height: 0;
 		overflow: hidden;
 		overscroll-behavior: none;
+		touch-action: pan-x pan-y;
 		background:
 			linear-gradient(var(--grid-color) 1px, transparent 1px),
 			linear-gradient(90deg, var(--grid-color) 1px, transparent 1px),
@@ -834,6 +835,7 @@ select {
 		overflow: hidden;
 		overscroll-behavior-y: none;
 		height: 100%;
+		touch-action: pan-x pan-y;
 	}
 
 	.shell[data-convo-active="true"] .workspace {
