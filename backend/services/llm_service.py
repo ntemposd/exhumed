@@ -111,25 +111,25 @@ class LLMService:
             "body": body,
         }
 
-    async def call_llm_api(
+    async def _post_chat_completion(
         self,
-        prompt: str,
-        agent_config: Any,
-        temperature_override: Optional[float] = None,
-    ) -> tuple[str, Any]:
-        """Execute a non-streaming completion request with shared retry semantics."""
+        *,
+        messages: List[Dict[str, str]],
+        temperature: float,
+        max_tokens: int,
+        stream: bool = False,
+    ) -> tuple[Dict[str, Any], Any, int]:
+        """Shared non-streaming provider POST with retry / throttle semantics."""
         headers = {"Authorization": f"Bearer {self._api_key}"}
-        provider_request = self.build_provider_request(
-            messages=[
-                {"role": "system", "content": agent_config.system_prompt.strip()},
-                {"role": "user", "content": prompt},
-            ],
-            agent_config=agent_config,
-            temperature_override=temperature_override,
-            stream=False,
-        )
-        api_url = provider_request["request_url"]
-        payload = provider_request["body"]
+        api_url = f"{self._api_base_url}/chat/completions"
+        payload: Dict[str, Any] = {
+            "model": self._model_id,
+            "messages": messages,
+            "temperature": float(temperature),
+            "max_tokens": max(16, int(max_tokens)),
+            "top_p": self._top_p,
+            "stream": stream,
+        }
 
         for attempt in range(self._max_retries + 1):
             try:
@@ -141,27 +141,7 @@ class LLMService:
                     response.raise_for_status()
                     data = response.json()
                     network_rtt_ms = int((self._perf_counter() - request_started) * 1000)
-
-                if isinstance(data, dict):
-                    choices = data.get("choices") or []
-                    if choices:
-                        message = choices[0].get("message") or {}
-                        content = message.get("content", "")
-                        if isinstance(content, list):
-                            content = "".join(item.get("text", "") if isinstance(item, dict) else str(item) for item in content)
-                        content = str(content).strip()
-                        metrics = self._extract_execution_metrics(
-                            data,
-                            response.headers,
-                            network_rtt_ms,
-                            build_metrics=self._execution_metrics_builder,
-                        )
-                        return content or "I need a moment to process this turn.", metrics
-
-                self._logger.error("Unexpected LLM API payload: %s", data)
-                raise HTTPException(status_code=500, detail="Invalid response from LLM API")
-            except HTTPException:
-                raise
+                return data, response.headers, network_rtt_ms
             except httpx.HTTPStatusError as exc:
                 response = exc.response
                 if response is not None:
@@ -184,6 +164,69 @@ class LLMService:
                 raise HTTPException(status_code=502, detail="Error communicating with LLM API")
 
         raise HTTPException(status_code=502, detail="LLM API retry budget exhausted")
+
+    @staticmethod
+    def _extract_message_content(data: Dict[str, Any]) -> str:
+        choices = data.get("choices") or []
+        if not choices:
+            return ""
+        message = choices[0].get("message") or {}
+        content = message.get("content", "")
+        if isinstance(content, list):
+            content = "".join(item.get("text", "") if isinstance(item, dict) else str(item) for item in content)
+        return str(content).strip()
+
+    async def complete_chat(
+        self,
+        messages: List[Dict[str, str]],
+        *,
+        temperature: float = 0.0,
+        max_tokens: int = 450,
+    ) -> str:
+        """Run a generic non-streaming chat completion (used by eval judges)."""
+        data, _headers, _rtt = await self._post_chat_completion(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stream=False,
+        )
+        if not isinstance(data, dict):
+            self._logger.error("Unexpected LLM API payload: %s", data)
+            raise HTTPException(status_code=500, detail="Invalid response from LLM API")
+        content = self._extract_message_content(data)
+        if not content:
+            raise HTTPException(status_code=500, detail="Empty response from LLM API")
+        return content
+
+    async def call_llm_api(
+        self,
+        prompt: str,
+        agent_config: Any,
+        temperature_override: Optional[float] = None,
+    ) -> tuple[str, Any]:
+        """Execute a non-streaming completion request with shared retry semantics."""
+        messages = [
+            {"role": "system", "content": agent_config.system_prompt.strip()},
+            {"role": "user", "content": prompt},
+        ]
+        data, headers, network_rtt_ms = await self._post_chat_completion(
+            messages=messages,
+            temperature=self._resolve_temperature(agent_config, temperature_override),
+            max_tokens=self._resolve_max_tokens(agent_config),
+            stream=False,
+        )
+        if isinstance(data, dict):
+            content = self._extract_message_content(data)
+            metrics = self._extract_execution_metrics(
+                data,
+                headers,
+                network_rtt_ms,
+                build_metrics=self._execution_metrics_builder,
+            )
+            return content or "I need a moment to process this turn.", metrics
+
+        self._logger.error("Unexpected LLM API payload: %s", data)
+        raise HTTPException(status_code=500, detail="Invalid response from LLM API")
 
     async def stream_llm_api(
         self,

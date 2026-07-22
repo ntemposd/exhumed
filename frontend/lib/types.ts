@@ -39,11 +39,26 @@ export type ExecutionMetrics = {
   updated_at: string;
 };
 
+export type AnswerEvalScores = {
+  grounding: number;
+  persona: number;
+  debate: number;
+};
+
+export type AnswerJudgeTelemetry = {
+  faithfulness: number;
+  persona: number;
+  faithfulness_notes?: string;
+  persona_notes?: string;
+};
+
 export type TurnTelemetry = {
   entropy: number;
   latency_ms: number;
   word_count: number;
   vector?: VectorTelemetry | null;
+  scores?: AnswerEvalScores | null;
+  judge?: AnswerJudgeTelemetry | null;
 };
 
 export type VectorSourceCitation = {

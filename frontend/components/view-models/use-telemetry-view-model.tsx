@@ -2,9 +2,22 @@
 // a presentational renderer fed by a single, typed view model.
 import { useMemo } from "react";
 
-import type { ExecutionMetrics, ServiceStatus, VectorTelemetry } from "@/lib/types";
+import type {
+  AnswerEvalScores,
+  AnswerJudgeTelemetry,
+  ExecutionMetrics,
+  ServiceStatus,
+  VectorTelemetry,
+} from "@/lib/types";
 
-import type { AsyncViewState, DebateMessage, TelemetryPanelViewModel, TelemetryTableRow, VectorUsageRow } from "../types";
+import type {
+  AsyncViewState,
+  DebateMessage,
+  ScoreboardMetricView,
+  TelemetryPanelViewModel,
+  TelemetryTableRow,
+  VectorUsageRow,
+} from "../types";
 import { formatSourceCitation } from "../source-titles";
 import { getStyleIndex } from "../utils";
 
@@ -42,6 +55,73 @@ function getSpeakerLastName(displayName: string): string {
 
 function formatSpeakerTurnLabel(displayName: string, turnNumber: number): string {
   return `T${String(turnNumber).padStart(2, "0")}-${getSpeakerLastName(displayName)}`;
+}
+
+function scoreBandLabel(average: number, highLabel: string, midLabel: string, lowLabel: string): string {
+  if (average < 0.35) {
+    return lowLabel;
+  }
+  if (average < 0.7) {
+    return midLabel;
+  }
+  return highLabel;
+}
+
+function averageScore(
+  messages: DebateMessage[],
+  key: keyof AnswerEvalScores,
+): number | null {
+  const values = messages
+    .map((message) => message.telemetry?.scores?.[key])
+    .filter((value): value is number => typeof value === "number");
+  if (values.length === 0) {
+    return null;
+  }
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function averageJudgeScore(
+  messages: DebateMessage[],
+  key: keyof Pick<AnswerJudgeTelemetry, "faithfulness" | "persona">,
+): number | null {
+  const values = messages
+    .map((message) => message.telemetry?.judge?.[key])
+    .filter((value): value is number => typeof value === "number");
+  if (values.length === 0) {
+    return null;
+  }
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function buildScoreboardMetric(
+  key: ScoreboardMetricView["key"],
+  label: string,
+  average: number | null,
+  highLabel: string,
+  midLabel: string,
+  lowLabel: string,
+  caption: string,
+): ScoreboardMetricView {
+  if (average === null) {
+    return {
+      key,
+      label,
+      value: "0%",
+      statusLabel: "No Data",
+      ratio: 0,
+      caption,
+    };
+  }
+
+  const ratio = Math.max(0, Math.min(1, average));
+  return {
+    key,
+    label,
+    value: `${Math.round(ratio * 100)}%`,
+    statusLabel: scoreBandLabel(average, highLabel, midLabel, lowLabel),
+    ratio,
+    caption,
+  };
 }
 
 export function useTelemetryViewModel({
@@ -177,27 +257,59 @@ export function useTelemetryViewModel({
     };
   });
 
-  const entropyValues = messages
-    .filter((message) => typeof message.telemetry?.entropy === "number")
-    .map((message) => message.telemetry!.entropy as number);
+  const scoreboardMetrics: ScoreboardMetricView[] = [
+    buildScoreboardMetric(
+      "grounding",
+      "Source relevance",
+      averageScore(messages, "grounding"),
+      "On topic",
+      "Mixed",
+      "Loose",
+      "Overlaps with the round’s Sim score, but normalized for this bar (60% Sim = 0%). Shows topic fit to that speaker’s sources.",
+    ),
+    buildScoreboardMetric(
+      "persona",
+      "Shared wording",
+      averageScore(messages, "persona"),
+      "High overlap",
+      "Some overlap",
+      "Low overlap",
+      "How many of the same words appear in both the reply and the source passages. A low % means they rephrased ideas; it does not mean they ignored the sources.",
+    ),
+    buildScoreboardMetric(
+      "debate",
+      "Diversity",
+      averageScore(messages, "debate"),
+      "Very different",
+      "Somewhat different",
+      "Similar wording",
+      "Convo average of how different each reply’s wording is from the previous speaker. High means different words—not a deeper clash of ideas.",
+    ),
+  ];
 
-  const averageEntropy = entropyValues.length > 0
-    ? entropyValues.reduce((sum, value) => sum + value, 0) / entropyValues.length
-    : null;
-
-  const observedRatio = averageEntropy !== null ? Math.max(0, Math.min(1, averageEntropy)) : 0;
-  let diversityLabel = "No Data";
-  let diversityValue = "0%";
-
-  if (averageEntropy !== null) {
-    diversityValue = `${Math.round(observedRatio * 100)}%`;
-    diversityLabel = "High Spread";
-    if (averageEntropy < 0.7) {
-      diversityLabel = "Moderate";
-    }
-    if (averageEntropy < 0.35) {
-      diversityLabel = "Low Spread";
-    }
+  const judgeFaithfulness = averageJudgeScore(messages, "faithfulness");
+  const judgePersona = averageJudgeScore(messages, "persona");
+  if (judgeFaithfulness !== null || judgePersona !== null) {
+    scoreboardMetrics.push(
+      buildScoreboardMetric(
+        "judge_faithfulness",
+        "Stays with the sources",
+        judgeFaithfulness,
+        "Well supported",
+        "Partly supported",
+        "Thinly supported",
+        "An independent review of whether the reply sticks to what that speaker’s sources actually say.",
+      ),
+      buildScoreboardMetric(
+        "judge_persona",
+        "Sounds like them",
+        judgePersona,
+        "In character",
+        "Somewhat in character",
+        "Out of character",
+        "An independent review of whether the reply feels like that historical figure—tone, values, and manner of arguing.",
+      ),
+    );
   }
 
   return {
@@ -212,9 +324,7 @@ export function useTelemetryViewModel({
     requestCount,
     tokenTableRows: requestRows,
     convoCostUsd,
-    observedRatio,
-    diversityValue,
-    diversityLabel,
+    scoreboardMetrics,
     vocalShareRows,
   };
   // deps: all inputs — recompute only when telemetry data actually changes

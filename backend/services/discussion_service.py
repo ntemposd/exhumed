@@ -9,6 +9,13 @@ from uuid import UUID
 
 from fastapi import HTTPException
 
+try:
+    from backend.evals.judge import judge_answer
+    from backend.utils.answer_evals import join_retrieval_context
+except ImportError:  # pragma: no cover - script-style imports
+    from evals.judge import judge_answer
+    from utils.answer_evals import join_retrieval_context
+
 
 class DiscussionService:
     """Coordinate route-level discussion flows so FastAPI handlers stay declarative."""
@@ -31,6 +38,8 @@ class DiscussionService:
         vector_telemetry_model: Callable[..., Any],
         logger: Any,
         utcnow: Callable[[], Any],
+        eval_online_judge: bool = False,
+        answer_judge_model: Optional[Callable[..., Any]] = None,
     ) -> None:
         self._turn_workflow_service = turn_workflow_service
         self._session_service = session_service
@@ -47,6 +56,51 @@ class DiscussionService:
         self._vector_telemetry_model = vector_telemetry_model
         self._logger = logger
         self._utcnow = utcnow
+        self._eval_online_judge = bool(eval_online_judge)
+        self._answer_judge_model = answer_judge_model
+
+    async def _maybe_attach_judge(
+        self,
+        *,
+        telemetry: Any,
+        agent_config: Any,
+        topic: str,
+        previous_response: str,
+        retrieval_context_text: str,
+        answer: str,
+    ) -> Any:
+        """Optionally run the LLM-as-judge and attach normalized scores to telemetry."""
+        if not self._eval_online_judge:
+            return telemetry
+        if not hasattr(self._llm_service, "complete_chat"):
+            return telemetry
+
+        try:
+            result = await judge_answer(
+                complete_chat=self._llm_service.complete_chat,
+                agent_id=str(getattr(agent_config, "agent_id", "") or ""),
+                display_name=str(getattr(agent_config, "display_name", "") or ""),
+                topic=topic,
+                system_prompt=str(getattr(agent_config, "system_prompt", "") or ""),
+                retrieved_context=retrieval_context_text,
+                previous_response=previous_response,
+                answer=answer,
+            )
+            judge_payload = result.as_telemetry_dict()
+            if self._answer_judge_model is not None:
+                judge_payload = self._answer_judge_model(**judge_payload)
+
+            if hasattr(telemetry, "model_copy") and callable(getattr(telemetry, "model_copy")):
+                return telemetry.model_copy(update={"judge": judge_payload})
+            if isinstance(telemetry, dict):
+                updated = dict(telemetry)
+                updated["judge"] = judge_payload
+                return updated
+            setattr(telemetry, "judge", judge_payload)
+            return telemetry
+        except Exception as exc:
+            self._logger.warning("Online answer judge failed: %s", exc)
+            return telemetry
 
     async def _capture_provider_request(
         self,
@@ -127,6 +181,7 @@ class DiscussionService:
             agent_context_matches,
             build_vector_telemetry=self._vector_telemetry_model,
         )
+        retrieval_context_text = join_retrieval_context(agent_context_matches)
         prompt = self._session_service.build_context_prompt(request.topic, context_messages, agent_config, agent_context_matches)
         await self._capture_provider_request(
             route="process-turn",
@@ -155,6 +210,15 @@ class DiscussionService:
             previous_response=previous_response,
             vector_telemetry=vector_telemetry,
             execution_metrics=execution_metrics,
+            retrieval_context_text=retrieval_context_text,
+        )
+        telemetry = await self._maybe_attach_judge(
+            telemetry=telemetry,
+            agent_config=agent_config,
+            topic=request.topic,
+            previous_response=previous_response,
+            retrieval_context_text=retrieval_context_text,
+            answer=generated_message,
         )
 
         return self._process_turn_response_model(
@@ -224,6 +288,7 @@ class DiscussionService:
             agent_context_matches,
             build_vector_telemetry=self._vector_telemetry_model,
         )
+        retrieval_context_text = join_retrieval_context(agent_context_matches)
         prompt = self._session_service.build_context_prompt(request.topic, context_messages, agent_config, agent_context_matches)
         await self._capture_provider_request(
             route="process-turn/stream",
@@ -254,6 +319,15 @@ class DiscussionService:
                 previous_response=previous_response,
                 vector_telemetry=vector_telemetry,
                 execution_metrics=execution_metrics,
+                retrieval_context_text=retrieval_context_text,
+            )
+            telemetry = await self._maybe_attach_judge(
+                telemetry=telemetry,
+                agent_config=agent_config,
+                topic=request.topic,
+                previous_response=previous_response,
+                retrieval_context_text=retrieval_context_text,
+                answer=generated_message,
             )
 
             final_model = self._process_turn_stream_final_model(
@@ -377,6 +451,7 @@ class DiscussionService:
             agent_context_matches,
             build_vector_telemetry=self._vector_telemetry_model,
         )
+        retrieval_context_text = join_retrieval_context(agent_context_matches)
         prompt = self._session_service.build_context_prompt(request.topic, context_messages, agent_config, agent_context_matches)
         await self._capture_provider_request(
             route="generate",
@@ -401,7 +476,16 @@ class DiscussionService:
             previous_response=request.previous_response or "",
             vector_telemetry=vector_telemetry,
             execution_metrics=execution_metrics,
+            retrieval_context_text=retrieval_context_text,
             latency_ms_fallback=int((time.time() - start_time) * 1000),
+        )
+        telemetry = await self._maybe_attach_judge(
+            telemetry=telemetry,
+            agent_config=agent_config,
+            topic=request.topic,
+            previous_response=request.previous_response or "",
+            retrieval_context_text=retrieval_context_text,
+            answer=generated_message,
         )
 
         return self._generate_response_model(

@@ -68,6 +68,8 @@ def build_runtime_services(
     export_session_pdf: Callable[..., Any],
     prompt_capture_log_path: Path,
     logger: Any,
+    eval_online_judge: bool = False,
+    answer_judge_model: Any = None,
 ) -> Dict[str, Any]:
     redis_client = Redis(url=upstash_redis_rest_url, token=upstash_redis_rest_token)
     vector_client = Index(url=upstash_vector_rest_url, token=upstash_vector_rest_token)
@@ -156,6 +158,8 @@ def build_runtime_services(
         vector_telemetry_model=vector_telemetry_model,
         logger=logger,
         utcnow=lambda: datetime.now(timezone.utc),
+        eval_online_judge=eval_online_judge,
+        answer_judge_model=answer_judge_model,
     )
     return {
         "redis": redis_client,

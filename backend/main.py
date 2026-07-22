@@ -167,11 +167,26 @@ class ChatStreamRequest(BaseModel):
     save_response: bool = Field(default=True, description="Persist the completed assistant response when a session id is provided")
 
 
+class AnswerEvalScores(BaseModel):
+    grounding: float = Field(..., ge=0.0, le=1.0, description="Retrieval-strength grounding score (0.0-1.0)")
+    persona: float = Field(..., ge=0.0, le=1.0, description="Answer-to-retrieved-context lexical alignment (0.0-1.0)")
+    debate: float = Field(..., ge=0.0, le=1.0, description="Novelty vs previous turn via Jaccard entropy (0.0-1.0)")
+
+
+class AnswerJudgeTelemetry(BaseModel):
+    faithfulness: float = Field(..., ge=0.0, le=1.0, description="LLM-as-judge faithfulness normalized from 1-5")
+    persona: float = Field(..., ge=0.0, le=1.0, description="LLM-as-judge persona normalized from 1-5")
+    faithfulness_notes: str = Field(default="", description="Short judge rationale for faithfulness")
+    persona_notes: str = Field(default="", description="Short judge rationale for persona")
+
+
 class TelemetryData(BaseModel):
     entropy: float = Field(..., description="Jaccard Similarity Entropy Score (0.0-1.0)")
     latency_ms: int = Field(..., description="Response generation latency in milliseconds")
     word_count: int = Field(..., description="Total word count in generated response")
     vector: Optional["VectorTelemetry"] = Field(default=None, description="Speaker knowledge retrieval telemetry for this turn")
+    scores: Optional[AnswerEvalScores] = Field(default=None, description="Deterministic answer eval scoreboard for this turn")
+    judge: Optional[AnswerJudgeTelemetry] = Field(default=None, description="Optional LLM-as-judge scores when EVAL_ONLINE_JUDGE is enabled")
 
 
 class VectorSourceCitation(BaseModel):
@@ -316,6 +331,8 @@ def _build_services(settings: BackendSettings) -> Dict[str, Any]:
         export_session_pdf=export_session_pdf,
         prompt_capture_log_path=settings.base_dir / "backend" / "logs" / "provider_prompt_captures.jsonl",
         logger=logger,
+        eval_online_judge=settings.runtime.eval_online_judge,
+        answer_judge_model=AnswerJudgeTelemetry,
     )
 
 

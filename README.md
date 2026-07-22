@@ -17,6 +17,7 @@ The current runtime stack is:
 - Current architecture and runtime behavior: `docs/architecture.md`
 - API payload examples: `docs/api-examples.md`
 - How to add a new speaker source: `docs/adding-speakers.md`
+- Offline LLM-as-judge evals + prompt optimize loop: `docs/agent-evals.md`
 
 ## Quick Start
 

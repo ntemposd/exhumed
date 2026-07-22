@@ -4,6 +4,11 @@ import asyncio
 from typing import Any, Awaitable, Callable, Dict, List, Optional, Tuple
 from uuid import UUID
 
+try:
+    from backend.utils.answer_evals import build_answer_eval_scores
+except ImportError:  # pragma: no cover - script-style imports
+    from utils.answer_evals import build_answer_eval_scores
+
 
 class TurnWorkflowService:
     """Coordinates the shared turn lifecycle used by the generation endpoints."""
@@ -71,6 +76,7 @@ class TurnWorkflowService:
         previous_response: str,
         vector_telemetry: Any,
         execution_metrics: Any,
+        retrieval_context_text: str = "",
         latency_ms_fallback: Optional[int] = None,
     ) -> Tuple[str, Any, Dict[str, Any]]:
         """Apply post-generation cleanup, telemetry derivation, and message persistence.
@@ -88,11 +94,27 @@ class TurnWorkflowService:
             or 0
         )
         entropy = self.calculate_entropy(sanitized_message, previous_response) if previous_response else 0.0
+
+        vector_used = bool(getattr(vector_telemetry, "used", None))
+        if isinstance(vector_telemetry, dict):
+            vector_used = bool(vector_telemetry.get("used"))
+        top_score = getattr(vector_telemetry, "top_score", None)
+        if isinstance(vector_telemetry, dict):
+            top_score = vector_telemetry.get("top_score")
+
+        scores = build_answer_eval_scores(
+            answer=sanitized_message,
+            retrieval_context_text=retrieval_context_text or "",
+            top_score=float(top_score) if isinstance(top_score, (int, float)) else None,
+            used=vector_used,
+            debate_entropy=entropy,
+        )
         telemetry = self.build_telemetry(
             entropy=entropy,
             latency_ms=int(latency_ms),
             word_count=len(sanitized_message.split()),
             vector=vector_telemetry,
+            scores=scores,
         )
 
         # Fire all three persistence operations concurrently — they write to

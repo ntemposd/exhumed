@@ -99,13 +99,17 @@ class TurnWorkflowServiceTests(unittest.IsolatedAsyncioTestCase):
             topic="virtue",
             turn_number=2,
             previous_response="Earlier response",
-            vector_telemetry={"used": True},
+            vector_telemetry={"used": True, "top_score": 0.80},
             execution_metrics=metrics,
+            retrieval_context_text="Temperance matters for a well ordered soul.",
         )
 
         self.assertEqual(message, "Temperance matters.")
         self.assertEqual(telemetry["entropy"], 0.25)
         self.assertEqual(telemetry["latency_ms"], 150)
+        self.assertEqual(telemetry["scores"]["grounding"], 0.5)
+        self.assertGreater(telemetry["scores"]["persona"], 0.0)
+        self.assertEqual(telemetry["scores"]["debate"], 0.25)
         self.assertEqual(stored_messages[0]["message"], "Temperance matters.")
         self.assertEqual(stored_message["id"], "message-1")
 

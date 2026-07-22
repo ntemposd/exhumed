@@ -631,6 +631,19 @@
   gap: 12px;
 }
 
+.restartBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.restartBtnIcon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  line-height: 0;
+}
+
 .telemetryIconBtn {
   display: none;
 }

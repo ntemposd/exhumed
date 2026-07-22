@@ -34,6 +34,15 @@ export type TranscriptViewState = {
   emptyMessage: string;
 };
 
+export type ScoreboardMetricView = {
+  key: "grounding" | "persona" | "debate" | "judge_faithfulness" | "judge_persona";
+  label: string;
+  value: string;
+  statusLabel: string;
+  ratio: number;
+  caption: string;
+};
+
 export type TelemetryPanelViewModel = {
   servicesState: AsyncViewState;
   onlineServices: number;
@@ -46,9 +55,7 @@ export type TelemetryPanelViewModel = {
   requestCount: number;
   tokenTableRows: TelemetryTableRow[];
   convoCostUsd: number;
-  observedRatio: number;
-  diversityValue: string;
-  diversityLabel: string;
+  scoreboardMetrics: ScoreboardMetricView[];
   vocalShareRows: TelemetryTableRow[];
 };
 

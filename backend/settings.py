@@ -100,6 +100,8 @@ class RuntimeSettings(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     startup_readiness_mode: Literal["off", "warn", "strict"] = "strict"
+    # When true, each generated turn also runs the LLM-as-judge (faithfulness + persona).
+    eval_online_judge: bool = False
 
 
 class BackendSettings(BaseModel):
@@ -170,6 +172,7 @@ def load_settings(
         },
         "runtime": {
             "startup_readiness_mode": env.get("BACKEND_STARTUP_READINESS_MODE", "strict").strip().lower(),
+            "eval_online_judge": env.get("EVAL_ONLINE_JUDGE", "off").strip().lower() in {"1", "true", "on", "yes"},
         },
     }
 

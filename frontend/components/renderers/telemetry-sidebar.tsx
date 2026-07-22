@@ -7,7 +7,13 @@ import { type RefObject, useCallback, useRef } from "react";
 import type { ServiceStatus } from "@/lib/types";
 
 import { formatConvoCostUsd } from "../utils";
-import type { AsyncViewState, TelemetryPanelViewModel, TelemetryTableRow, VectorUsageRow } from "../types";
+import type {
+  AsyncViewState,
+  ScoreboardMetricView,
+  TelemetryPanelViewModel,
+  TelemetryTableRow,
+  VectorUsageRow,
+} from "../types";
 import styles from "./telemetry-sidebar.module.css";
 
 export type { TelemetryTableRow, VectorUsageRow };
@@ -230,23 +236,18 @@ function TelemetryServiceStatus({ servicesState, onlineServices, serviceRows }: 
 // ─── Summary sections ─────────────────────────────────────────────────────
 
 const CONVO_COST_CAPTION = "Spend estimate for this convo, based on LLM token volume.";
-const DIVERSITY_CAPTION = "Lexical spread (Jaccard): average pairwise word-set entropy between each response and the one before it. Measures vocabulary overlap, not semantic similarity.";
 
 type TelemetrySummarySectionsProps = {
   performanceRows: TelemetryTableRow[];
   convoCostUsd: number;
-  observedRatio: number;
-  diversityValue: string;
-  diversityLabel: string;
+  scoreboardMetrics: ScoreboardMetricView[];
   vocalShareRows: TelemetryTableRow[];
 };
 
 function TelemetrySummarySections({
   performanceRows,
   convoCostUsd,
-  observedRatio,
-  diversityValue,
-  diversityLabel,
+  scoreboardMetrics,
   vocalShareRows,
 }: TelemetrySummarySectionsProps) {
   return (
@@ -262,16 +263,23 @@ function TelemetrySummarySections({
         </div>
       </SidebarSection>
 
-      <SidebarSection title="DEBATE DIVERSITY">
+      <SidebarSection title="HOW THIS ROUND READS">
         <div className={styles.card}>
-          <div className={styles.entropyTopline}>
-            <span className={styles.entropyValue}>{diversityValue}</span>
-            <span className={styles.entropyStatus}>{diversityLabel}</span>
+          <div className={styles.scoreboardList}>
+            {scoreboardMetrics.map((metric) => (
+              <div key={metric.key} className={styles.scoreboardRow}>
+                <div className={styles.entropyTopline}>
+                  <span className={styles.scoreboardLabel}>{metric.label}</span>
+                  <span className={styles.entropyValue}>{metric.value}</span>
+                  <span className={styles.entropyStatus}>{metric.statusLabel}</span>
+                </div>
+                <div className={styles.track}>
+                  <div className={styles.fill} style={{ width: `${metric.ratio * 100}%` }} />
+                </div>
+                <div className={styles.caption}>{metric.caption}</div>
+              </div>
+            ))}
           </div>
-          <div className={styles.track}>
-            <div className={styles.fill} style={{ width: `${observedRatio * 100}%` }} />
-          </div>
-          <div className={styles.caption}>{DIVERSITY_CAPTION}</div>
         </div>
       </SidebarSection>
 
@@ -334,9 +342,7 @@ export function TelemetryPanel({
     serviceRows,
     performanceRows,
     convoCostUsd,
-    observedRatio,
-    diversityValue,
-    diversityLabel,
+    scoreboardMetrics,
     vocalShareRows,
   } = viewModel;
 
@@ -381,9 +387,7 @@ export function TelemetryPanel({
               <TelemetrySummarySections
                 performanceRows={performanceRows}
                 convoCostUsd={convoCostUsd}
-                observedRatio={observedRatio}
-                diversityValue={diversityValue}
-                diversityLabel={diversityLabel}
+                scoreboardMetrics={scoreboardMetrics}
                 vocalShareRows={vocalShareRows}
               />
             </>

@@ -1,0 +1,62 @@
+{
+  "name": "persona_faithfulness_v1",
+  "description": "Minimum viable offline suite for faithfulness + persona LLM-as-judge scoring.",
+  "cases": [
+    {
+      "id": "socrates_virtue_opening",
+      "agent_id": "agt_001",
+      "topic": "What is virtue, and can it be taught?",
+      "previous_response": "",
+      "notes": "First-turn Socratic ethics"
+    },
+    {
+      "id": "socrates_virtue_rebuttal",
+      "agent_id": "agt_001",
+      "topic": "What is virtue, and can it be taught?",
+      "previous_response": "Virtue is simply habit reinforced by reward. Teach the habits and you teach virtue.",
+      "notes": "Should push back in Socratic style"
+    },
+    {
+      "id": "sun_tzu_strategy_opening",
+      "agent_id": "agt_003",
+      "topic": "Is deception essential to strategy?",
+      "previous_response": "",
+      "notes": "Art of War framing"
+    },
+    {
+      "id": "sun_tzu_strategy_rebuttal",
+      "agent_id": "agt_003",
+      "topic": "Is deception essential to strategy?",
+      "previous_response": "Honesty and transparency always beat cunning in the long run.",
+      "notes": "Should answer from strategic doctrine"
+    },
+    {
+      "id": "napoleon_leadership_opening",
+      "agent_id": "agt_004",
+      "topic": "What makes a decisive leader in crisis?",
+      "previous_response": "",
+      "notes": "Napoleonic leadership"
+    },
+    {
+      "id": "napoleon_leadership_rebuttal",
+      "agent_id": "agt_004",
+      "topic": "What makes a decisive leader in crisis?",
+      "previous_response": "Leaders should always wait for consensus before acting.",
+      "notes": "Should challenge consensus-first leadership"
+    },
+    {
+      "id": "marcus_duty_opening",
+      "agent_id": "agt_005",
+      "topic": "How should a leader face misfortune?",
+      "previous_response": "",
+      "notes": "Stoic duty and fortune"
+    },
+    {
+      "id": "marcus_duty_rebuttal",
+      "agent_id": "agt_005",
+      "topic": "How should a leader face misfortune?",
+      "previous_response": "Escape suffering whenever you can; comfort is the highest good.",
+      "notes": "Should reject comfort-as-highest-good"
+    }
+  ]
+}
