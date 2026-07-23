@@ -263,7 +263,7 @@ function TelemetrySummarySections({
         </div>
       </SidebarSection>
 
-      <SidebarSection title="HOW THIS ROUND READS">
+      <SidebarSection title="HOW THIS DEBATE READS">
         <div className={styles.card}>
           <div className={styles.scoreboardList}>
             {scoreboardMetrics.map((metric) => (

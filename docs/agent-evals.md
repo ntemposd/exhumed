@@ -188,7 +188,7 @@ Default **off** (extra LLM call per turn).
 set EVAL_ONLINE_JUDGE=on
 ```
 
-Restart the backend. Live turns can attach judge scores to telemetry (**Stays with the sources** / **Sounds like them** in **How this round reads**).
+Restart the backend. Live turns can attach judge scores to telemetry (**Stays with the sources** / **Sounds like them** in **How this debate reads**).
 
 Use for interactive iteration; keep offline suite as the comparable record.
 
@@ -234,4 +234,4 @@ Known soft spots:
 | `backend/evals/reports/` | Run outputs (local) |
 | `backend/scripts/run_eval_suite.py` | CLI entry for the suite |
 | `backend/scripts/optimize_agent_prompt.py` | Prompt optimize loop |
-| Telemetry “How this round reads” | Live proxies (+ optional judge rows) |
+| Telemetry “How this debate reads” | Live proxies (+ optional judge rows) |
